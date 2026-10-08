@@ -13,7 +13,8 @@ canvas{display:block;width:100%;height:100%;object-fit:contain;background:var(--
 const cv=document.getElementById('c');let g=cv.getContext('2d');const mainG=g;
 const wc=document.createElement('canvas'),wg=wc.getContext('2d'),bc=document.createElement('canvas'),bgx=bc.getContext('2d'),b2=document.createElement('canvas'),b2x=b2.getContext('2d');let scope=0;
 let W=1280,H=720,WW=2920,portrait=false,forced=null,L={},btns=[];
-function loadImg(src){const i=new Image();i.ok=false;i.onload=()=>i.ok=true;i.src=src;return i}
+// 폰의 로컬 서버가 이미지를 한꺼번에 요청받으면 일부를 놓치는 일이 있어, 실패하면 잠시 뒤 다시 받는다
+function loadImg(src){const i=new Image();i.ok=false;let n=0;i.onload=()=>{i.ok=true};i.onerror=()=>{if(n++<6)setTimeout(()=>{i.src=src+(src.indexOf('?')<0?'?':'&')+'r='+n},300*n)};i.src=src;return i}
 const bg=loadImg('bg2.jpg');
 // 뒷모습 그림이 아직 없어서 뒤쪽이 보이는 포즈를 임시로 3명에게 공통 사용
 const heroImg=loadImg('char1.png');
