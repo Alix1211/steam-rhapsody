@@ -24,7 +24,8 @@ function params(ch, no) {
   const goal = Math.round((14 + no * 1.2 + c * 0.8) * 2.2);   // 스테이지 길이 2배 이상 (가안)
   const lim = Math.round(80 + goal * 3.4 + (boss ? 40 : 0)) * 60;
   return { boss, goal, st: {
-    ehp: Math.round(40 * Math.pow(DIFF.hpMul, c) * f), edmg: +(6 * E * Math.pow(DIFF.atkMul, c) * (1 + 0.04 * (no - 1))).toFixed(1),
+    ehp: Math.round(60 * Math.pow(DIFF.hpMul, c) * f),   // 40→60: 조준 판정 도입 후 아군이 먼저 다 잡아 버려 1.5배 (케인)
+    edmg: +(6 * E * Math.pow(DIFF.atkMul, c) * (1 + 0.04 * (no - 1))).toFixed(1),
     goal, limit: lim, boss, bossHp: 6, maxAlive: 5 + (no >= 4 ? 1 : 0) + (no >= 8 ? 1 : 0) + (c >= 3 ? 1 : 0),
     spB: Math.max(60, 86 - no * 2 - c * 2), spMin: Math.max(36, 54 - no - c * 2), eliteP: Math.min(0.45, 0.08 + 0.03 * no + 0.03 * c),
     fMin: Math.max(50, Math.round((100 - c * 4 - no) * (c === 0 ? 1 : 0.95))), fVar: c === 0 ? 70 : 60, mechHp: 4, mechDm: 0.7, droneHp: 0.3, droneDm: 0.5, droneP: 0.55,
