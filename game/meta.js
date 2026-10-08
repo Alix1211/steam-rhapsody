@@ -20,13 +20,13 @@ const chNo = ch => parseInt(ch.slice(1), 10);
 const tier = ch => { const n = chNo(ch); return n >= 11 ? 5 : n - 1; };       // 0~5 (11장 = 5)
 function params(ch, no) {
   const c = tier(ch), boss = no === 10, f = 1 + 0.07 * (no - 1);
-  const goal = Math.round(14 + no * 1.2 + c * 0.8);
-  const lim = Math.round(70 + goal * 3.2 + (boss ? 25 : 0)) * 60;
+  const goal = Math.round((14 + no * 1.2 + c * 0.8) * 2.2);   // 스테이지 길이 2배 이상 (가안)
+  const lim = Math.round(80 + goal * 3.4 + (boss ? 40 : 0)) * 60;
   return { boss, goal, st: {
     ehp: Math.round(40 * Math.pow(DIFF.hpMul, c) * f), edmg: +(6 * Math.pow(DIFF.atkMul, c) * (1 + 0.04 * (no - 1))).toFixed(1),
-    goal, limit: lim, boss, bossHp: 9, maxAlive: 5 + (no >= 4 ? 1 : 0) + (no >= 8 ? 1 : 0) + (c >= 3 ? 1 : 0),
+    goal, limit: lim, boss, bossHp: 6, maxAlive: 5 + (no >= 4 ? 1 : 0) + (no >= 8 ? 1 : 0) + (c >= 3 ? 1 : 0),
     spB: Math.max(60, 86 - no * 2 - c * 2), spMin: Math.max(36, 54 - no - c * 2), eliteP: Math.min(0.45, 0.08 + 0.03 * no + 0.03 * c),
-    fMin: Math.max(60, 100 - c * 4 - no), fVar: 70, mechHp: 1.5,
+    fMin: Math.max(60, 100 - c * 4 - no), fVar: 70, mechHp: 4, mechDm: 0.55, droneHp: 0.3, droneDm: 0.4, droneP: 0.55,
     cvHp: Math.round(220 * Math.pow(DIFF.cover, c)), ecv: Math.round(30 * Math.pow(DIFF.ecover, c)), bombCv: Math.round(250 * Math.pow(DIFF.ecover, c)),
     bombDmg: Math.round(140 * Math.pow(DIFF.heroDmg, c)), hhp: Math.round(100 * Math.pow(DIFF.heroHp, c)), heal: +(6 * Math.pow(DIFF.heroHp, c)).toFixed(1) } };
 }
@@ -297,7 +297,11 @@ const BGMAP = { F1: 'bg2.jpg', F2: 'bg_F2.jpg', F3: 'bg_F3.jpg', F4: 'bg_F4.jpg'
 const BGI = {};
 function chBg(ch) { const f = BGMAP[ch]; if (!f) return bg; return BGI[f] || (BGI[f] = loadImg(f)); }
 let DLBG = null;
-function setBattleBg(ch) { bgB = DLBG = chBg(ch); }
+// 배경별 지평선(바닥이 시작되는 높이, 화면 높이 대비 비율 · 가안: 눈대중). 보행 유닛은 이 선 아래에만 선다
+const BGHZ = { F1: 0.45, F2: 0.43, F3: 0.37, F4: 0.40, F5: 0.38, M1: 0.35, M2: 0.40, M3: 0.42, M4: 0.39, M5: 0.35, C11: 0.42 };
+function syncHz() { HZF = BGHZ[curHzCh] || 0.40; if (L && L.H) L.ey0 = Math.round(L.H * HZF) + (portrait ? 34 : 22); }
+let curHzCh = 'F1';
+function setBattleBg(ch) { bgB = DLBG = chBg(ch); curHzCh = ch; syncHz(); setCovers(ch); }
 function launch(side0, ch, no, sel) {
   const P = params(ch, no), c = tier(ch); Object.assign(ST, P.st);
   picks = sel.map(r => Object.assign({}, r, { gm: gmFor(r, c) })); side = side0 === 'C' ? 'C' : side0;
