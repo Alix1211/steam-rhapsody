@@ -1,0 +1,82 @@
+{
+ "_note": "options의 수치 범위는 Claude 관리(밸런스). bases는 GPT가 채운다(G2). bases가 비어 있으면 엔진이 임시 이름을 쓴다.",
+ "options": [
+  {
+   "id": "atk",
+   "name": "공격력",
+   "unit": "%",
+   "min": 5,
+   "max": 25
+  },
+  {
+   "id": "aim",
+   "name": "조준",
+   "unit": "%",
+   "min": 5,
+   "max": 20
+  },
+  {
+   "id": "eva",
+   "name": "회피",
+   "unit": "%",
+   "min": 3,
+   "max": 15
+  },
+  {
+   "id": "def",
+   "name": "방어",
+   "unit": "%",
+   "min": 3,
+   "max": 15
+  },
+  {
+   "id": "auto",
+   "name": "자동조준",
+   "unit": "%",
+   "min": 5,
+   "max": 20
+  },
+  {
+   "id": "reload",
+   "name": "장전",
+   "unit": "%",
+   "min": 5,
+   "max": 25
+  },
+  {
+   "id": "mag",
+   "name": "탄창",
+   "unit": "%",
+   "min": 10,
+   "max": 30
+  },
+  {
+   "id": "crit",
+   "name": "치명타",
+   "unit": "%",
+   "min": 3,
+   "max": 15
+  },
+  {
+   "id": "heal",
+   "name": "회복력",
+   "unit": "%",
+   "min": 5,
+   "max": 25
+  },
+  {
+   "id": "cover",
+   "name": "엄폐물 내구",
+   "unit": "%",
+   "min": 10,
+   "max": 40
+  }
+ ],
+ "rarity": {
+  "common": 1,
+  "rare": 2,
+  "myth": 3,
+  "legend": 4
+ },
+ "bases": []
+}

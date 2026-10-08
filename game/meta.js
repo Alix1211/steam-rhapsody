@@ -183,7 +183,7 @@ function drawLines() {
   const by = H - 72;
   if (c11) { button('마계 · 11장', W / 2 - 230, by, 300, 58, () => openStages('C'), { gold: true, s: 24 }); }
   else { g.save(); g.globalAlpha = 0.55; plate3('plate_dark_s', W / 2 - 230, by, 300, 58); g.restore(); sprFit('ic_lock', W / 2 - 205, by + 29, 34); txt('???', W / 2 - 70, by + 38, { b: true, s: 24, a: 'center', c: '#9a8a70' }); }
-  button('장비', W / 2 + 90, by, 140, 58, () => toast('장비 화면은 다음 단계에서 열립니다'), { s: 22 });
+  button('장비', W / 2 + 90, by, 140, 58, () => openInv(() => go('lines')), { s: 22 });
 }
 
 // ---------- 스테이지 목록 ----------
@@ -250,6 +250,7 @@ function drawParty() {
   });
   const rd = PS.sel.length === 3;
   txt('출격할 3명을 고르세요 (' + PS.sel.length + '/3)', 24, H - 52, { b: true, s: 22, c: '#ffe27a', sh: true });
+  button('장비', W - 440, H - 88, 190, 68, () => openInv(() => go('party')), { s: 24 });
   button('출격', W - 230, H - 88, 200, 68, () => { SV.party[side] = PS.sel.map(r => r.k); saveNow(); beginStage(); }, { red: true, s: 30, dis: !rd });
 }
 
@@ -283,7 +284,6 @@ function drawDialogue() {
 }
 
 // ---------- 전투 시작 ----------
-const gmFor = (r, c) => Object.assign({ atk: 0, aim: 0, eva: 0, def: 0, auto: 0, rel: 0, mag: 0, crit: 0, heal: 0, cov: 0 }, { atk: Math.pow(DIFF.heroDmg, c) - 1 });
 SETS.C = () => { const a = SETS.F(), b = SETS.M(); return { K: a.K.concat(b.K), M: a.M.concat(b.M) }; };
 function beginStage() {
   const { side, ch, no, sel } = PS, e = epData(ch, no), id = epId(ch, no);
@@ -327,7 +327,7 @@ function drawResult() {
   }
 }
 function afterWin() {
-  const cs = curStage, e = epData(cs.ch, cs.no), id = epId(cs.ch, cs.no), fin = () => { backToStages(cs.no === 10); };
+  const cs = curStage, e = epData(cs.ch, cs.no), id = epId(cs.ch, cs.no), stars = res ? res.stars : 1, fin = () => { startRewards(cs, stars, () => backToStages(cs.no === 10)); };
   curStage = Object.assign({}, cs); over = false; menu = true;
   if (!SV.seen[id + 'a']) { SV.seen[id + 'a'] = 1; saveNow(); playDialogue(e.after, fin); } else fin();
 }
@@ -362,11 +362,149 @@ function drawModal() {
   button('확인', x + w - 190, y + h - 78, 160, 54, () => { const f = m.yes; MODAL = null; f && f(); }, { red: true, s: 22 }); button('취소', x + 30, y + h - 78, 140, 54, () => { MODAL = null; }, { s: 20 });
 }
 
+// ================= 장비 · 보상 카드 · 인벤토리 (B단계) =================
+const RARN = ['일반', '레어', '신화', '전설'], RARC = ['#c8c8c8', '#5ab0ff', '#c870ff', '#ffb030'], PARTS_GET = [1, 3, 8, 20];
+const LVF = [1, 1.35, 1.8, 2.4, 3.2, 4.2];                       // 장(tier)별 옵션 수치 배율 (가안)
+const OPT_KEY = { atk: 'atk', aim: 'aim', eva: 'eva', def: 'def', auto: 'auto', reload: 'rel', mag: 'mag', crit: 'crit', heal: 'heal', cover: 'cov' };
+const OPT_ICON = { atk: 'badge_atk', aim: 'ic_aim', eva: 'badge_eva', def: 'ic_shield', auto: 'ic_lock', reload: 'badge_rel', mag: 'ic_mag', crit: 'badge_flame', heal: 'badge_heal', cover: 'badge_hand' };
+const OPT_CAP = { eva: 0.6, def: 0.6, rel: 0.6, aim: 0.85 };
+let ITEMS = { options: [], bases: [] }, BLANKS = [];
+const FALLBACK_OPTS = [['atk', '공격력', 5, 25], ['aim', '조준', 5, 20], ['eva', '회피', 3, 15], ['def', '방어', 3, 15], ['auto', '자동조준', 5, 20], ['reload', '장전', 5, 25], ['mag', '탄창', 10, 30], ['crit', '치명타', 3, 15], ['heal', '회복력', 5, 25], ['cover', '엄폐물 내구', 10, 40]].map(a => ({ id: a[0], name: a[1], min: a[2], max: a[3] }));
+const FALLBACK_BASES = ['쫀득 채찍', '방울 재갈', '핑크 패들', '마도 족쇄', '하트 초커', '훈도시 장갑복', '페로몬 연막탄', '증기 가죽끈'].map((n, i) => ({ id: 'tmp' + i, name: n, flavor: '' }));   // 임시 — G2 완료 시 items.json이 대체
+function loadItems() {
+  fetch(new URL('../data/items.json', location.href)).then(r => r.json()).then(j => { ITEMS = j; }).catch(() => {});
+  fetch(new URL('../data/blank_cards.json', location.href)).then(r => r.json()).then(j => { BLANKS = Array.isArray(j) ? j : []; }).catch(() => {});
+}
+loadItems();
+const optDefs = () => (ITEMS.options && ITEMS.options.length ? ITEMS.options : FALLBACK_OPTS);
+const optName = id => { const o = optDefs().find(x => x.id === id); return o ? o.name : id; };
+const baseList = () => (ITEMS.bases && ITEMS.bases.length ? ITEMS.bases : FALLBACK_BASES);
+function rollVals(opts, lv) { return opts.map(o => { const d = optDefs().find(x => x.id === o.k) || { min: 5, max: 20 }; return { k: o.k, v: Math.round((d.min + (d.max - d.min) * Math.random()) * LVF[clamp(lv - 1, 0, 5)] * 10) / 10 }; }); }
+function rollGear(tierN, boss) {
+  const w = boss ? [28, 38, 25, 9] : [60, 28, 10, 2]; let r = Math.random() * 100, rar = 1; for (let i = 0; i < 4; i++) { r -= w[i]; if (r < 0) { rar = i + 1; break; } if (i === 3) rar = 4; }
+  const ids = optDefs().map(o => o.id).sort(() => Math.random() - 0.5).slice(0, rar), base = baseList()[Math.floor(Math.random() * baseList().length)], lv = tierN + 1;
+  return { id: SV.nid++, base: base.name, flavor: base.flavor || '', rar, lv, opts: rollVals(ids.map(k => ({ k })), lv) };
+}
+const gearById = id => SV.gear.find(x => x.id === id);
+const gearOwner = gid => { for (const k in SV.eq) if (SV.eq[k] === gid) return k; return null; };
+const heroByKey = k => ROSTER.F.concat(ROSTER.M).find(r => r.k === k);
+function sumMods(key) {
+  const m = { atk: 0, aim: 0, eva: 0, def: 0, auto: 0, rel: 0, mag: 0, crit: 0, heal: 0, cov: 0 }, g0 = gearById(SV.eq[key]);
+  if (g0) for (const o of g0.opts) m[OPT_KEY[o.k]] += o.v / 100;
+  for (const k in OPT_CAP) m[k] = Math.min(OPT_CAP[k], m[k]); return m;
+}
+function gmFor(r, c) { const m = sumMods(r.k); m.atk = (1 + m.atk) * Math.pow(DIFF.heroDmg, c) - 1; return m; }
+const optLine = o => optName(o.k) + ' +' + (Math.round(o.v * 10) / 10) + '%';
+const gearIconKey = g0 => OPT_ICON[g0.opts[0].k] || 'badge_gear';
+function gearIcon(g0, cx, cy, sz) { g.save(); g.fillStyle = RARC[g0.rar - 1]; g.globalAlpha = 0.28; g.beginPath(); g.arc(cx, cy, sz * 0.52, 0, 7); g.fill(); g.globalAlpha = 1; g.restore(); sprFit(gearIconKey(g0), cx, cy, sz); }
+function equip(gid, key) { for (const k in SV.eq) if (SV.eq[k] === gid) delete SV.eq[k]; if (key) SV.eq[key] = gid; saveNow(); }
+function dismantle(gid) { const g0 = gearById(gid); if (!g0) return 0; equip(gid, null); SV.gear = SV.gear.filter(x => x.id !== gid); const p = PARTS_GET[g0.rar - 1]; SV.parts += p; saveNow(); return p; }
+const rerollCost = g0 => 3 * g0.rar;
+function reroll(gid) { const g0 = gearById(gid); if (!g0) return; const c = rerollCost(g0); if (SV.parts < c) { toast('부품이 부족합니다 (' + c + ' 필요)'); return; } SV.parts -= c; g0.opts = rollVals(g0.opts, g0.lv); saveNow(); toast('옵션 수치를 다시 굴렸습니다'); }
+
+// ---------- 보상 카드 ----------
+let RW = null;
+function startRewards(cs, stars, then) {
+  const n = [0, 2, 4, 6][stars], pick = [0, 1, 2, 3][stars], tN = tier(cs.ch), cards = [];
+  for (let i = 0; i < n / 2; i++) cards.push({ kind: 'gear', gear: rollGear(tN, cs.P.boss) });
+  for (let i = 0; i < n / 2; i++) { const b = BLANKS.length ? BLANKS[Math.floor(Math.random() * BLANKS.length)] : { title: '꽝', caption: '다음 기회에.', parts: 1 }; cards.push({ kind: 'blank', blank: b }); }
+  cards.sort(() => Math.random() - 0.5); RW = { cards, pick, left: pick, then, doneT: 0, label: chNo(cs.ch) + '-' + cs.no }; go('cards');
+}
+function cardGeo() {
+  const n = RW.cards.length, cols = n >= 6 ? 3 : (portrait ? 2 : n), rows = Math.ceil(n / cols), top = 120, bot = 110, gap = 16;
+  const cw = Math.min(230, (W - 40 - (cols - 1) * gap) / cols), ch = Math.min(cw * 1.5, (H - top - bot - (rows - 1) * gap) / rows), tw = cols * cw + (cols - 1) * gap, th = rows * ch + (rows - 1) * gap, x0 = (W - tw) / 2, y0 = top + (H - top - bot - th) / 2;
+  return RW.cards.map((c, i) => ({ c, x: x0 + (i % cols) * (cw + gap), y: y0 + Math.floor(i / cols) * (ch + gap), w: cw, h: ch }));
+}
+function cardFront(c, x, y, w, h, dimmed) {
+  const big = w > 150;
+  if (c.kind === 'gear') {
+    const g0 = c.gear, col = RARC[g0.rar - 1]; panel(x, y, w, h, { fill: 'rgba(18,12,22,.96)', e1: col, e2: col, lw: 4 });
+    gearIcon(g0, x + w / 2, y + h * 0.17, w * 0.3); txt(RARN[g0.rar - 1], x + w / 2, y + h * 0.38, { b: true, s: big ? 18 : 14, a: 'center', c: col });
+    wrap(g0.base, w - 20, big ? 21 : 16, true).slice(0, 2).forEach((l, i) => txt(l, x + w / 2, y + h * 0.48 + i * (big ? 24 : 19), { b: true, s: big ? 21 : 16, a: 'center' }));
+    g0.opts.forEach((o, i) => txt(optLine(o), x + w / 2, y + h * 0.68 + i * (big ? 24 : 19), { s: big ? 18 : 14, a: 'center', c: '#cfe8ff' }));
+    txt('Lv.' + g0.lv, x + w / 2, y + h - 12, { s: 14, a: 'center', c: '#cbb890' });
+  } else {
+    panel(x, y, w, h, { fill: 'rgba(24,20,24,.96)', e1: '#8a7a6a', e2: '#5a4a3a' }); sprFit('ic_warn', x + w / 2, y + h * 0.18, w * 0.28);
+    txt('꽝', x + w / 2, y + h * 0.5, { b: true, s: big ? 40 : 28, a: 'center', c: '#bba' });
+    wrap(c.blank.title || '', w - 20, 16, true).slice(0, 2).forEach((l, i) => txt(l, x + w / 2, y + h * 0.6 + i * 20, { b: true, s: 16, a: 'center', c: '#ddd' }));
+    wrap(c.blank.caption || '', w - 24, 14).slice(0, 3).forEach((l, i) => txt(l, x + w / 2, y + h * 0.74 + i * 18, { s: 14, a: 'center', c: '#aaa' }));
+    txt('부품 +' + (c.blank.parts || 1), x + w / 2, y + h - 12, { s: 14, a: 'center', c: '#cbb890' });
+  }
+  if (dimmed) { g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x + 3, y + 3, w - 6, h - 6); }
+}
+function drawCards() {
+  coverImg(bg, 0.5, 0.5); dim(0.8); header('보상 카드 · ' + RW.label, null, RW.left > 0 ? '카드 ' + RW.left + '장을 고르세요' : '획득 완료');
+  const geo = cardGeo(), now = nowMs();
+  geo.forEach(q => {
+    const c = q.c, tt = c.t0 ? clamp((now - c.t0) / 420, 0, 1) : 0, face = tt > 0.5 || c.shown; let sx = 1;
+    if (c.t0 && tt < 1) sx = Math.abs(Math.cos(tt * Math.PI)); else sx = 1;
+    g.save(); g.translate(q.x + q.w / 2, q.y + q.h / 2); g.scale(Math.max(0.02, sx), 1); g.translate(-q.w / 2, -q.h / 2);
+    if (face) cardFront(c, 0, 0, q.w, q.h, c.dim); else {
+      panel(0, 0, q.w, q.h, { fill: 'rgba(60,14,24,.95)', e1: '#e8b86a', e2: '#8a5a2a', lw: 4 }); sprFit('ic_wings_big', q.w / 2, q.h / 2, q.w * 0.6); txt('?', q.w / 2, q.h * 0.88, { b: true, s: 30, a: 'center', c: '#ffe27a' });
+    }
+    g.restore();
+    if (c.picked && tt >= 1) { sprFit('ok_sm', q.x + q.w - 8, q.y + 8, 34); }
+    if (!c.t0 && RW.left > 0) addHit(q.x, q.y, q.w, q.h, () => {
+      if (RW.left <= 0 || c.t0) return; c.t0 = nowMs(); c.picked = true; RW.left--;
+      if (c.kind === 'gear') SV.gear.push(c.gear); else SV.parts += c.blank.parts || 1; saveNow();
+      if (RW.left === 0) { RW.doneT = nowMs() + 900; setTimeout(() => { for (const k of RW.cards) if (!k.t0) { k.t0 = nowMs(); k.dim = true; } }, 700); }
+    });
+  });
+  if (RW.left === 0 && nowMs() > RW.doneT) button('확인', W / 2 - 110, H - 90, 220, 62, () => { const f = RW.then; RW = null; f(); }, { red: true, s: 26 });
+  txt('부품 ' + SV.parts, W - 70, 96, { b: true, s: 18, a: 'right', c: '#cbb890' });
+}
+
+// ---------- 인벤토리 ----------
+let INV = { hero: null, page: 0, sel: null, back: null };
+function openInv(back) {
+  const pool = ROSTER.F.concat(ROSTER.M).filter(heroAvail); INV = { hero: (INV.hero && pool.find(r => r.k === INV.hero)) ? INV.hero : (pool[0] ? pool[0].k : null), page: 0, sel: null, back: back || (() => go('lines')) }; go('inv');
+}
+const sortedGear = () => SV.gear.slice().sort((a, b) => b.rar - a.rar || b.lv - a.lv || b.id - a.id);
+function statLines(key) { const m = sumMods(key), out = []; for (const o of optDefs()) { const v = m[OPT_KEY[o.id]]; if (v > 0) out.push(o.name + ' +' + Math.round(v * 1000) / 10 + '%'); } return out; }
+function drawInv() {
+  coverImg(bg, 0.5, 0.5); dim(0.8); header('장비', INV.back); txt('부품 ' + SV.parts, W - 70, 40, { b: true, s: 20, a: 'right', c: '#ffe27a', sh: true });
+  const pool = ROSTER.F.concat(ROSTER.M).filter(heroAvail), per = portrait ? 8 : pool.length, rowsN = Math.ceil(pool.length / per), cs = Math.min(76, (W - 40 - (per - 1) * 6) / per), top = 74;
+  pool.forEach((r, i) => { const x = 20 + (i % per) * (cs + 6), y = top + Math.floor(i / per) * (cs + 6), on = INV.hero === r.k, eq = SV.eq[r.k];
+    g.fillStyle = on ? 'rgba(255,226,122,.25)' : 'rgba(0,0,0,.5)'; g.fillRect(x, y, cs, cs); g.strokeStyle = on ? '#ffe27a' : 'rgba(255,255,255,.25)'; g.lineWidth = on ? 3 : 1.5; g.strokeRect(x, y, cs, cs);
+    if (r.face.ok) { const k = Math.max(cs / r.face.naturalWidth, cs / r.face.naturalHeight) * 1.0; g.save(); g.beginPath(); g.rect(x, y, cs, cs); g.clip(); g.drawImage(r.face, x + (cs - r.face.naturalWidth * k) / 2, y, r.face.naturalWidth * k, r.face.naturalHeight * k); g.restore(); }
+    if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - 6, cs, 6); } }
+    addHit(x, y, cs, cs, () => { INV.hero = r.k; });
+  });
+  const lt = top + rowsN * (cs + 6) + 6, hero = heroByKey(INV.hero), eqG = gearById(SV.eq[INV.hero]);
+  const listW = portrait ? W - 40 : W - 40 - 360, listH = portrait ? 6 * 74 + 100 : H - lt - 14;
+  // 가방 목록
+  const gs = sortedGear(), rowH = 74, perPage = Math.max(1, Math.floor((listH - 100) / rowH)), pages = Math.max(1, Math.ceil(gs.length / perPage)); INV.page = clamp(INV.page, 0, pages - 1);
+  panel(20, lt, listW, listH, { gem: false }); txt('가방 ' + gs.length + '개', 36, lt + 34, { b: true, s: 22, c: '#ffe9b0' });
+  if (!gs.length) txt('아직 장비가 없습니다. 스테이지를 클리어하고 카드를 고르세요.', 20 + listW / 2, lt + listH / 2, { s: 20, a: 'center', c: '#9a8a70' });
+  gs.slice(INV.page * perPage, INV.page * perPage + perPage).forEach((g0, i) => {
+    const x = 32, y = lt + 48 + i * rowH, w = listW - 24, on = INV.sel === g0.id, own = gearOwner(g0.id);
+    g.fillStyle = on ? 'rgba(255,226,122,.18)' : 'rgba(255,255,255,.05)'; g.fillRect(x, y, w, rowH - 6); g.strokeStyle = on ? '#ffe27a' : RARC[g0.rar - 1]; g.lineWidth = on ? 3 : 1.5; g.strokeRect(x, y, w, rowH - 6);
+    gearIcon(g0, x + 38, y + (rowH - 6) / 2, 52); txt(g0.base, x + 78, y + 28, { b: true, s: 21, c: RARC[g0.rar - 1] }); txt(RARN[g0.rar - 1] + ' · Lv.' + g0.lv, x + w - 12, y + 28, { s: 16, a: 'right', c: '#cbb890' });
+    txt(g0.opts.map(optLine).join('  '), x + 78, y + 54, { s: portrait ? 15 : 17, c: '#cfe8ff' });
+    if (own) { const h2 = heroByKey(own); txt('착용: ' + (h2 ? h2.n : own), x + w - 12, y + 54, { b: true, s: 15, a: 'right', c: '#9fe6a8' }); }
+    addHit(x, y, w, rowH - 6, () => { INV.sel = on ? null : g0.id; });
+  });
+  if (pages > 1) { button('◀', 20 + listW / 2 - 110, lt + listH - 46, 70, 38, () => { INV.page = Math.max(0, INV.page - 1); }, { s: 18 }); txt((INV.page + 1) + ' / ' + pages, 20 + listW / 2, lt + listH - 20, { b: true, s: 18, a: 'center' }); button('▶', 20 + listW / 2 + 40, lt + listH - 46, 70, 38, () => { INV.page = Math.min(pages - 1, INV.page + 1); }, { s: 18 }); }
+  button('일반 일괄 분해', 20 + listW - 190, lt + 6, 176, 36, () => { const n = SV.gear.filter(x => x.rar === 1 && !gearOwner(x.id)).length; if (!n) { toast('분해할 일반 장비가 없습니다'); return; } MODAL = { kind: 'confirm', title: '일반 장비 ' + n + '개를 분해할까요?', msg: '착용 중인 장비는 제외됩니다.', yes: () => { let p = 0; for (const x of SV.gear.slice()) if (x.rar === 1 && !gearOwner(x.id)) p += dismantle(x.id); toast('부품 +' + p); INV.sel = null; } }; }, { s: 15 });
+  // 영웅 / 상세 패널
+  const px = portrait ? 20 : 20 + listW + 12, pw = portrait ? W - 40 : 348, py = portrait ? lt + listH + 10 : lt, ph = portrait ? H - py - 10 : listH;
+  panel(px, py, pw, ph, { gem: false }); if (!hero) return;
+  txt(hero.n + ' · ' + CLS[hero.c], px + 16, py + 32, { b: true, s: 22, c: CCOL[hero.c] });
+  let yy = py + 58; if (eqG) { gearIcon(eqG, px + 34, yy + 22, 46); txt(eqG.base, px + 66, yy + 18, { b: true, s: 18, c: RARC[eqG.rar - 1] }); txt(eqG.opts.map(optLine).join(' '), px + 66, yy + 40, { s: 13, c: '#cfe8ff' }); button('해제', px + pw - 86, yy, 70, 38, () => { equip(eqG.id, null); }, { s: 16 }); } else txt('착용 장비 없음', px + 16, yy + 28, { s: 18, c: '#9a8a70' });
+  yy += 62; const sl = statLines(INV.hero); txt('합계(장비)', px + 16, yy, { s: 15, c: '#cbb890' }); (sl.length ? sl : ['—']).forEach((s, i) => txt(s, px + 16 + (portrait ? (i % 3) * (pw / 3) : 0), yy + 24 + (portrait ? Math.floor(i / 3) * 22 : i * 22), { s: 16, c: '#e8f0ff' }));
+  const sg = gearById(INV.sel); if (sg) {
+    const by = py + ph - 156; g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(px + 12, by - 8, pw - 24, 1); txt(sg.base, px + 16, by + 16, { b: true, s: 18, c: RARC[sg.rar - 1] }); if (sg.flavor) wrap(sg.flavor, pw - 32, 14).slice(0, 2).forEach((l, i) => txt(l, px + 16, by + 38 + i * 18, { s: 14, c: '#bbb' }));
+    const bw = (pw - 44) / 3; button('장착', px + 12, by + 70, bw, 50, () => { equip(sg.id, INV.hero); toast(hero.n + '에게 장착'); }, { red: true, s: 18 });
+    button('분해', px + 22 + bw, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '분해할까요?', msg: sg.base + ' → 부품 +' + PARTS_GET[sg.rar - 1], yes: () => { const p = dismantle(sg.id); INV.sel = null; toast('부품 +' + p); } }; }, { s: 18 });
+    button('재설정', px + 32 + bw * 2, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '옵션 재설정', msg: '부품 ' + rerollCost(sg) + '개를 써서 수치를 다시 굴립니다.', yes: () => reroll(sg.id) }; }, { s: 16 });
+  } else txt('목록에서 장비를 눌러 선택하세요', px + pw / 2, py + ph - 40, { s: 16, a: 'center', c: '#9a8a70' });
+}
+
 // ================= 코어 연결 =================
 function sceneDraw() {
   switch (scene) {
     case 'title': drawTitle(); break; case 'lines': drawLines(); break; case 'stages': drawStages(); break;
-    case 'party': drawParty(); break; case 'dialogue': drawDialogue(); break; default: drawTitle();
+    case 'party': drawParty(); break; case 'dialogue': drawDialogue(); break; case 'cards': drawCards(); break; case 'inv': drawInv(); break; default: drawTitle();
   }
   if (MODAL) drawModal(); drawToast();
 }
@@ -390,6 +528,6 @@ addEventListener('keydown', e => {
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
-window.GW = { get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; },
+window.GW = { get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
