@@ -244,10 +244,11 @@ function muzzle(h){
  if(h.art){const p=h.art[poseOf(h,h.idx)],k=elfK(h);return{x:h.x+(p.mx-p.ax)*k,y:h.y-(p.h-p.my)*k}}
  const d=heroDraw(h);return{x:h.x+d.dw*0.25,y:d.top+h.ht*0.3}}
 function burst(x,y,n,col){if(parts.length>250)return;for(let k=0;k<n;k++)parts.push({x,y,vx:(Math.random()-0.5)*9,vy:-Math.random()*7,life:16+Math.random()*10,col,s:2+Math.random()*3})}
-function shoot(h,tg,manual,cont){if(!tg)return;const w=h.w,m=muzzle(h);const a0=Math.atan2(ecy(tg)-m.y,tg.x-m.x);
+function aimPt(h){const AR=34/(1+h.w.zoom*0.6);let b=null,bd=AR;for(const e of enemies){const d=Math.hypot(e.x-cross.x,ecy(e)-cross.y);if(d<bd){bd=d;b=e}}return b?{x:b.x,y:ecy(b)}:{x:cross.x,y:cross.y}}   // 수동 사격: 조준점으로 쏜다. 조준점 바로 근처 적만 살짝 보정(저격은 더 좁게)
+function shoot(h,tg,manual,cont){const w=h.w,m=muzzle(h);let tp;if(manual)tp=aimPt(h);else{if(!tg)return;tp={x:tg.x,y:ecy(tg)}}const a0=Math.atan2(tp.y-m.y,tp.x-m.x);
  const dm=(manual?1:ST.autoDm*(1+h.m.auto))*(1+h.m.atk),sp=w.spread*(1-Math.min(0.85,h.m.aim));
  for(let k=0;k<w.pellets;k++){const a=a0+(Math.random()-0.5)*2*sp,cr=Math.random()<h.m.crit;
-  bullets.push({x:m.x,y:m.y,vx:Math.cos(a)*w.speed,vy:Math.sin(a)*w.speed,dmg:w.dmg*dm*(cr?2:1),cr,life:Math.max(w.life,Math.ceil(Math.hypot(tg.x-m.x,ecy(tg)-m.y)/w.speed)+6),wd:w.wd})}
+  bullets.push({x:m.x,y:m.y,vx:Math.cos(a)*w.speed,vy:Math.sin(a)*w.speed,dmg:w.dmg*dm*(cr?2:1),cr,life:Math.max(w.life,Math.ceil(Math.hypot(tp.x-m.x,tp.y-m.y)/w.speed)+6),wd:w.wd})}
  h.ammo--;if(h.ammo<=0)startReload(h);
  if(w.burst&&!cont){h.bq=w.burst-1;h.bt=w.bi;h.bman=manual}
  shk=Math.max(shk,manual?w.shake:w.shake*0.3);
@@ -285,16 +286,16 @@ function update(){
  const sw=heroes[sel].w,sv=fireHeld?sw.sens:1;   // 조준경 상태에서는 무기별 감도
  if(jx||jy){cross.x=Math.max(200,Math.min(WW-200,cross.x+jx*12*sv));cross.y=Math.max(L.cy0,Math.min(L.cy1,cross.y+jy*10*sv));cross.used=180}
  // 조준 끌림: 적이 가까이 오면 무기별 세기로 조준점이 살짝 붙는다
- if(fireHeld&&!jx&&!jy){const tg=crossTarget();if(tg){const dx=tg.x-cross.x,dy=ecy(tg)-cross.y;if(Math.hypot(dx,dy*2)<sw.pull){cross.x+=Math.max(-8,Math.min(8,dx*sw.mag));cross.y+=Math.max(-3,Math.min(3,dy*sw.mag*0.4));cross.used=180}}}
+ if(fireHeld&&!jx&&!jy){const tg=crossTarget();if(tg){const dx=tg.x-cross.x,dy=ecy(tg)-cross.y;if(Math.hypot(dx,dy*2)<sw.pull*0.4){cross.x+=Math.max(-8,Math.min(8,dx*sw.mag));cross.y+=Math.max(-3,Math.min(3,dy*sw.mag*0.4));cross.used=180}}}
  if(cross.used>0)cross.used--;
  const want=Math.max(0,Math.min(WW-W,cross.x-W/2));camX+=(want-camX)*0.12;
  heroes.forEach((h,i)=>{
   h.rec*=0.8;h.hit*=0.85;h.cr=(h.cr||0)+((h.rl>0?1:0)-(h.cr||0))*0.18;if(h.hp<=0)return;h.cd--;if(h.rl>0){h.rl--;if(h.rl==0)h.ammo=h.mag}
-  if(h.bq>0){if(h.rl>0)h.bq=0;else if(--h.bt<=0){const tg=h.bman?(crossTarget()||autoFor(h)):autoFor(h);if(tg)shoot(h,tg,h.bman,true);h.bq--;h.bt=h.w.bi}}   // 점사: 3연발 뒤 쉰다
+  if(h.bq>0){if(h.rl>0)h.bq=0;else if(--h.bt<=0){const tg=h.bman?null:autoFor(h);if(tg||h.bman)shoot(h,tg,h.bman,true);h.bq--;h.bt=h.w.bi}}   // 점사: 3연발 뒤 쉰다
   if(h.c==3){h.hl=(h.hl||0)+1;if(h.hl>=ST.healT){h.hl=0;let lo=null;for(const a of heroes)if(a.hp>0&&a.hp<a.max&&(!lo||a.hp/a.max<lo.hp/lo.max))lo=a;
    if(lo){lo.hp=Math.min(lo.max,lo.hp+ST.heal*(1+h.m.heal));sfx('heal');h.rec=Math.max(h.rec,0.3);for(let q=0;q<8;q++)parts.push({x:lo.x+(Math.random()-0.5)*80,y:lo.y-lo.ht*(0.2+Math.random()*0.5),vx:(Math.random()-0.5)*2,vy:-2-Math.random()*2,life:26,col:'#7dff9a',s:4})}}}
   if(h.rl>0){}
-  else if(i==sel&&fireHeld){if(h.cd<=0){shoot(h,crossTarget()||autoFor(h),true);h.cd=h.w.cd}}
+  else if(i==sel&&fireHeld){if(h.cd<=0){shoot(h,null,true);h.cd=h.w.cd}}
   else if(h.cd<=0){const tg=autoFor(h);if(tg){shoot(h,tg,false);h.cd=h.w.acd}}
  });
  spawnT--;if(spawnT<=0&&enemies.length<ST.maxAlive&&ST.spawned<ST.goal){spawn();spawnT=ST.spB-(ST.spB-ST.spMin)*Math.min(1,ST.spawned/ST.goal)}
