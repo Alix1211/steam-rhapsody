@@ -405,7 +405,7 @@ function drawWorld(){
    top=by-h}
   else{g.fillStyle=e.flash>0?'#fff':'#7a3a9a';g.fillRect(e.x-26*s,y-100*s,52*s,100*s);g.beginPath();g.arc(e.x,y-112*s,22*s,0,7);g.fill();top=y-134*s}
   if(e.cv&&e.cv.hp>0)drawEcv(e.cv,1);
-  {const fr=Math.max(0,e.hp)/e.max,rr=(e.boss?19:k.mech?15:k.drone?9:12)*(0.8+0.35*s),rx=e.x+ew*(k.drone?0.55:0.4)+rr*0.6,ry=top+eh*(k.drone?0.05:0.14);g.save();g.globalAlpha=0.85;ringG(rx,ry,rr,fr,'rgba(255,255,255,.95)',Math.max(3,rr*0.38),'rgba(255,255,255,.2)');g.restore()
+  {const fr=Math.max(0,e.hp)/e.max,rr=(e.boss?10:k.mech?8:k.drone?5:6.5)*(0.8+0.35*s),rx=e.x+ew*(k.drone?0.55:0.4)+rr*0.6,ry=top+eh*(k.drone?0.05:0.14);g.save();g.globalAlpha=0.6;ringG(rx,ry,rr,fr,'rgba(255,255,255,.9)',2,'rgba(255,255,255,.15)');g.restore()
   if(k.mech&&fr<0.3){const fi=fxi('flame1');if(fi.ok){const fw=70*s*(0.9+0.2*Math.sin(t*0.5+e.x)),fh=fw*fi.height/fi.width;g.save();g.globalCompositeOperation='lighter';g.globalAlpha=0.9;g.drawImage(fi,e.x-ew*0.15-fw/2,top+eh*0.45-fh,fw,fh);g.drawImage(fi,e.x+ew*0.2-fw/2,top+eh*0.3-fh,fw*0.8,fh*0.8);g.restore()}}}});
  if(smMode==1||smMode==4)smTile(hazeSpr,L.ey0-40,140,0.25,0.32,0.95);
  if(smMode==3||smMode==4)for(const o of steam){const q=1-o.life/o.max;g.globalAlpha=0.6*Math.min(1,q*6)*Math.pow(1-q,1.2);const dw=o.r*2.6;g.drawImage(steamSpr[o.v],o.x-dw/2,o.y-dw/2,dw,dw)}g.globalAlpha=1;
