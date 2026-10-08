@@ -13,7 +13,7 @@ canvas{display:block;width:100%;height:100%;object-fit:contain;background:var(--
 <script>
 const cv=document.getElementById('c');let g=cv.getContext('2d');const mainG=g;
 const wc=document.createElement('canvas'),wg=wc.getContext('2d'),bc=document.createElement('canvas'),bgx=bc.getContext('2d'),b2=document.createElement('canvas'),b2x=b2.getContext('2d');let scope=0;
-let HZF=0.40;let W=1280,H=720,WW=1400,portrait=false,forced=null,L={},btns=[];
+let HZF=0.40;let W=1280,H=720,WW=2600,portrait=false,forced=null,L={},btns=[];
 // 폰의 로컬 서버가 이미지를 한꺼번에 요청받으면 일부를 놓치는 일이 있어, 실패하면 잠시 뒤 다시 받는다
 function loadImg(src){const i=new Image();i.ok=false;let n=0;i.onload=()=>{i.ok=true};i.onerror=()=>{if(n++<6)setTimeout(()=>{i.src=src+(src.indexOf('?')<0?'?':'&')+'r='+n},300*n)};i.src=src;return i}
 const bg=loadImg('bg2.jpg');
@@ -139,7 +139,7 @@ function inb(p,b){return p.x>b.x&&p.x<b.x+b.w&&p.y>b.y&&p.y<b.y+b.h}
 function layout(p){
  if(p)return{W:720,H:1280,WW:3400,sp:900,hht:700,hy:1290,dn:130,ey0:Math.round(1280*HZF)+34,ed:300,es:1.45,cy0:380,cy1:1010,cyI:700,cvW:430,cvB:1276,range:1300,ringY:1090,ringR:260,cntY:700,mw:240,bombR:360,
   btns:[{x:430,y:1215,r:46,a:'sel0'},{x:530,y:1215,r:46,a:'sel1'},{x:630,y:1215,r:46,a:'sel2'},{x:590,y:1050,r:80,a:'fire'},{x:440,y:1060,r:58,a:'bomb'}]};
- return{W:1280,H:720,WW:1400,sp:380,hht:480,hy:725,dn:95,ey0:Math.round(720*HZF)+22,ed:170,es:1,cy0:150,cy1:560,cyI:380,cvW:330,cvB:722,range:900,ringY:635,ringR:170,cntY:330,mw:360,bombR:270,
+ return{W:1280,H:720,WW:2600,sp:480,hht:480,hy:725,dn:95,ey0:Math.round(720*HZF)+22,ed:170,es:1,cy0:150,cy1:560,cyI:380,cvW:330,cvB:722,range:900,ringY:635,ringR:170,cntY:330,mw:360,bombR:270,
   btns:[{x:1010,y:630,r:46,a:'sel0'},{x:1100,y:630,r:46,a:'sel1'},{x:1190,y:630,r:46,a:'sel2'},{x:1130,y:490,r:70,a:'fire'},{x:990,y:505,r:52,a:'bomb'}]};
 }
 function applyLayout(p){
