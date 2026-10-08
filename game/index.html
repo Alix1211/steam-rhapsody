@@ -63,6 +63,7 @@ const CI={},CD={};function cimg(n){return CI[n]||(CI[n]=loadImg('c_'+n+'.webp'))
 function cdark(n){const im=cimg(n);if(!im.ok)return im;if(!CD[n]){const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.drawImage(im,0,0);x.globalCompositeOperation='source-atop';x.fillStyle='rgba(20,10,0,0.38)';x.fillRect(0,0,c.width,c.height);CD[n]=c}return CD[n]}
 let PCV=['sandbag','crate_large','crate_sandbag'],ECV=['crate_small','crate_large','crate_stack','sandbag','crate_sandbag','barrels'],WRKS=null,EXPL={barrels:1};
 // 장(章)별 오브제 세트(csets.js): c=적 엄폐물, p=아군 엄폐물(넓은 것), w=잔해, x=폭발물
+function pickCv(){let t=ECV[Math.floor(Math.random()*ECV.length)];if(EXPL[t]&&enemies.filter(e=>!e.dead&&e.cv&&e.cv.hp>0&&EXPL[e.cv.type]).length>=2){const n=ECV.filter(x=>!EXPL[x]);if(n.length)t=n[Math.floor(Math.random()*n.length)]}return t}   // 터지는 엄폐물은 화면에 최대 2개
 function setCovers(ch){const c=window.CSETS&&CSETS[ch];if(c&&c.c.length){ECV=c.c.slice();PCV=[c.p[0],c.p[1]||c.p[0],c.p[2]||c.p[0]];WRKS=c.w.slice();EXPL={};for(const n of c.x)EXPL[n]=1}else{PCV=['sandbag','crate_large','crate_sandbag'];ECV=['crate_small','crate_large','crate_stack','sandbag','crate_sandbag','barrels'];WRKS=null;EXPL={barrels:1}}}
 function coverW(t,iw){return t.startsWith('oc_')?Math.max(80,Math.min(175,iw*0.62)):(t=='barrels'||t=='crate_small'?96:124)}
 for(const n of PCV.concat(ECV,['wreck_crate','wreck_stack']))cimg(n);
@@ -219,7 +220,7 @@ function bhit(b,e){const cx=e.x,cy=ecy(e),r=Math.max(e.k.r*sc(e),32*L.es),x0=b.x
  const t=Math.max(0,Math.min(1,((cx-x0)*b.vx+(cy-y0)*b.vy)/vv));return Math.hypot(x0+b.vx*t-cx,y0+b.vy*t-cy)<r}
 function ecy(e){const k=e.k;return ey(e)-((k.hov||0)+k.cyf*k.h*k.f)*sc(e)}
 function spawn(){ST.spawned++;const boss=ST.boss&&ST.spawned===ST.goal;const k=boss?MK[1]:((ST.spawned>3&&Math.random()<ST.eliteP)?pickElite():KN[Math.floor(Math.random()*KN.length)]);
- const hp=ST.ehp*(k.drone?ST.droneHp:(k.mech?ST.mechHp:1))*(boss?ST.bossHp:1);const tier=boss?1:(Math.random()<0.55?0:1),dj=(Math.random()-0.5)*0.06;enemies.push({tier,tn:420+Math.random()*520,dj,x:200+Math.random()*(WW-400),d:TIER_D[tier]+dj,hp,max:hp,fireCd:boss?50:90+Math.random()*120,tele:0,k,boss,bs:boss?1.3:1,cv:k.nocv?null:{type:ECV[Math.floor(Math.random()*ECV.length)],hp:ST.ecv,max:ST.ecv,sh:0}});const ne=enemies[enemies.length-1];if(ne.cv){ne.cv.x=ne.x;ne.cv.d=ne.d}}
+ const hp=ST.ehp*(k.drone?ST.droneHp:(k.mech?ST.mechHp:1))*(boss?ST.bossHp:1);const tier=boss?1:(Math.random()<0.55?0:1),dj=(Math.random()-0.5)*0.06;enemies.push({tier,tn:420+Math.random()*520,dj,x:200+Math.random()*(WW-400),d:TIER_D[tier]+dj,hp,max:hp,fireCd:boss?50:90+Math.random()*120,tele:0,k,boss,bs:boss?1.3:1,cv:k.nocv?null:{type:pickCv(),hp:ST.ecv,max:ST.ecv,sh:0}});const ne=enemies[enemies.length-1];if(ne.cv){ne.cv.x=ne.x;ne.cv.d=ne.d}}
 // 적이 다른 층으로 옮겨 가면 엄폐물은 제자리에 남고(잠시 뒤 사라짐), 멀쩡했다면 새 자리에 새 엄폐물이 선다
 let oldcv=[];
 function relocate(e){const c=e.cv;if(!c)return;oldcv.push({c,life:420});e.cv=c.hp>0?{type:c.type,hp:ST.ecv,max:ST.ecv,sh:0,x:e.x,d:TIER_D[e.tier]+e.dj}:null}
@@ -231,8 +232,8 @@ function pickElite(){const dr=MK.filter(m=>m.drone),me=MK.filter(m=>m.mech);cons
 // 링 게이지: 바탕 고리 + 비율만큼 채워진 호
 function ringG(x,y,r,fr,col,lw,tr){g.lineWidth=lw;g.lineCap='butt';g.strokeStyle=tr;g.beginPath();g.arc(x,y,r,0,7);g.stroke();if(fr>0){g.strokeStyle=col;g.beginPath();g.arc(x,y,r,-Math.PI/2,-Math.PI/2+Math.PI*2*Math.min(1,fr));g.stroke()}}
 // 폭발하는 오브제(엄폐물) 종류
-function hitCover(c,dmg,x,gy){const was=c.hp>0;c.hp=Math.max(0,c.hp-dmg);c.sh=1;sfx('hit');
- if(was&&c.hp<=0){burst(x,gy-20,18,'#a07a4a');burst(x,gy-30,10,'#e0c890');shk=Math.max(shk,5);if(EXPL[c.type]&&blastQ.length<8)blastQ.push({x:c.x,y:gy-28,R:210,d:4,src:null,mul:0.85,gy})}}
+function hitCover(c,dmg,x,gy,ch){const was=c.hp>0;c.hp=Math.max(0,c.hp-dmg);c.sh=1;sfx('hit');
+ if(was&&c.hp<=0){burst(x,gy-20,18,'#a07a4a');burst(x,gy-30,10,'#e0c890');shk=Math.max(shk,5);if(EXPL[c.type]&&blastQ.length<8)blastQ.push({x:c.x,y:gy-28,R:210,d:ch?30:4,src:null,mul:0.85,gy,ex:1})}}
 function smallPop(x,y,sz){if(parts.length>260)return;rings.push({x,y,max:30*sz+14,life:12,t:0,col:'255,200,120',w:5});for(let k=0;k<7;k++){const a=Math.random()*6.283,sp=2+Math.random()*5;parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:14+Math.random()*10,col:k%2?'#ffd27a':'#ff7a3a',s:2+Math.random()*3})}}
 function popFx(x,y,s){addFx('star',x,y,170*s,14);bflash=Math.max(bflash,0.08);shk=Math.max(shk,5);rings.push({x,y,max:80*s,life:16,t:0,col:'255,230,170',w:8});fireballs.push({x,y,max:62*s,life:16,t:0});
  for(let k=0;k<14;k++){const a=Math.random()*6.283,sp=3+Math.random()*9;parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-3,life:20+Math.random()*16,col:['#fff3b0','#ffb35a','#7a7a8a'][k%3],s:2+Math.random()*4})}
@@ -246,8 +247,8 @@ function runBlast(q){const x=q.x,y=q.y,R=q.R,mul=q.mul,big=mul>=1,gy=q.gy||y+24;
  if(scorch.length<14)scorch.push({x,y:gy,r:R*0.5,life:900});sfx('bomb');vib([40,30,80]);
  addFx(big?'big':'cloud',x,y,R*(big?2.5:2),big?32:26);if(mul>=2)addFx('mush',x,gy,R*2.6,44);else if(big)addFx('ray',x,y,R*2.3,22);addFire(x,gy,R*(big?0.85:0.6),big?200:130);
  for(const e of enemies){if(e.dead||e===q.src)continue;const cy=ecy(e),dx=e.x-x,dy=cy-y,d=Math.hypot(dx,dy*1.4);
-  if(e.cv&&e.cv.hp>0&&Math.hypot(e.cv.x-x,(L.ey0+e.cv.d*L.ed-30-y)*1.4)<R)hitCover(e.cv,ST.bombCv*0.8*mul,e.cv.x,L.ey0+e.cv.d*L.ed);
-  if(d<R){const f=1-0.5*d/R,nx=dx/(d+1),cva=e.cv&&e.cv.hp>0;e.hp-=ST.bombDmg*0.6*f*mul*(cva?0.5:1);e.flash=8;e.kx=nx*14*f;e.vl=12*f;e.lift=1;e.stun=Math.max(e.stun||0,30);
+  if(e.cv&&e.cv.hp>0&&Math.hypot(e.cv.x-x,(L.ey0+e.cv.d*L.ed-30-y)*1.4)<R)hitCover(e.cv,ST.bombCv*0.8*mul,e.cv.x,L.ey0+e.cv.d*L.ed,q.ex);
+  if(d<R){const f=1-0.5*d/R,nx=dx/(d+1),cva=e.cv&&e.cv.hp>0;e.hp-=ST.bombDmg*0.6*f*mul*(cva?0.5:1)*(q.ex?0.5:1);e.flash=8;e.kx=nx*14*f;e.vl=12*f;e.lift=1;e.stun=Math.max(e.stun||0,30);
    if(e.hp<=0)killEnemy(e,nx)}}}
 function killEnemy(e,nx){if(e.dead)return;e.dead=true;score++;const k=e.k,s=sc(e),cy=ecy(e)-(e.lift||0);
  streak=(streakT>0?streak:0)+1;streakT=170;if(streak>=5&&streak%5==0)banners.push({t:0,txt:streak+'연속 처치!'});
