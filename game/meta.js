@@ -557,6 +557,6 @@ addEventListener('keydown', e => {
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
-window.GW = { get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
+window.GW = { openParty, get PS() { return PS; }, beginStage, poolOf, LINES, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
