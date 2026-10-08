@@ -2,11 +2,7 @@
 
 작업 순서대로 처리하세요. 시작 전 `HANDOFF.md`와 `data/SCHEMA.md`를 읽으세요.
 
-- [ ] **G1. 시나리오 → 대사 JSON 변환**
-  - 입력: `scenario/F1_harbor.md` ~ `scenario/C11_demonrealm.md` (11개 파일)
-  - 출력: `data/dialogue/F1.json` ~ `F5.json`, `M1.json` ~ `M5.json`, `C11.json`, `C11_reactions.json`
-  - 규칙: `data/SCHEMA.md` 1번 형식. 문장은 한 글자도 바꾸지 말 것. 각 장 JSON은 편 10개, 별 판정 3줄이 모두 있어야 한다.
-  - 검증: 변환 후 JSON이 유효한지(파싱), 장당 episodes 10개, 모든 에피소드에 before/after/stars가 있는지 스크립트로 확인하고 결과를 `inbox/log.md`에 남길 것. 모양이 이상한 원고 줄은 임의로 고치지 말고 `inbox/for_claude.md`에 줄 번호와 함께 보고.
+- [x] **G1. 시나리오 → 대사 JSON 변환** — Claude가 `tools/md2json.py`로 처리 완료(11개 장 × 10편, 검증 통과). GPT는 건드리지 않아도 됨. 시나리오 원고가 바뀌면 `python3 tools/md2json.py`로 재생성.
 - [ ] **G2. 아이템 기본 목록 작성** (`data/items.json`의 `bases`)
   - 장비 이름과 개그 설명 60개. 쫀득 채찍, 방울 재갈, 핑크 패들, 마도 족쇄, 하트 초커, 훈도시 장갑복, 페로몬 연막탄 등 이 게임에 이미 나온 도구와 소품을 중심으로 코믹하게. 노골적 표현은 쓰지 않는다.
   - 아이콘 매핑은 케인이 자른 아이콘 시트가 올라온 뒤 별도 요청.
