@@ -48,3 +48,11 @@
 - 출처: FEMDOMRUSH 저장소 `assets/items/item_01~36.webp`를 그대로 복사 (번호 동일: item_NN → gi_NN)
 - 연결: `game/meta.js`의 `giIdx(이름)` — 아이템 이름이 `data/items.json` bases 목록의 몇 번째인지 → `(순번 % 36)`으로 아이콘 고정. 목록에 없는 이름은 이름 해시. (60종 → 24종은 아이콘 재사용)
 - 아직 미사용: 분홍 채찍 시트(12종), 채소 무기 시트 (저장소에 낱장 없음, 필요 시 시트에서 자름)
+
+## 추가 코믹 장비 아이콘 42종 — 분리 완료 / 저장소 업로드 대기 (2026-10-08)
+- 케인이 제공한 **하트·채찍·패들 시트 12종**과 **채소·버섯 무기·소품 시트 30종**을 개별 투명 WebP(288×288)로 분리·검수함.
+- 신규 파일 이름 예약: `game/ui/gi_37.webp` ~ `game/ui/gi_78.webp` (실제 저장소에 추가 전까지 파일이 없을 수 있음).
+- 전달용 ZIP: `steam_rhapsody_extra_icons_42.zip` — 압축 내용은 `game/ui/gi_37~78.webp`, 원본 시트 `assets_src/sheets/gag_heart_sheet.png`, `gag_vegetable_sheet.png`, `icon_manifest.json`.
+- **상태 주의:** 이 항목은 에셋 제작/압축 완료 기록이며, GitHub에 이미지 바이너리가 업로드됐다는 뜻이 아님. ZIP 파일을 저장소에 풀어 추가해야 함.
+- 게임 연결은 별도 지시 전까지 기존 `game/meta.js`의 `giIdx`(36종 순환) 그대로 유지. `data/items.json`의 60종 이름 작성 및 새 아이콘과 재매핑은 후속 작업.
+- 작업 로그는 두 AI 모두 `inbox/log.md` 하나에 기록.
