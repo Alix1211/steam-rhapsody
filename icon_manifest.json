@@ -1,0 +1,632 @@
+[
+  {
+    "file": "gi_37.webp",
+    "group": "heart",
+    "description": "하트 리본 채찍",
+    "source_bbox": [
+      4,
+      12,
+      377,
+      350
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_38.webp",
+    "group": "heart",
+    "description": "검은 장미 채찍",
+    "source_bbox": [
+      375,
+      10,
+      732,
+      336
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_39.webp",
+    "group": "heart",
+    "description": "보라 별빛 채찍",
+    "source_bbox": [
+      732,
+      14,
+      1124,
+      341
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_40.webp",
+    "group": "heart",
+    "description": "핑크 깃털 채찍",
+    "source_bbox": [
+      1114,
+      9,
+      1448,
+      368
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_41.webp",
+    "group": "heart",
+    "description": "꽃장식 나뭇가지 패들",
+    "source_bbox": [
+      24,
+      346,
+      348,
+      721
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_42.webp",
+    "group": "heart",
+    "description": "꽃넝쿨 채찍",
+    "source_bbox": [
+      362,
+      346,
+      721,
+      710
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_43.webp",
+    "group": "heart",
+    "description": "하트 패들",
+    "source_bbox": [
+      766,
+      361,
+      1083,
+      715
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_44.webp",
+    "group": "heart",
+    "description": "토끼 패들",
+    "source_bbox": [
+      1127,
+      346,
+      1446,
+      729
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_45.webp",
+    "group": "heart",
+    "description": "작은 하트 봉",
+    "source_bbox": [
+      30,
+      705,
+      346,
+      1060
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_46.webp",
+    "group": "heart",
+    "description": "캔디 스트라이프 채찍",
+    "source_bbox": [
+      324,
+      703,
+      770,
+      1069
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_47.webp",
+    "group": "heart",
+    "description": "고양이 발 패들",
+    "source_bbox": [
+      784,
+      701,
+      1086,
+      1071
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_48.webp",
+    "group": "heart",
+    "description": "리본 마법 지팡이",
+    "source_bbox": [
+      1099,
+      691,
+      1427,
+      1063
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_49.webp",
+    "group": "vegetable",
+    "description": "가지 창",
+    "source_bbox": [
+      6,
+      7,
+      184,
+      531
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_50.webp",
+    "group": "vegetable",
+    "description": "오이 창",
+    "source_bbox": [
+      134,
+      1,
+      317,
+      518
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_51.webp",
+    "group": "vegetable",
+    "description": "독버섯 창",
+    "source_bbox": [
+      286,
+      2,
+      440,
+      537
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_52.webp",
+    "group": "vegetable",
+    "description": "버섯 다발 창",
+    "source_bbox": [
+      438,
+      5,
+      585,
+      531
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_53.webp",
+    "group": "vegetable",
+    "description": "핑크 소시지 창",
+    "source_bbox": [
+      581,
+      2,
+      697,
+      536
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_54.webp",
+    "group": "vegetable",
+    "description": "당근 창",
+    "source_bbox": [
+      698,
+      3,
+      855,
+      536
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_55.webp",
+    "group": "vegetable",
+    "description": "대파 창",
+    "source_bbox": [
+      849,
+      3,
+      977,
+      530
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_56.webp",
+    "group": "vegetable",
+    "description": "새송이버섯 창",
+    "source_bbox": [
+      985,
+      28,
+      1116,
+      519
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_57.webp",
+    "group": "vegetable",
+    "description": "보라버섯 창",
+    "source_bbox": [
+      1110,
+      30,
+      1245,
+      533
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_58.webp",
+    "group": "vegetable",
+    "description": "풋고추 창",
+    "source_bbox": [
+      1240,
+      34,
+      1350,
+      465
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_59.webp",
+    "group": "vegetable",
+    "description": "가시창",
+    "source_bbox": [
+      1357,
+      26,
+      1453,
+      542
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_60.webp",
+    "group": "vegetable",
+    "description": "핑크 소시지 장식창",
+    "source_bbox": [
+      1416,
+      5,
+      1536,
+      545
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_61.webp",
+    "group": "vegetable",
+    "description": "휘어진 가지 채찍",
+    "source_bbox": [
+      13,
+      515,
+      220,
+      801
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_62.webp",
+    "group": "vegetable",
+    "description": "철갑 오이 몽둥이",
+    "source_bbox": [
+      221,
+      517,
+      350,
+      810
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_63.webp",
+    "group": "vegetable",
+    "description": "광대버섯 철퇴",
+    "source_bbox": [
+      316,
+      533,
+      476,
+      810
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_64.webp",
+    "group": "vegetable",
+    "description": "버섯다발 철퇴",
+    "source_bbox": [
+      468,
+      526,
+      621,
+      803
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_65.webp",
+    "group": "vegetable",
+    "description": "핑크 소시지 철퇴",
+    "source_bbox": [
+      630,
+      535,
+      759,
+      809
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_66.webp",
+    "group": "vegetable",
+    "description": "당근 철퇴",
+    "source_bbox": [
+      767,
+      529,
+      913,
+      788
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_67.webp",
+    "group": "vegetable",
+    "description": "대파 철퇴",
+    "source_bbox": [
+      891,
+      507,
+      1079,
+      822
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_68.webp",
+    "group": "vegetable",
+    "description": "새송이버섯 철퇴",
+    "source_bbox": [
+      1042,
+      563,
+      1178,
+      837
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_69.webp",
+    "group": "vegetable",
+    "description": "보라버섯 쌍망치",
+    "source_bbox": [
+      1174,
+      525,
+      1358,
+      842
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_70.webp",
+    "group": "vegetable",
+    "description": "고양이 발 몽둥이",
+    "source_bbox": [
+      1359,
+      541,
+      1531,
+      831
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_71.webp",
+    "group": "vegetable",
+    "description": "채소 항아리",
+    "source_bbox": [
+      0,
+      794,
+      216,
+      1018
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_72.webp",
+    "group": "vegetable",
+    "description": "채소 보급상자",
+    "source_bbox": [
+      210,
+      806,
+      434,
+      1016
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_73.webp",
+    "group": "vegetable",
+    "description": "버섯 마법 병",
+    "source_bbox": [
+      431,
+      806,
+      591,
+      1012
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_74.webp",
+    "group": "vegetable",
+    "description": "방울 달린 가죽 목띠",
+    "source_bbox": [
+      582,
+      807,
+      778,
+      1006
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_75.webp",
+    "group": "vegetable",
+    "description": "분홍 리본 목띠",
+    "source_bbox": [
+      762,
+      813,
+      961,
+      1023
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_76.webp",
+    "group": "vegetable",
+    "description": "분홍 볼 재갈",
+    "source_bbox": [
+      954,
+      818,
+      1200,
+      984
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_77.webp",
+    "group": "vegetable",
+    "description": "하트 고리 벨트",
+    "source_bbox": [
+      1143,
+      877,
+      1305,
+      1020
+    ],
+    "size": [
+      288,
+      288
+    ]
+  },
+  {
+    "file": "gi_78.webp",
+    "group": "vegetable",
+    "description": "채소 보급 자루",
+    "source_bbox": [
+      1280,
+      821,
+      1534,
+      1020
+    ],
+    "size": [
+      288,
+      288
+    ]
+  }
+]
