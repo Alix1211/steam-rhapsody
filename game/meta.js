@@ -500,6 +500,34 @@ function drawInv() {
   } else txt('목록에서 장비를 눌러 선택하세요', px + pw / 2, py + ph - 40, { s: 16, a: 'center', c: '#9a8a70' });
 }
 
+
+// ================= 조준선 / 조준경 렌즈 (PNG: docs/reticle_index.png 번호로 교체 가능) =================
+const RET = { idle: 3, scope: 3 }; ui('ret' + String(RET.idle).padStart(2, '0')); ui('ret' + String(RET.scope).padStart(2, '0'));
+const TINT = {};
+function tinted(n, col) {
+  const k = n + col; if (TINT[k]) return TINT[k]; const im = ui(n); if (!im.ok) return null;
+  const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; const x = c.getContext('2d');
+  x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, c.width, c.height); return (TINT[k] = c);
+}
+function retDraw(n, col, cx, cy, size, a) { const c = tinted('ret' + String(n).padStart(2, '0'), col); if (!c || a <= 0.01) return; g.save(); g.globalAlpha = a; g.drawImage(c, cx - size / 2, cy - size / 2, size, size * c.height / c.width); g.restore(); }
+drawReticle = function (vx, vy, ringR) {
+  const k = clamp(scope * 1.6, 0, 1), used = cross.used > 0;
+  retDraw(RET.idle, used ? '#ff4a4a' : '#ff9a9a', vx, vy, 92, (1 - k) * (used ? 1 : 0.7));
+  if (k > 0.01) {
+    retDraw(RET.scope, '#ffffff', vx, vy, ringR * 2 * 1.02, k);
+    g.save(); g.globalAlpha = k * 0.85; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath();
+    const a0 = ringR * 0.12, a1 = ringR * 0.86; g.moveTo(vx - a1, vy); g.lineTo(vx - a0, vy); g.moveTo(vx + a0, vy); g.lineTo(vx + a1, vy); g.moveTo(vx, vy - a1); g.lineTo(vx, vy - a0); g.moveTo(vx, vy + a0); g.lineTo(vx, vy + a1); g.stroke();
+    g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore();
+  }
+};
+lensFx = function (vx, vy, ringR) {
+  if (scope < 0.03) return; g.save(); g.globalAlpha = clamp(scope * 1.3, 0, 1);
+  const gr = g.createRadialGradient(vx, vy, ringR * 0.55, vx, vy, ringR); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.5)');
+  g.fillStyle = gr; g.beginPath(); g.arc(vx, vy, ringR, 0, 7); g.fill();
+  g.lineWidth = 9; g.strokeStyle = 'rgba(12,9,14,.9)'; g.beginPath(); g.arc(vx, vy, ringR + 4, 0, 7); g.stroke();
+  g.lineWidth = 2; g.strokeStyle = '#c89a5a'; g.beginPath(); g.arc(vx, vy, ringR + 0.5, 0, 7); g.stroke(); g.restore();
+};
+
 // ================= 코어 연결 =================
 function sceneDraw() {
   switch (scene) {

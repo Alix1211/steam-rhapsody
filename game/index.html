@@ -11,7 +11,7 @@ canvas{display:block;width:100%;height:100%;object-fit:contain;background:var(--
 <canvas id="c" width="1280" height="720"></canvas>
 <script>
 const cv=document.getElementById('c');let g=cv.getContext('2d');const mainG=g;
-const wc=document.createElement('canvas'),wg=wc.getContext('2d'),bc=document.createElement('canvas'),bgx=bc.getContext('2d');let scope=0;
+const wc=document.createElement('canvas'),wg=wc.getContext('2d'),bc=document.createElement('canvas'),bgx=bc.getContext('2d'),b2=document.createElement('canvas'),b2x=b2.getContext('2d');let scope=0;
 let W=1280,H=720,WW=2920,portrait=false,forced=null,L={},btns=[];
 function loadImg(src){const i=new Image();i.ok=false;i.onload=()=>i.ok=true;i.src=src;return i}
 const bg=loadImg('bg2.jpg');
@@ -134,7 +134,7 @@ function layout(p){
   btns:[{x:1010,y:630,r:46,a:'sel0'},{x:1100,y:630,r:46,a:'sel1'},{x:1190,y:630,r:46,a:'sel2'},{x:1130,y:490,r:70,a:'fire'},{x:990,y:505,r:52,a:'bomb'}]};
 }
 function applyLayout(p){
- const oldWW=WW;portrait=p;L=layout(p);W=L.W;H=L.H;WW=L.WW;cv.width=W;cv.height=H;wc.width=W;wc.height=H;bc.width=Math.ceil(W/4);bc.height=Math.ceil(H/4);
+ const oldWW=WW;portrait=p;L=layout(p);W=L.W;H=L.H;WW=L.WW;cv.width=W;cv.height=H;wc.width=W;wc.height=H;bc.width=Math.ceil(W/4);bc.height=Math.ceil(H/4);b2.width=Math.ceil(W/2);b2.height=Math.ceil(H/2);
  heroes.forEach((h,i)=>{h.x=WW/2+(i-1)*L.sp;h.y=L.hy;h.ht=L.hht});
  for(const e of enemies)e.x*=WW/oldWW;
  bullets=[];ebul=[];bombs=[];btns=L.btns;stick.on=false;stick.dx=stick.dy=0;fireHeld=false;
@@ -381,9 +381,12 @@ function draw(){
   g=wg;wg.clearRect(0,0,W,H);wg.save();wg.translate(-Math.round(camX),0);drawWorld();wg.restore();g=mainG;
   g.save();shakeT(1-0.5*scope);
   const z1=1;
-  bgx.clearRect(0,0,bc.width,bc.height);
-  bgx.imageSmoothingEnabled=true;bgx.drawImage(wc,0,0,bc.width,bc.height);
-  g.imageSmoothingEnabled=true;g.drawImage(bc,0,0,W,H);
+  // 부드러운 흐림: 1/2 → 1/4로 두 번에 나눠 줄이고, 1/4 → 1/2 → 원본으로 두 번에 나눠 키운다 (한 번에 줄이고 키우면 네모 무늬가 생김)
+  b2x.imageSmoothingEnabled=bgx.imageSmoothingEnabled=g.imageSmoothingEnabled=true;
+  b2x.clearRect(0,0,b2.width,b2.height);b2x.drawImage(wc,0,0,b2.width,b2.height);
+  bgx.clearRect(0,0,bc.width,bc.height);bgx.drawImage(b2,0,0,bc.width,bc.height);
+  b2x.clearRect(0,0,b2.width,b2.height);b2x.drawImage(bc,0,0,b2.width,b2.height);
+  g.drawImage(b2,0,0,W,H);
   g.fillStyle='rgba(0,0,0,'+(0.3*scope)+')';g.fillRect(0,0,W,H);
   g.restore();
   // 안쪽 원: 원 주변의 작은 영역만 잘라서 확대 (전체 화면을 키우지 않음)
@@ -392,12 +395,11 @@ function draw(){
   g.save();g.beginPath();g.arc(vx,vy,ringR,0,7);g.clip();
   g.save();shakeT(heroes[sel].w.ishake);
   g.drawImage(wc,cx-hs/z2,cy-hs/z2,2*hs/z2,2*hs/z2,cx-hs,cy-hs,2*hs,2*hs);
-  g.restore();g.restore();
+  g.restore();g.restore();lensFx(vx,vy,ringR);
  }
  if(bflash>0.02){g.fillStyle='rgba(255,244,214,'+(bflash*0.8)+')';g.fillRect(0,0,W,H);bflash*=0.9}zp*=0.9;
  if(bombCd==0&&!over&&scope<0.5){g.save();g.setLineDash([10,10]);g.strokeStyle='rgba(255,150,60,.35)';g.lineWidth=2;g.beginPath();g.arc(vx,vy,L.bombR*zsB,0,7);g.stroke();g.restore()}
- g.strokeStyle=scope>0.3?'rgba(255,255,255,.95)':(cross.used>0?'#f33':'rgba(255,80,80,.4)');g.lineWidth=3;
- g.beginPath();g.arc(vx,vy,ringR,0,7);g.moveTo(vx-ringR-10,vy);g.lineTo(vx-ringR*0.3,vy);g.moveTo(vx+ringR*0.3,vy);g.lineTo(vx+ringR+10,vy);g.moveTo(vx,vy-ringR-10);g.lineTo(vx,vy-ringR*0.3);g.moveTo(vx,vy+ringR*0.3);g.lineTo(vx,vy+ringR+10);g.stroke();
+ drawReticle(vx,vy,ringR);
  // 상단바
  g.fillStyle='rgba(0,0,0,.5)';g.fillRect(0,0,W,50);drawFS();drawSM();g.fillStyle='#fff';g.font='bold 22px sans-serif';g.textAlign='left';g.fillText('처치 '+score+'/'+ST.goal,20,33);g.font='bold 26px sans-serif';g.fillStyle='#ffe27a';g.fillText('FPS '+fps+(scope>0.5?' (조준경)':''),150,34);
  for(const [b2,lb,on] of [[sndBtn(),'소리',soundOn],[vibBtn(),'진동',vibOn]]){g.fillStyle=on?'rgba(255,226,122,.3)':'rgba(255,255,255,.12)';g.fillRect(b2.x,b2.y,b2.w,b2.h);g.strokeStyle=on?'#ffe27a':'rgba(255,255,255,.4)';g.lineWidth=2;g.strokeRect(b2.x,b2.y,b2.w,b2.h);g.fillStyle=on?'#fff':'rgba(255,255,255,.5)';g.font='bold 14px sans-serif';g.textAlign='center';g.fillText(lb,b2.x+b2.w/2,b2.y+22)}
@@ -433,6 +435,8 @@ function draw(){
  if(over)drawOver();
 }
 function drawOver(){g.fillStyle='rgba(0,0,0,.7)';g.fillRect(0,0,W,H);g.fillStyle='#fff';g.font='bold 56px sans-serif';g.textAlign='center';g.fillText(won?'스테이지 클리어!':'전멸 — 처치 '+score+'/'+ST.goal,W/2,H/2);g.font='24px sans-serif';g.fillText('화면을 눌러 다시 시작',W/2,H/2+50)}
+function drawReticle(vx,vy,ringR){g.strokeStyle=scope>0.3?'rgba(255,255,255,.95)':(cross.used>0?'#f33':'rgba(255,80,80,.4)');g.lineWidth=3;g.beginPath();g.arc(vx,vy,ringR,0,7);g.stroke()}
+function lensFx(vx,vy,ringR){}
 function onOverTap(p){menu=true}
 function onBattleTap(p){return false}
 function mkHero(r,i){const m=Object.assign({atk:0,aim:0,eva:0,def:0,auto:0,rel:0,mag:0,crit:0,heal:0,cov:0},r.gm||{}),mg=Math.max(1,Math.round(WP[r.c].mag*(1+m.mag))),cvh=ST.cvHp*(1+m.cov),hp=ST.hhp||100;
