@@ -1,0 +1,45 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>총구 찍기</title><style>
+html,body{margin:0;height:100%;background:#16121a;color:#f3e9d8;font-family:system-ui,sans-serif;overflow:hidden}
+#top{position:fixed;left:0;right:0;top:0;padding:10px 14px;background:#241c2a;display:flex;gap:10px;align-items:center;font-size:17px;z-index:2}
+#top b{color:#ffd77a}#cv{position:fixed;left:0;top:52px;touch-action:none}
+#bar{position:fixed;left:0;right:0;bottom:0;padding:10px;display:flex;gap:10px;background:#241c2a;z-index:2}
+button{flex:1;font-size:19px;padding:14px;border:0;border-radius:10px;background:#5b2a3a;color:#fff}
+button.go{background:#b0243a}#out{position:fixed;inset:60px 12px 80px;display:none;flex-direction:column;gap:10px;z-index:3}
+#out textarea{flex:1;background:#0e0b10;color:#cfe;font-size:13px;border-radius:8px}
+#hint{font-size:13px;color:#b9a;margin-left:auto}</style></head><body>
+<div id="top"><span id="ttl"></span><span id="hint">총구 끝을 누르세요 · 맞으면 다음</span></div>
+<canvas id="cv"></canvas>
+<div id="out"><div>다 찍었습니다. 아래 글을 <b>복사</b>해서 Claude에게 붙여 주세요.</div><textarea id="ta" readonly></textarea><button class="go" id="cp">복사</button><button id="back">다시 보기</button></div>
+<div id="bar"><button id="pv">◀ 이전</button><button id="nx" class="go">다음 ▶</button></div>
+<script>
+const IT=[{"t": "h", "k": "elf", "q": "stand", "src": "h_elf_stand.webp", "d": [425, 122]}, {"t": "h", "k": "elf", "q": "kneel", "src": "h_elf_kneel.webp", "d": [440, 143]}, {"t": "h", "k": "dwarf", "q": "stand", "src": "h_dwarf_stand.webp", "d": [532, 97]}, {"t": "h", "k": "dwarf", "q": "kneel", "src": "h_dwarf_kneel.webp", "d": [414, 80]}, {"t": "h", "k": "human", "q": "stand", "src": "h_human_stand.webp", "d": [450, 191]}, {"t": "h", "k": "human", "q": "kneel", "src": "h_human_kneel.webp", "d": [429, 130]}, {"t": "h", "k": "fox", "q": "stand", "src": "h_fox_stand.webp", "d": [452, 115]}, {"t": "h", "k": "fox", "q": "kneel", "src": "h_fox_kneel.webp", "d": [403, 107]}, {"t": "h", "k": "goblin", "q": "stand", "src": "h_goblin_stand.webp", "d": [358, 121]}, {"t": "h", "k": "goblin", "q": "kneel", "src": "h_goblin_kneel.webp", "d": [386, 134]}, {"t": "h", "k": "harpy", "q": "stand", "src": "h_harpy_stand.webp", "d": [434, 105]}, {"t": "h", "k": "harpy", "q": "kneel", "src": "h_harpy_kneel.webp", "d": [422, 103]}, {"t": "h", "k": "lamia", "q": "stand", "src": "h_lamia_stand.webp", "d": [433, 106]}, {"t": "h", "k": "lamia", "q": "kneel", "src": "h_lamia_kneel.webp", "d": [454, 103]}, {"t": "h", "k": "fmedic", "q": "stand", "src": "h_fmedic_stand.webp", "d": [387, 120]}, {"t": "h", "k": "fmedic", "q": "kneel", "src": "h_fmedic_kneel.webp", "d": [415, 132]}, {"t": "h", "k": "mwolf", "q": "stand", "src": "h_mwolf_stand.webp", "d": [443, 107]}, {"t": "h", "k": "mwolf", "q": "kneel", "src": "h_mwolf_kneel.webp", "d": [406, 110]}, {"t": "h", "k": "mhuman", "q": "stand", "src": "h_mhuman_stand.webp", "d": [434, 91]}, {"t": "h", "k": "mhuman", "q": "kneel", "src": "h_mhuman_kneel.webp", "d": [418, 90]}, {"t": "h", "k": "mdwarf", "q": "stand", "src": "h_mdwarf_stand.webp", "d": [507, 75]}, {"t": "h", "k": "mdwarf", "q": "kneel", "src": "h_mdwarf_kneel.webp", "d": [435, 58]}, {"t": "h", "k": "morc", "q": "stand", "src": "h_morc_stand.webp", "d": [529, 77]}, {"t": "h", "k": "morc", "q": "kneel", "src": "h_morc_kneel.webp", "d": [425, 69]}, {"t": "h", "k": "melf", "q": "stand", "src": "h_melf_stand.webp", "d": [543, 87]}, {"t": "h", "k": "melf", "q": "kneel", "src": "h_melf_kneel.webp", "d": [517, 77]}, {"t": "h", "k": "mlizard", "q": "stand", "src": "h_mlizard_stand.webp", "d": [519, 88]}, {"t": "h", "k": "mlizard", "q": "kneel", "src": "h_mlizard_kneel.webp", "d": [529, 80]}, {"t": "h", "k": "mmedic", "q": "stand", "src": "h_mmedic_stand.webp", "d": [444, 73]}, {"t": "h", "k": "mmedic", "q": "kneel", "src": "h_mmedic_kneel.webp", "d": [415, 83]}, {"t": "h", "k": "mgoblin", "q": "stand", "src": "h_mgoblin_stand.webp", "d": [444, 106]}, {"t": "h", "k": "mgoblin", "q": "kneel", "src": "h_mgoblin_kneel.webp", "d": [460, 101]}, {"t": "e", "k": "kn_kneel1", "src": "e_kn_kneel1.png", "d": null}, {"t": "e", "k": "kn_kneel2", "src": "e_kn_kneel2.png", "d": null}, {"t": "e", "k": "kn_stand1", "src": "e_kn_stand1.png", "d": null}, {"t": "e", "k": "kn_stand2", "src": "e_kn_stand2.png", "d": null}, {"t": "e", "k": "mech_golem", "src": "e_mech_golem.png", "d": null}, {"t": "e", "k": "mech_golem2", "src": "e_mech_golem2.png", "d": null}, {"t": "e", "k": "mech_gun", "src": "e_mech_gun.png", "d": null}, {"t": "e", "k": "mech_shield", "src": "e_mech_shield.png", "d": null}, {"t": "e", "k": "mech_spider", "src": "e_mech_spider.png", "d": null}, {"t": "e", "k": "wk_kneel1", "src": "e_wk_kneel1.png", "d": null}, {"t": "e", "k": "wk_kneel2", "src": "e_wk_kneel2.png", "d": null}, {"t": "e", "k": "wk_stand1", "src": "e_wk_stand1.png", "d": null}, {"t": "e", "k": "wk_stand2", "src": "e_wk_stand2.png", "d": null}, {"t": "e", "k": "wm_golem", "src": "e_wm_golem.png", "d": null}, {"t": "e", "k": "wm_golem2", "src": "e_wm_golem2.png", "d": null}, {"t": "e", "k": "wm_gun", "src": "e_wm_gun.png", "d": null}, {"t": "e", "k": "wm_spider", "src": "e_wm_spider.png", "d": null}, {"t": "e", "k": "wm_wing", "src": "e_wm_wing.png", "d": null}];
+let P={};try{P=JSON.parse(localStorage.getItem('gw_muz')||'{}')}catch(e){}
+const key=i=>IT[i].t+':'+IT[i].k+':'+(IT[i].q||'');
+let i=0;try{i=Math.min(IT.length-1,+localStorage.getItem('gw_muz_i')||0)}catch(e){}
+const cv=document.getElementById('cv'),g=cv.getContext('2d'),IM={};
+function img(s){if(!IM[s]){const m=new Image();m.onload=draw;m.src=s;IM[s]=m}return IM[s]}
+let fit={};
+function pt(){return P[key(i)]||IT[i].d}
+function draw(){const W=innerWidth,H=innerHeight-52-74;cv.width=W;cv.height=H;g.fillStyle='#2a2230';g.fillRect(0,0,W,H);
+ const it=IT[i],m=img(it.src);document.getElementById('ttl').innerHTML=(it.t=='h'?'영웅 <b>'+it.k+'</b> · '+(it.q=='stand'?'서서 쏘기':'웅크려 쏘기'):'적 <b>'+it.k+'</b>')+' ('+(i+1)+'/'+IT.length+')';
+ if(!m.complete||!m.naturalWidth)return;const k=Math.min((W-20)/m.naturalWidth,(H-20)/m.naturalHeight),w=m.naturalWidth*k,h=m.naturalHeight*k,x=(W-w)/2,y=(H-h)/2;fit={k,x,y};
+ for(let yy=0;yy<h;yy+=16)for(let xx=0;xx<w;xx+=16){g.fillStyle=((xx+yy)/16)%2?'#3a3240':'#332b38';g.fillRect(x+xx,y+yy,16,16)}
+ g.drawImage(m,x,y,w,h);const p=pt();if(!p)return;const px=x+p[0]*k,py=y+p[1]*k;
+ g.strokeStyle=P[key(i)]?'#3f6':'#ff0';g.lineWidth=2;g.beginPath();g.moveTo(px-18,py);g.lineTo(px+18,py);g.moveTo(px,py-18);g.lineTo(px,py+18);g.stroke();g.beginPath();g.arc(px,py,7,0,7);g.stroke();
+ const Z=4,R=70,zx=W-R-12,zy=R+12;g.save();g.beginPath();g.arc(zx,zy,R,0,7);g.clip();g.fillStyle='#2a2230';g.fillRect(zx-R,zy-R,2*R,2*R);
+ g.imageSmoothingEnabled=false;g.drawImage(m,p[0]-R/Z,p[1]-R/Z,2*R/Z,2*R/Z,zx-R,zy-R,2*R,2*R);g.restore();
+ g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(zx,zy,R,0,7);g.stroke();g.strokeStyle='#f33';g.beginPath();g.moveTo(zx-10,zy);g.lineTo(zx+10,zy);g.moveTo(zx,zy-10);g.lineTo(zx,zy+10);g.stroke()}
+function save(){try{localStorage.setItem('gw_muz',JSON.stringify(P));localStorage.setItem('gw_muz_i',i)}catch(e){}}
+function setAt(cx,cy){const r=cv.getBoundingClientRect(),m=img(IT[i].src);if(!fit.k)return;let x=Math.round((cx-r.left-fit.x)/fit.k),y=Math.round((cy-r.top-fit.y)/fit.k);
+ x=Math.max(0,Math.min(m.naturalWidth-1,x));y=Math.max(0,Math.min(m.naturalHeight-1,y));P[key(i)]=[x,y];save();draw()}
+let drag=false;cv.addEventListener('pointerdown',e=>{drag=true;setAt(e.clientX,e.clientY)});cv.addEventListener('pointermove',e=>{if(drag)setAt(e.clientX,e.clientY)});addEventListener('pointerup',()=>drag=false);
+addEventListener('keydown',e=>{const p=pt();if(!p)return;const d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(d){P[key(i)]=[p[0]+d[0],p[1]+d[1]];save();draw();e.preventDefault()}if(e.key=='Enter')nx()});
+function out(){const o={h:{},e:{}};IT.forEach((it,j)=>{const p=P[key(j)]||it.d;if(!p)return;if(it.t=='h'){(o.h[it.k]=o.h[it.k]||{})[it.q]=p}else if(P[key(j)])o.e[it.k]=p});
+ document.getElementById('ta').value='MUZ='+JSON.stringify(o);document.getElementById('out').style.display='flex'}
+function nx(){if(i<IT.length-1){i++;save();draw()}else out()}
+document.getElementById('nx').onclick=nx;document.getElementById('pv').onclick=()=>{if(i>0){i--;save();draw()}};
+document.getElementById('back').onclick=()=>{document.getElementById('out').style.display='none'};
+document.getElementById('cp').onclick=()=>{const t=document.getElementById('ta');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}document.getElementById('cp').textContent='복사됨'};
+addEventListener('resize',draw);draw();
+</script></body></html>
