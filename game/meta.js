@@ -407,8 +407,10 @@ function sumMods(key) {
 }
 function gmFor(r, c) { const m = sumMods(r.k); m.atk = (1 + m.atk) * Math.pow(DIFF.heroDmg, c) - 1; return m; }
 const optLine = o => optName(o.k) + ' +' + (Math.round(o.v * 10) / 10) + '%';
-const gearIconKey = g0 => OPT_ICON[g0.opts[0].k] || 'badge_gear';
-function gearIcon(g0, cx, cy, sz) { g.save(); g.fillStyle = RARC[g0.rar - 1]; g.globalAlpha = 0.28; g.beginPath(); g.arc(cx, cy, sz * 0.52, 0, 7); g.fill(); g.globalAlpha = 1; g.restore(); sprFit(gearIconKey(g0), cx, cy, sz); }
+const GI_N = 36;   // ui/gi_01~36.webp (FEMDOM RUSH 아이템 아이콘). 아이템 이름 → 고정 아이콘(같은 이름=같은 그림, 안 맞는 건 개그)
+const giIdx = nm => { const bl = baseList().map(b => b.name), k = bl.indexOf(nm); if (k >= 0) return k % GI_N; let h = 0; for (const ch of nm) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % GI_N; };
+const gearIconKey = g0 => 'gi_' + String(giIdx(g0.base) + 1).padStart(2, '0');
+function gearIcon(g0, cx, cy, sz) { g.save(); g.fillStyle = RARC[g0.rar - 1]; g.globalAlpha = 0.28; g.beginPath(); g.arc(cx, cy, sz * 0.52, 0, 7); g.fill(); g.globalAlpha = 1; g.restore(); sprFit(gearIconKey(g0), cx, cy, sz * 1.12); }
 function equip(gid, key) { for (const k in SV.eq) if (SV.eq[k] === gid) delete SV.eq[k]; if (key) SV.eq[key] = gid; saveNow(); }
 function dismantle(gid) { const g0 = gearById(gid); if (!g0) return 0; equip(gid, null); SV.gear = SV.gear.filter(x => x.id !== gid); const p = PARTS_GET[g0.rar - 1]; SV.parts += p; saveNow(); return p; }
 const rerollCost = g0 => 3 * g0.rar;
