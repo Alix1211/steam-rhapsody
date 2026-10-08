@@ -130,9 +130,9 @@ function inb(p,b){return p.x>b.x&&p.x<b.x+b.w&&p.y>b.y&&p.y<b.y+b.h}
 
 // ===== 가로/세로 레이아웃 =====
 function layout(p){
- if(p)return{W:720,H:1280,WW:3400,sp:900,hht:545,hy:1290,dn:130,ey0:630,ed:330,es:1.45,cy0:380,cy1:1010,cyI:700,cvW:430,cvB:1276,range:1300,ringY:1090,ringR:260,cntY:700,mw:240,bombR:360,
+ if(p)return{W:720,H:1280,WW:3400,sp:900,hht:450,hy:1140,dn:130,ey0:525,ed:210,es:1.45,cy0:380,cy1:1010,cyI:700,cvW:430,cvB:1150,range:1300,ringY:1148,ringR:260,cntY:700,mw:240,bombR:360,
   btns:[{x:430,y:1215,r:46,a:'sel0'},{x:530,y:1215,r:46,a:'sel1'},{x:630,y:1215,r:46,a:'sel2'},{x:590,y:1050,r:80,a:'fire'},{x:440,y:1060,r:58,a:'bomb'}]};
- return{W:1280,H:720,WW:2920,sp:520,hht:375,hy:725,dn:95,ey0:355,ed:240,es:1,cy0:150,cy1:560,cyI:380,cvW:330,cvB:722,range:900,ringY:635,ringR:170,cntY:330,mw:360,bombR:270,
+ return{W:1280,H:720,WW:2920,sp:520,hht:310,hy:642,dn:95,ey0:295,ed:117,es:1,cy0:150,cy1:560,cyI:380,cvW:330,cvB:659,range:900,ringY:648,ringR:170,cntY:330,mw:360,bombR:270,
   btns:[{x:1010,y:630,r:46,a:'sel0'},{x:1100,y:630,r:46,a:'sel1'},{x:1190,y:630,r:46,a:'sel2'},{x:1130,y:490,r:70,a:'fire'},{x:990,y:505,r:52,a:'bomb'}]};
 }
 function applyLayout(p){
@@ -172,17 +172,17 @@ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 
 // ===== 적 (d: 0=멀리, 1=가까이) =====
 function ey(e){return L.ey0+e.d*L.ed}
-// 적은 먼 층·중간 층·가까운 층 3단계로 서고, 층이 가까울수록 커진다 (보병 기준 가장 가까운 층이 화면 높이의 약 19%)
+// 적은 먼 층·중간 층·가까운 층 3단계로 서고, 층이 가까울수록 커진다 (목업 기준: 보병은 영웅의 절반 크기, 메카는 영웅의 두 배 가까이)
 const TIER_D=[0.10,0.50,0.90];
-function sc(e){return L.es*(0.40+0.60*e.d)*(e.bs||1)}
+function sc(e){return L.es*(0.76+0.26*e.d)*(e.bs||1)}
 const EI={};function eimg(n){return EI[n]||(EI[n]=loadImg('e_'+n+'.png'))}
 // 적 그림: 기사(보병)와 정예 메카. f=그림 축소 비율, hov=공중에 떠 있는 높이, cyf=피격 중심(키 대비), r=피격 반경, hpm=체력 배율
-function mkSet(kn,mk){const K=kn.map(a=>Object.assign({hov:0,hpm:1,cyf:0.45,r:46,fire:kn.fire,hit:kn.hit},a));const M=mk.map(o=>Object.assign({hov:0,hpm:2.2,cyf:0.5,r:70,fire:null,hit:null},o));for(const k of K.concat(M))for(const n of [k.img,k.fire,k.hit])if(n)eimg(n);return{K,M}}
+function mkSet(kn,mk){const K=kn.map(a=>Object.assign({hov:0,hpm:1,cyf:0.45,r:30,fire:kn.fire,hit:kn.hit},a,{f:a.f*0.62}));const M=mk.map(o=>Object.assign({hov:0,hpm:2.2,cyf:0.5,r:70,fire:null,hit:null},o));for(const k of K.concat(M))for(const n of [k.img,k.fire,k.hit])if(n)eimg(n);return{K,M}}
 const SETS={
  F:()=>mkSet(Object.assign([{img:'kn_stand1',h:549,f:0.27},{img:'kn_stand2',h:482,f:0.3},{img:'kn_kneel1',h:390,f:0.27},{img:'kn_kneel2',h:366,f:0.29}],{fire:'kn_fire',hit:'kn_hit'}),
-  [{img:'mech_golem',h:541,f:0.57},{img:'mech_golem2',h:665,f:0.465},{img:'mech_spider',h:501,f:0.48,r:62},{img:'mech_gun',h:468,f:0.09,hov:50,r:26},{img:'mech_shield',h:450,f:0.1,hov:50,r:26}]),
+  [{img:'mech_golem',h:541,f:0.57},{img:'mech_golem2',h:665,f:0.465},{img:'mech_spider',h:501,f:0.48,r:62},{img:'mech_gun',h:468,f:0.145,hov:50,r:34},{img:'mech_shield',h:450,f:0.17,hov:50,r:34}]),
  M:()=>mkSet(Object.assign([{img:'wk_stand1',h:605,f:0.245},{img:'wk_stand2',h:542,f:0.27},{img:'wk_kneel1',h:419,f:0.3},{img:'wk_kneel2',h:415,f:0.3}],{fire:'wk_fire',hit:'wk_hit'}),
-  [{img:'wm_golem',h:612,f:0.5},{img:'wm_golem2',h:486,f:0.55,r:75},{img:'wm_spider',h:355,f:0.62,r:62},{img:'wm_gun',h:370,f:0.11,hov:50,r:26},{img:'wm_wing',h:464,f:0.095,hov:50,r:26}])};
+  [{img:'wm_golem',h:612,f:0.5},{img:'wm_golem2',h:486,f:0.55,r:75},{img:'wm_spider',h:355,f:0.62,r:62},{img:'wm_gun',h:370,f:0.18,hov:50,r:34},{img:'wm_wing',h:464,f:0.17,hov:50,r:34}])};
 let KN,MK;function setEnemies(sd){const o=(SETS[sd]||SETS.F)();KN=o.K;MK=o.M}
 setEnemies('F');
 // 총알이 빠르면 작은(먼) 적을 건너뛰므로, 이번 프레임 이동 구간과 적 사이 거리를 잰다. 먼 적도 최소 판정 크기를 보장
@@ -344,7 +344,7 @@ function drawWorld(){
    if(e.flash>0){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=0.75;g.drawImage(im,e.x-w/2,by-h,w,h);g.restore()}
    top=by-h}
   else{g.fillStyle=e.flash>0?'#fff':'#7a3a9a';g.fillRect(e.x-26*s,y-100*s,52*s,100*s);g.beginPath();g.arc(e.x,y-112*s,22*s,0,7);g.fill();top=y-134*s}
-  if(e.cv&&e.cv.hp>0){const c=e.cv,ci=cimg(c.type);if(ci.ok){const cw=(c.type=='barrels'||c.type=='crate_small'?95:125)*s,kk=cw/ci.width,chh=ci.height*kk,sx=c.sh>0.05?(Math.random()-0.5)*6*c.sh:0;c.sh*=0.8;g.drawImage(c.hp<c.max*0.5?cdark(c.type):ci,e.x-cw/2+sx,gy-chh+8*s,cw,chh);g.fillStyle='rgba(0,0,0,.5)';g.fillRect(e.x-22*s,gy+10*s,44*s,4);g.fillStyle='#e0b060';g.fillRect(e.x-22*s,gy+10*s,44*s*c.hp/c.max,4)}}
+  if(e.cv&&e.cv.hp>0){const c=e.cv,ci=cimg(c.type);if(ci.ok){const cw=(c.type=='barrels'||c.type=='crate_small'?70:92)*s,kk=cw/ci.width,chh=ci.height*kk,sx=c.sh>0.05?(Math.random()-0.5)*6*c.sh:0;c.sh*=0.8;g.drawImage(c.hp<c.max*0.5?cdark(c.type):ci,e.x-cw/2+sx,gy-chh+8*s,cw,chh);g.fillStyle='rgba(0,0,0,.5)';g.fillRect(e.x-22*s,gy+10*s,44*s,4);g.fillStyle='#e0b060';g.fillRect(e.x-22*s,gy+10*s,44*s*c.hp/c.max,4)}}
   const bw=(k.hpm>1?80:60)*s;g.fillStyle='#300';g.fillRect(e.x-bw/2,top-12*s,bw,6);g.fillStyle='#f55';g.fillRect(e.x-bw/2,top-12*s,bw*Math.max(0,e.hp)/e.max,6)});
  if(smMode==1||smMode==4)smTile(hazeSpr,L.ey0-40,140,0.25,0.32,0.95);
  if(smMode==3||smMode==4)for(const o of steam){const q=1-o.life/o.max;g.globalAlpha=0.6*Math.min(1,q*6)*Math.pow(1-q,1.2);const dw=o.r*2.6;g.drawImage(steamSpr[o.v],o.x-dw/2,o.y-dw/2,dw,dw)}g.globalAlpha=1;
