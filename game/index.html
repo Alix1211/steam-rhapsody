@@ -46,7 +46,7 @@ function setCovers(ch){const c=window.CSETS&&CSETS[ch];if(c&&c.c.length){ECV=c.c
 function coverW(t,iw){return t.startsWith('oc_')?Math.max(80,Math.min(175,iw*0.62)):(t=='barrels'||t=='crate_small'?96:124)}
 for(const n of PCV.concat(ECV,['wreck_crate','wreck_stack']))cimg(n);
 const ST={cvHp:220,ecv:30,cvDm:0.7,bombCv:250,goal:20,spawned:0,ehp:40,maxAlive:7,spB:80,spMin:50,fMin:95,fVar:70,edmg:6,autoDm:0.6,healT:150,heal:6,eliteP:0.15,mechHp:4,mechDm:0.55,droneHp:0.3,droneDm:0.4,droneP:0.55,hhp:100,bombDmg:140,boss:false,bossHp:6,limit:0};let won=false;
-let sel=0,bullets=[],ebul=[],enemies=[],parts=[],shk=0,t=0,spawnT=0,score=0,over=false;
+let efl=[],sel=0,bullets=[],ebul=[],enemies=[],parts=[],shk=0,t=0,spawnT=0,score=0,over=false;
 const BI={},FXI={};function fxi(n){return FXI[n]||(FXI[n]=loadImg('fx_'+n+'.webp'))}
 function addFx(n,x,y,w,life,o){if(fxs.length<9)fxs.push(Object.assign({n,x,y,w,life,t:0},o||{}))}
 function addFire(x,y,w,life){if(fires.length<5)fires.push({n:'fan',x,y,w,life,t:0,ph:Math.random()*6})}
@@ -146,7 +146,7 @@ function applyLayout(p){
  const oldWW=WW;portrait=p;L=layout(p);W=L.W;H=L.H;WW=L.WW;cv.width=W;cv.height=H;wc.width=W;wc.height=H;bc.width=Math.ceil(W/4);bc.height=Math.ceil(H/4);b2.width=Math.ceil(W/2);b2.height=Math.ceil(H/2);
  heroes.forEach((h,i)=>{h.x=WW/2+(i-1)*L.sp;h.y=L.hy;h.ht=L.hht});
  for(const e of enemies)e.x*=WW/oldWW;
- bullets=[];ebul=[];bombs=[];btns=L.btns;stick.on=false;stick.dx=stick.dy=0;fireHeld=false;
+ bullets=[];ebul=[];efl=[];bombs=[];btns=L.btns;stick.on=false;stick.dx=stick.dy=0;fireHeld=false;
  cross.x=heroes[sel]?heroes[sel].x:WW/2;cross.y=L.cyI;cross.used=0;
  camX=Math.max(0,Math.min(WW-W,cross.x-W/2));
 }
@@ -243,10 +243,15 @@ function elfK(h){return h.ht/h.art.stand.h}
 function muzzle(h){
  if(h.art){const p=h.art[poseOf(h,h.idx)],k=elfK(h);return{x:h.x+(p.mx-p.ax)*k,y:h.y-(p.h-p.my)*k}}
  const d=heroDraw(h);return{x:h.x+d.dw*0.25,y:d.top+h.ht*0.3}}
+function drawFlash(x,y,a,R,k,en){g.save();g.globalCompositeOperation='lighter';R*=0.75+0.45*k;   // 총구 화염(코드): 빛 번짐 + 가시. 영웅=사격 방향, 적=정면 별모양
+ const gr=g.createRadialGradient(x,y,0,x,y,R);gr.addColorStop(0,'rgba(255,255,235,'+k+')');gr.addColorStop(0.3,'rgba(255,214,110,'+(0.85*k)+')');gr.addColorStop(1,'rgba(255,90,20,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,R,0,7);g.fill();
+ g.fillStyle='rgba(255,236,170,'+(0.9*k)+')';const sp=(b,Ln,w)=>{const c=Math.cos(b),q=Math.sin(b);g.beginPath();g.moveTo(x+c*Ln,y+q*Ln);g.lineTo(x-q*w,y+c*w);g.lineTo(x+q*w,y-c*w);g.closePath();g.fill()};
+ if(en){for(let j=0;j<4;j++)sp(a+j*1.5708,R*1.5,R*0.17)}else{sp(a,R*2.4,R*0.26);sp(a+1.05,R*0.85,R*0.16);sp(a-1.05,R*0.85,R*0.16)}
+ g.restore()}
 function burst(x,y,n,col){if(parts.length>250)return;for(let k=0;k<n;k++)parts.push({x,y,vx:(Math.random()-0.5)*9,vy:-Math.random()*7,life:16+Math.random()*10,col,s:2+Math.random()*3})}
 function aimPt(h){const AR=34/(1+h.w.zoom*0.6);let b=null,bd=AR;for(const e of enemies){const d=Math.hypot(e.x-cross.x,ecy(e)-cross.y);if(d<bd){bd=d;b=e}}return b?{x:b.x,y:ecy(b)}:{x:cross.x,y:cross.y}}   // 수동 사격: 조준점으로 쏜다. 조준점 바로 근처 적만 살짝 보정(저격은 더 좁게)
 function shoot(h,tg,manual,cont){const w=h.w,m=muzzle(h);let tp;if(manual)tp=aimPt(h);else{if(!tg)return;tp={x:tg.x,y:ecy(tg)}}const a0=Math.atan2(tp.y-m.y,tp.x-m.x);
- const dm=(manual?1:ST.autoDm*(1+h.m.auto))*(1+h.m.atk),sp=w.spread*(1-Math.min(0.85,h.m.aim));
+ const dm=(manual?1:ST.autoDm*(1+h.m.auto))*(1+h.m.atk),sp=w.spread*(1-Math.min(0.85,h.m.aim));h.mf=5;h.mfa=a0;h.mfs=h.ht*0.055*(w.n==='산탄'?1.45:w.n==='저격'?1.6:1)*(manual?1:0.85);
  for(let k=0;k<w.pellets;k++){const a=a0+(Math.random()-0.5)*2*sp,cr=Math.random()<h.m.crit;
   bullets.push({x:m.x,y:m.y,vx:Math.cos(a)*w.speed,vy:Math.sin(a)*w.speed,dmg:w.dmg*dm*(cr?2:1),cr,life:Math.max(w.life,Math.ceil(Math.hypot(tp.x-m.x,tp.y-m.y)/w.speed)+6),wd:w.wd})}
  h.ammo--;if(h.ammo<=0)startReload(h);
@@ -290,7 +295,7 @@ function update(){
  if(cross.used>0)cross.used--;
  const want=Math.max(0,Math.min(WW-W,cross.x-W/2));camX+=(want-camX)*0.12;
  heroes.forEach((h,i)=>{
-  h.rec*=0.8;h.hit*=0.85;h.cr=(h.cr||0)+((h.rl>0?1:0)-(h.cr||0))*0.18;if(h.hp<=0)return;h.cd--;if(h.rl>0){h.rl--;if(h.rl==0)h.ammo=h.mag}
+  h.rec*=0.8;if(h.mf>0)h.mf--;h.hit*=0.85;h.cr=(h.cr||0)+((h.rl>0?1:0)-(h.cr||0))*0.18;if(h.hp<=0)return;h.cd--;if(h.rl>0){h.rl--;if(h.rl==0)h.ammo=h.mag}
   if(h.bq>0){if(h.rl>0)h.bq=0;else if(--h.bt<=0){const tg=h.bman?null:autoFor(h);if(tg||h.bman)shoot(h,tg,h.bman,true);h.bq--;h.bt=h.w.bi}}   // 점사: 3연발 뒤 쉰다
   if(h.c==3){h.hl=(h.hl||0)+1;if(h.hl>=ST.healT){h.hl=0;let lo=null;for(const a of heroes)if(a.hp>0&&a.hp<a.max&&(!lo||a.hp/a.max<lo.hp/lo.max))lo=a;
    if(lo){lo.hp=Math.min(lo.max,lo.hp+ST.heal*(1+h.m.heal));sfx('heal');h.rec=Math.max(h.rec,0.3);for(let q=0;q<8;q++)parts.push({x:lo.x+(Math.random()-0.5)*80,y:lo.y-lo.ht*(0.2+Math.random()*0.5),vx:(Math.random()-0.5)*2,vy:-2-Math.random()*2,life:26,col:'#7dff9a',s:4})}}}
@@ -312,14 +317,14 @@ function update(){
   if(e.fireCd<=0&&e.tele==0){e.tele=24}
   if(e.tele>0){e.tele--;if(e.tele==0){
     let h=null,bd=1e9;for(const x of heroes){if(x.hp>0){const d=Math.abs(x.x-e.x);if(d<bd){bd=d;h=x}}}
-    if(h){sfx('enemy');const m=heroDraw(h);ebul.push({sx:e.x,sy:ecy(e),tx:h.x,ty:m.top+h.ht*0.45,p:0,h,dm:e.k.drone?ST.droneDm:(e.k.mech?ST.mechDm:1)});if(e.k.drone)smallPop(e.x,ecy(e),0.5)}
+    if(h){sfx('enemy');efl.push({e,t:5,r:Math.random()*1.6,s:30*sc(e)*(e.k.mech?1.5:e.k.drone?0.75:1)});if(efl.length>30)efl.shift();const m=heroDraw(h);ebul.push({sx:e.x,sy:ecy(e),tx:h.x,ty:m.top+h.ht*0.45,p:0,h,dm:e.k.drone?ST.droneDm:(e.k.mech?ST.mechDm:1)});if(e.k.drone)smallPop(e.x,ecy(e),0.5)}
     e.fireCd=(ST.fMin+Math.random()*ST.fVar)*(e.boss?0.55:1)*(e.k.mech?1.35:e.k.drone?1.1:1)}}
  }
  for(const b of ebul){b.p+=1/85;if(b.p>=1&&!b.done){b.done=true;const hh=b.h;
   if(hh.rl>0&&hh.cv&&hh.cv.hp>0){hh.cv.hp=Math.max(0,hh.cv.hp-ST.edmg*ST.cvDm*b.dm);hh.cv.sh=1;sfx('hit');burst(hh.x+(Math.random()-0.5)*L.cvW*0.5,covB()-L.cvW*0.3,7,'#d9b27a');shk=Math.max(shk,2);if(hh.cv.hp<=0){burst(hh.x,covB()-L.cvW*0.25,26,'#a07a4a');sfx('kill');shk=Math.max(shk,8)}}
   else if(Math.random()<hh.m.eva){burst(b.tx,b.ty,5,'#9cf');sfx('switch')}
   else{hh.hit=1;sfx('hurt');vib(35);hurtF=Math.max(hurtF,0.5+0.4*Math.min(1,b.dm));if(hh.hp>0)hh.hp-=ST.edmg*b.dm*(1-hh.m.def);burst(b.tx,b.ty,6,'#ff7a5a');shk=Math.max(shk,3)}}}
- ebul=ebul.filter(b=>!b.done);
+ ebul=ebul.filter(b=>!b.done);for(const f of efl)f.t--;efl=efl.filter(f=>f.t>0&&!f.e.dead);
  for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life--}
  for(const b of bullets)for(const e of enemies){if(!b.dead&&!e.dead&&bhit(b,e)){
   if(e.cv&&e.cv.hp>0){b.dead=true;burst(b.x,b.y,5,'#d9b27a');hitCover(e.cv,b.dmg,e.x,ey(e));continue}
@@ -358,7 +363,7 @@ function drawHero(h,i){
  const bob=alive?Math.sin(t/32+ph)*9:0,swx=alive?Math.sin(t/70+ph)*9:0,rot=alive?Math.sin(t/85+ph)*0.03:0;
  const rx=-h.rec*36+(Math.random()-0.5)*h.hit*26,ry=h.rec*13;
  g.translate(h.x+swx+rx,h.y+bob+ry);g.rotate(rot-h.rec*0.05);g.translate(-h.x,-h.y);
- if(h.art){const pn=poseOf(h,i),p=h.art[pn],k=elfK(h),by=pn=='down'?H-L.dn:h.y-(h.cr||0)*(portrait?60:45);if(p.img.ok)g.drawImage(p.img,h.x-p.ax*k,by-p.h*k,p.w*k,p.h*k)}
+ if(h.art){const pn=poseOf(h,i),p=h.art[pn],k=elfK(h),by=pn=='down'?H-L.dn:h.y-(h.cr||0)*(portrait?60:45);if(p.img.ok)g.drawImage(p.img,h.x-p.ax*k,by-p.h*k,p.w*k,p.h*k);if(h.mf>0&&pn!='down')drawFlash(h.x+(p.mx-p.ax)*k,by-(p.h-p.my)*k,h.mfa,h.mfs,h.mf/5,false)}
  else if(heroImg.ok)g.drawImage(heroImg,h.x-d.dw/2,d.top,d.dw,h.ht);
  else{g.fillStyle=h.col;g.fillRect(h.x-35,d.top+40,70,h.ht-40)}
  g.restore();
@@ -415,6 +420,7 @@ function drawWorld(){
   if(gi&&gi.ok){const w=gi.width*q.k.f*q.s,h=gi.height*q.k.f*q.s;g.drawImage(gi,-w/2,-h*(q.k.cyf),w,h)}
   else{g.fillStyle='#7a3a9a';g.fillRect(-26*q.s,-50*q.s,52*q.s,100*q.s);g.beginPath();g.arc(0,-62*q.s,22*q.s,0,7);g.fill()}
   g.restore()}
+ for(const f of efl)drawFlash(f.e.x,ecy(f.e),f.r,f.s,f.t/5,true);
  g.fillStyle='#ff6a3a';for(const b of ebul){const x=b.sx+(b.tx-b.sx)*b.p,y=b.sy+(b.ty-b.sy)*b.p;g.beginPath();g.arc(x,y,3+9*b.p,0,7);g.fill()}
  heroes.forEach(h=>{if(h.cv)drawPCover(h)});
  heroes.forEach(drawHero);
@@ -521,7 +527,7 @@ function mkHero(r,i){const m=Object.assign({atk:0,aim:0,eva:0,def:0,auto:0,rel:0
  return{x:0,y:0,ht:0,hp,max:hp,cd:0,col:CCOL[r.c],w:WP[r.c],rec:0,hit:0,idx:i,art:heroArt(r.k),name:r.n,c:r.c,hl:0,m,mag:mg,ammo:mg,rl:0,rlt:WP[r.c].rl,cv:{type:PCV[i],hp:cvh,max:cvh,sh:0}}}
 function startGame(){
  heroes.length=0;picks.forEach((r,i)=>heroes.push(mkHero(r,i)));
- setEnemies(side);oldcv=[];bullets=[];ebul=[];bombs=[];rings=[];fireballs=[];smoke=[];ghosts=[];parts=[];bombCd=0;enemies=[];t=0;score=0;over=false;won=false;ST.spawned=0;spawnT=0;
+ setEnemies(side);oldcv=[];bullets=[];ebul=[];efl=[];bombs=[];rings=[];fireballs=[];smoke=[];ghosts=[];parts=[];bombCd=0;enemies=[];t=0;score=0;over=false;won=false;ST.spawned=0;spawnT=0;
  menu=false;applyLayout(portrait);pick(0)}
 // ===== 장면(타이틀·전선·스테이지·출격·대사·결과)은 meta.js가 맡는다. 아래는 meta.js가 덮어쓰기 전까지의 빈 껍데기 =====
 function menuTap(p){}

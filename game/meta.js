@@ -535,10 +535,13 @@ drawReticle = function (vx, vy, ringR) {
     if (rt.dot) { g.save(); g.globalAlpha = k * 0.7; g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore(); }
   }
 };
+const SCH = {"scope_F_0":[0.5069,0.5254,0.2801],"scope_F_1":[0.5131,0.4562,0.3083],"scope_F_2":[0.4984,0.5332,0.2863],"scope_F_3":[0.4835,0.4593,0.2886],"scope_M_0":[0.4966,0.4511,0.3325],"scope_M_1":[0.5344,0.4835,0.3569],"scope_M_2":[0.4668,0.522,0.2762],"scope_M_3":[0.4886,0.4924,0.3]};   // 렌즈 구멍 중심x,y / 반지름(이미지 폭 비율)
 lensFx = function (vx, vy, ringR) {
   if (scope < 0.03) return; g.save(); g.globalAlpha = clamp(scope * 1.3, 0, 1);
   const gr = g.createRadialGradient(vx, vy, ringR * 0.55, vx, vy, ringR); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.5)');
   g.fillStyle = gr; g.beginPath(); g.arc(vx, vy, ringR, 0, 7); g.fill();
+  const hh = heroes[sel], nm = 'scope_' + (side === 'M' ? 'M' : 'F') + '_' + (hh ? hh.c : 0), im = ui(nm), q = SCH[nm];   // 국가·총기별 스코프 프레임(0연사 1산탄 2저격 3점사)
+  if (im.ok && q) { const iw = im.naturalWidth, ih = im.naturalHeight, k = ringR / (q[2] * iw); g.drawImage(im, vx - q[0] * iw * k, vy - q[1] * ih * k, iw * k, ih * k); g.restore(); return; }
   g.lineWidth = 9; g.strokeStyle = 'rgba(12,9,14,.9)'; g.beginPath(); g.arc(vx, vy, ringR + 4, 0, 7); g.stroke();
   g.lineWidth = 2; g.strokeStyle = '#c89a5a'; g.beginPath(); g.arc(vx, vy, ringR + 0.5, 0, 7); g.stroke(); g.restore();
 };
