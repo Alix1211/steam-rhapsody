@@ -16,6 +16,7 @@ let W=1280,H=720,WW=2920,portrait=false,forced=null,L={},btns=[];
 // 폰의 로컬 서버가 이미지를 한꺼번에 요청받으면 일부를 놓치는 일이 있어, 실패하면 잠시 뒤 다시 받는다
 function loadImg(src){const i=new Image();i.ok=false;let n=0;i.onload=()=>{i.ok=true};i.onerror=()=>{if(n++<6)setTimeout(()=>{i.src=src+(src.indexOf('?')<0?'?':'&')+'r='+n},300*n)};i.src=src;return i}
 const bg=loadImg('bg2.jpg');
+let bgB=bg;   // 전투 배경(장마다 바뀜). 메뉴 배경은 bg 그대로
 // 뒷모습 그림이 아직 없어서 뒤쪽이 보이는 포즈를 임시로 3명에게 공통 사용
 const heroImg=loadImg('char1.png');
 // 캐릭터별 포즈 그림 (서기/앉기/장전/쓰러짐). ax=몸 중심, mx,my=총구 위치
@@ -323,9 +324,9 @@ function drawWorld(){
  const tw=1280*H/720;
  for(let i=Math.floor(camX/tw);i<=Math.floor((camX+W)/tw);i++){
   const x=i*tw;
-  if(!bg.ok){g.fillStyle='#3a3a4a';g.fillRect(x,0,tw,H);continue}
-  if(i%2==0)g.drawImage(bg,x,0,tw,H);
-  else{g.save();g.translate(x+tw,0);g.scale(-1,1);g.drawImage(bg,0,0,tw,H);g.restore()}
+  if(!bgB.ok){g.fillStyle='#3a3a4a';g.fillRect(x,0,tw,H);continue}
+  if(i%2==0)g.drawImage(bgB,x,0,tw,H);
+  else{g.save();g.translate(x+tw,0);g.scale(-1,1);g.drawImage(bgB,0,0,tw,H);g.restore()}
  }
  if(smMode==2||smMode==4){smTile(smogSpr,L.ey0-270,260,0.35,0.55,0.6);smTile(smogSpr,L.ey0-190,230,0.7,0.4,0.8)}
  if(smMode==1||smMode==4)smTile(hazeSpr,L.ey0-120,230,0.15,0.6,0.9);

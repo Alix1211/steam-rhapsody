@@ -189,6 +189,7 @@ function drawLines() {
 // ---------- 스테이지 목록 ----------
 let SG = { side: 'F', ci: 0 };
 function openStages(side, ci) {
+  DLBG = null;
   if (ci === undefined) { const m = SV.last.ch[side]; ci = m !== undefined && chOpen(side, m) ? m : Math.max(0, reach(side) - 1); if (side === 'C') ci = 0; }
   SG = { side, ci }; SV.last.side = side; go('stages');
 }
@@ -227,7 +228,7 @@ function drawBrief() {
   if (hasSeen) button('대사 보기', x + w / 2 - 80, by, 150, 56, () => { MODAL = null; replayStory(m.ch, m.no); }, { s: 20 });
   button('닫기', x + 30, by, 110, 56, () => { MODAL = null; }, { s: 20 });
 }
-function replayStory(ch, no) { const e = epData(ch, no); const back = () => { openStages(SG.side, SG.ci); }; playDialogue(e.before.concat(e.after), back); }
+function replayStory(ch, no) { const e = epData(ch, no); setBattleBg(ch); const back = () => { openStages(SG.side, SG.ci); }; playDialogue(e.before.concat(e.after), back); }
 
 // ---------- 출격(파티) ----------
 function openParty(side, ci, ch, no) {
@@ -267,7 +268,7 @@ function dlAdvance() {
 function dlSkip() { if (!DL) return; const f = DL.onEnd; DL = null; f(); }
 function drawDialogue() {
   if (!DL) return; const l = DL.lines[DL.i], narr = l.kind === 'stage' || !l.who, hero = heroOf(l.who);
-  g.fillStyle = '#0d0a10'; g.fillRect(0, 0, W, H); coverImg(bg, 0.5, 0.5); dim(0.5);
+  g.fillStyle = '#0d0a10'; g.fillRect(0, 0, W, H); coverImg(DLBG || bg, 0.5, 0.5); dim(0.5);
   const bh = portrait ? 330 : 210, bx = portrait ? 20 : 40, bw = W - bx * 2, by = H - bh - (portrait ? 30 : 22);
   if (hero && hero.face.ok) {
     const right = heroLine(hero) === 'M', ph = portrait ? H * 0.46 : H * 0.7, k = ph / hero.face.naturalHeight, pw = hero.face.naturalWidth * k;
@@ -288,13 +289,20 @@ SETS.C = () => { const a = SETS.F(), b = SETS.M(); return { K: a.K.concat(b.K), 
 function beginStage() {
   const { side, ch, no, sel } = PS, e = epData(ch, no), id = epId(ch, no);
   const go2 = () => launch(side, ch, no, sel);
+  setBattleBg(ch);
   if (!SV.seen[id + 'b']) { SV.seen[id + 'b'] = 1; saveNow(); playDialogue(e.before, go2); } else go2();
 }
+// 장별 전투 배경 (빨간 깃발=여성국, 검정 깃발=남성국, 공장·마계는 구분 없음). M5는 낮 시가지 재사용(가안)
+const BGMAP = { F1: 'bg2.jpg', F2: 'bg_F2.jpg', F3: 'bg_F3.jpg', F4: 'bg_F4.jpg', F5: 'bg_F5.jpg', M1: 'bg_M1.jpg', M2: 'bg_M2.jpg', M3: 'bg_M3.jpg', M4: 'bg_M4.jpg', M5: 'bg_M1.jpg', C11: 'bg_C.jpg' };
+const BGI = {};
+function chBg(ch) { const f = BGMAP[ch]; if (!f) return bg; return BGI[f] || (BGI[f] = loadImg(f)); }
+let DLBG = null;
+function setBattleBg(ch) { bgB = DLBG = chBg(ch); }
 function launch(side0, ch, no, sel) {
   const P = params(ch, no), c = tier(ch); Object.assign(ST, P.st);
   picks = sel.map(r => Object.assign({}, r, { gm: gmFor(r, c) })); side = side0 === 'C' ? 'C' : side0;
   curStage = { side: side0, ch, no, sel, P, bannerT: 0 }; paused = false; res = null; timeUp = false; fireHeld = false;
-  scene = 'battle'; MODAL = null; startGame();
+  setBattleBg(ch); scene = 'battle'; MODAL = null; startGame();
 }
 function backToStages(adv) { curStage = null; res = null; paused = false; over = false; if (adv && SG.side !== 'C' && SG.ci < 4 && chOpen(SG.side, SG.ci + 1)) { SG.ci++; SV.last.ch[SG.side] = SG.ci; } openStages(SG.side, SG.ci); }
 
