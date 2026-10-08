@@ -515,10 +515,10 @@ function retDraw(n, col, cx, cy, size, a) { const c = tinted(n, col); if (!c || 
 drawReticle = function (vx, vy, ringR) {
   const k = clamp(scope * 1.6, 0, 1), used = cross.used > 0;
   const rt = RET[heroes[sel] ? heroes[sel].c : 0] || RET[0];
-  retDraw(rt.n, used ? '#ff4a4a' : '#ff9a9a', vx, vy, 92, (1 - k) * (used ? 1 : 0.7));
+  retDraw(rt.n, used ? '#ff4a4a' : '#ff9a9a', vx, vy, 80, (1 - k) * (used ? 0.8 : 0.5));
   if (k > 0.01) {
-    retDraw(rt.n, '#ffffff', vx, vy, ringR * 2 * 1.02, k);
-    if (rt.dot) { g.save(); g.globalAlpha = k; g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore(); }
+    retDraw(rt.n, '#ffffff', vx, vy, ringR * 2 * 0.94, k * 0.5);
+    if (rt.dot) { g.save(); g.globalAlpha = k * 0.7; g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore(); }
   }
 };
 lensFx = function (vx, vy, ringR) {

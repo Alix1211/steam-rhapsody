@@ -191,10 +191,12 @@ function crossTarget(){let b=null,bd=1e9;for(const e of enemies){const d=Math.hy
 function autoFor(h){
  if(cross.used>0){const c=crossTarget();if(c&&Math.abs(c.x-h.x)<L.range*1.3)return c}
  const eff=h.w.speed*h.w.life*0.9;let b=null,bd=1e9,nb=null,nd=1e9;for(const e of enemies){const d=Math.abs(e.x-h.x);if(d<nd){nd=d;nb=e}if(d<eff&&d<bd){bd=d;b=e}}return b||nb}
-function heroDraw(h){const dw=heroImg.ok?heroImg.naturalWidth*h.ht/heroImg.naturalHeight:h.ht;return{dw,top:h.y-h.ht}}
+function heroDraw(h){const dw=heroImg.ok?heroImg.naturalWidth*h.ht/heroImg.naturalHeight:h.ht;return{dw,top:h.y+sinkOf(h)-h.ht}}
 function elfK(h){return h.ht/h.art.stand.h}
+// 엄호물이 살아 있으면 몸을 엄호물 높이의 80%만큼 내려 그 뒤에서 쏜다 (장전 땐 기존대로 웅크림)
+function sinkOf(h){const c=h.cv;if(!c||c.hp<=0||h.hp<=0)return 0;const im=cimg(c.type);if(!im.ok)return 0;return im.height*L.cvW/im.width*0.8*(1-(h.cr||0))}
 function muzzle(h){
- if(h.art){const p=h.art[poseOf(h,h.idx)],k=elfK(h);return{x:h.x+(p.mx-p.ax)*k,y:h.y-(p.h-p.my)*k}}
+ if(h.art){const p=h.art[poseOf(h,h.idx)],k=elfK(h);return{x:h.x+(p.mx-p.ax)*k,y:h.y+sinkOf(h)-(p.h-p.my)*k}}
  const d=heroDraw(h);return{x:h.x+d.dw*0.25,y:d.top+h.ht*0.3}}
 function burst(x,y,n,col){if(parts.length>250)return;for(let k=0;k<n;k++)parts.push({x,y,vx:(Math.random()-0.5)*9,vy:-Math.random()*7,life:16+Math.random()*10,col,s:2+Math.random()*3})}
 function shoot(h,tg,manual,cont){if(!tg)return;const w=h.w,m=muzzle(h);const a0=Math.atan2(ecy(tg)-m.y,tg.x-m.x);
@@ -299,7 +301,7 @@ function drawHero(h,i){
  const bob=alive?Math.sin(t/32+ph)*9:0,swx=alive?Math.sin(t/70+ph)*9:0,rot=alive?Math.sin(t/85+ph)*0.03:0;
  const rx=-h.rec*36+(Math.random()-0.5)*h.hit*26,ry=h.rec*13;
  g.translate(h.x+swx+rx,h.y+bob+ry);g.rotate(rot-h.rec*0.05);g.translate(-h.x,-h.y);
- if(h.art){const pn=poseOf(h,i),p=h.art[pn],k=elfK(h),by=pn=='down'?H-L.dn:h.y+(h.cr||0)*(portrait?70:50);if(p.img.ok)g.drawImage(p.img,h.x-p.ax*k,by-p.h*k,p.w*k,p.h*k)}
+ if(h.art){const pn=poseOf(h,i),p=h.art[pn],k=elfK(h),by=pn=='down'?H-L.dn:h.y+(h.cr||0)*(portrait?70:50)+sinkOf(h);if(p.img.ok)g.drawImage(p.img,h.x-p.ax*k,by-p.h*k,p.w*k,p.h*k)}
  else if(heroImg.ok)g.drawImage(heroImg,h.x-d.dw/2,d.top,d.dw,h.ht);
  else{g.fillStyle=h.col;g.fillRect(h.x-35,d.top+40,70,h.ht-40)}
  g.restore();
@@ -368,7 +370,7 @@ function draw(){
  if(menu){drawMenu();drawFS();return}
  const cx=cross.x-camX,cy=cross.y;
  scope+=((fireHeld&&!over?1:0)-scope)*0.2;
- const R=(portrait?200:170)*heroes[sel].w.r;let ringR=26;
+ const R=(portrait?200:170)*0.75*heroes[sel].w.r;let ringR=26;
  // 화면 흔들림: 평소엔 천천히 출렁, 사격·피격 때 크게 떨림
  // 조준점(화면에 보이는 위치): 흔들리지 않고 고정. 배경 확대 비율만 맞춰 둔다
  const zsB=1.14,vx=W/2+(cx-W/2)*zsB,vy=H/2+(cy-H/2)*zsB;
