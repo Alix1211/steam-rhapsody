@@ -502,25 +502,23 @@ function drawInv() {
 
 
 // ================= 조준선 / 조준경 렌즈 (PNG: docs/reticle_index.png 번호로 교체 가능) =================
-// 총기 종류별 조준선 (번호는 docs/reticle_index.png). 0 연사 · 1 산탄 · 2 저격 · 3 점사(힐러 총). cross=true면 가는 십자선+붉은 중심점을 얹는다 (가안)
-const RET = { 0: { n: 3, cross: true }, 1: { n: 10, cross: true }, 2: { n: 20, cross: false }, 3: { n: 14, cross: true } };
-for (const k in RET) ui('ret' + String(RET[k].n).padStart(2, '0'));
+// 총기 종류별 조준선 (케인 제작 4종, assets_src/reticles_4types.png). 0 연사 · 1 산탄 · 2 저격 · 3 점사(힐러 총). dot=true면 붉은 중심점을 얹는다
+const RET = { 0: { n: 'rt_ar', dot: true }, 1: { n: 'rt_sg', dot: false }, 2: { n: 'rt_snipe', dot: true }, 3: { n: 'rt_burst', dot: false } };
+for (const k in RET) ui(RET[k].n);
 const TINT = {};
 function tinted(n, col) {
   const k = n + col; if (TINT[k]) return TINT[k]; const im = ui(n); if (!im.ok) return null;
   const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; const x = c.getContext('2d');
   x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = col; x.fillRect(0, 0, c.width, c.height); return (TINT[k] = c);
 }
-function retDraw(n, col, cx, cy, size, a) { const c = tinted('ret' + String(n).padStart(2, '0'), col); if (!c || a <= 0.01) return; g.save(); g.globalAlpha = a; g.drawImage(c, cx - size / 2, cy - size / 2, size, size * c.height / c.width); g.restore(); }
+function retDraw(n, col, cx, cy, size, a) { const c = tinted(n, col); if (!c || a <= 0.01) return; g.save(); g.globalAlpha = a; g.drawImage(c, cx - size / 2, cy - size / 2, size, size * c.height / c.width); g.restore(); }
 drawReticle = function (vx, vy, ringR) {
   const k = clamp(scope * 1.6, 0, 1), used = cross.used > 0;
   const rt = RET[heroes[sel] ? heroes[sel].c : 0] || RET[0];
   retDraw(rt.n, used ? '#ff4a4a' : '#ff9a9a', vx, vy, 92, (1 - k) * (used ? 1 : 0.7));
   if (k > 0.01) {
     retDraw(rt.n, '#ffffff', vx, vy, ringR * 2 * 1.02, k);
-    if (rt.cross) { g.save(); g.globalAlpha = k * 0.85; g.strokeStyle = '#fff'; g.lineWidth = 1.5; g.beginPath();
-    const a0 = ringR * 0.12, a1 = ringR * 0.86; g.moveTo(vx - a1, vy); g.lineTo(vx - a0, vy); g.moveTo(vx + a0, vy); g.lineTo(vx + a1, vy); g.moveTo(vx, vy - a1); g.lineTo(vx, vy - a0); g.moveTo(vx, vy + a0); g.lineTo(vx, vy + a1); g.stroke();
-    g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore(); }
+    if (rt.dot) { g.save(); g.globalAlpha = k; g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore(); }
   }
 };
 lensFx = function (vx, vy, ringR) {
