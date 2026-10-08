@@ -190,7 +190,14 @@ function bhit(b,e){const cx=e.x,cy=ecy(e),r=Math.max(e.k.r*sc(e),32*L.es),x0=b.x
  const t=Math.max(0,Math.min(1,((cx-x0)*b.vx+(cy-y0)*b.vy)/vv));return Math.hypot(x0+b.vx*t-cx,y0+b.vy*t-cy)<r}
 function ecy(e){const k=e.k;return ey(e)-((k.hov||0)+k.cyf*k.h*k.f)*sc(e)}
 function spawn(){ST.spawned++;const boss=ST.boss&&ST.spawned===ST.goal;const k=boss?MK[1]:((ST.spawned>3&&Math.random()<ST.eliteP)?MK[Math.floor(Math.random()*MK.length)]:KN[Math.floor(Math.random()*KN.length)]);
- const hp=ST.ehp*(k.hpm>1?ST.mechHp:1)*(boss?ST.bossHp:1);const tier=boss?1:(Math.random()<0.55?0:1),dj=(Math.random()-0.5)*0.06;enemies.push({tier,tn:420+Math.random()*520,dj,x:200+Math.random()*(WW-400),d:TIER_D[tier]+dj,hp,max:hp,fireCd:boss?50:90+Math.random()*120,tele:0,k,boss,bs:boss?1.3:1,cv:k.hpm>1?null:{type:ECV[Math.floor(Math.random()*ECV.length)],hp:ST.ecv,max:ST.ecv,sh:0}})}
+ const hp=ST.ehp*(k.hpm>1?ST.mechHp:1)*(boss?ST.bossHp:1);const tier=boss?1:(Math.random()<0.55?0:1),dj=(Math.random()-0.5)*0.06;enemies.push({tier,tn:420+Math.random()*520,dj,x:200+Math.random()*(WW-400),d:TIER_D[tier]+dj,hp,max:hp,fireCd:boss?50:90+Math.random()*120,tele:0,k,boss,bs:boss?1.3:1,cv:k.hpm>1?null:{type:ECV[Math.floor(Math.random()*ECV.length)],hp:ST.ecv,max:ST.ecv,sh:0}});const ne=enemies[enemies.length-1];if(ne.cv){ne.cv.x=ne.x;ne.cv.d=ne.d}}
+// 적이 다른 층으로 옮겨 가면 엄폐물은 제자리에 남고(잠시 뒤 사라짐), 멀쩡했다면 새 자리에 새 엄폐물이 선다
+let oldcv=[];
+function relocate(e){const c=e.cv;if(!c)return;oldcv.push({c,life:420});e.cv=c.hp>0?{type:c.type,hp:ST.ecv,max:ST.ecv,sh:0,x:e.x,d:TIER_D[e.tier]+e.dj}:null}
+function drawEcv(c,al){const gy=L.ey0+c.d*L.ed,s=L.es*(0.76+0.26*c.d);g.save();g.globalAlpha=al;
+ if(c.hp<=0){const wi=cimg(wreckOf(c));if(wi.ok){const ww=105*s,kk=ww/wi.width;g.drawImage(wi,c.x-ww/2,gy-wi.height*kk+6*s,ww,wi.height*kk)}}
+ else{const ci=cimg(c.type);if(ci.ok){const cw=(c.type=='barrels'||c.type=='crate_small'?70:92)*s,kk=cw/ci.width,chh=ci.height*kk,sx=c.sh>0.05?(Math.random()-0.5)*6*c.sh:0;c.sh*=0.8;g.drawImage(c.hp<c.max*0.5?cdark(c.type):ci,c.x-cw/2+sx,gy-chh+8*s,cw,chh);g.fillStyle='rgba(0,0,0,.5)';g.fillRect(c.x-22*s,gy+10*s,44*s,4);g.fillStyle='#e0b060';g.fillRect(c.x-22*s,gy+10*s,44*s*c.hp/c.max,4)}}
+ g.restore()}
 function crossTarget(){let b=null,bd=1e9;for(const e of enemies){const d=Math.hypot(e.x-cross.x,ecy(e)-cross.y);if(d<bd){bd=d;b=e}}return b}
 function autoFor(h){
  if(cross.used>0){const c=crossTarget();if(c&&Math.abs(c.x-h.x)<L.range*1.3)return c}
@@ -226,7 +233,7 @@ function boom(x,y){
  for(const e of enemies){if(e.dead)continue;const s=sc(e),cy=ecy(e),dx=e.x-x,dy=cy-y,d=Math.hypot(dx,dy);
   if(d<R){const f=1-0.55*d/R,nx=dx/(d+1);
    const cva=e.cv&&e.cv.hp>0;if(cva){e.cv.hp=Math.max(0,e.cv.hp-ST.bombCv*f);e.cv.sh=1}
-   e.hp-=ST.bombDmg*f*(cva?0.5:1);e.flash=8;e.kx=nx*20*f;e.vl=15*f;e.lift=1;e.stun=90;if(f>0.45){e.tier=Math.max(0,e.tier-1);e.tn=360+Math.random()*300}e.tele=0;
+   e.hp-=ST.bombDmg*f*(cva?0.5:1);e.flash=8;e.kx=nx*20*f;e.vl=15*f;e.lift=1;e.stun=90;if(f>0.45&&e.tier>0){e.tier--;e.tn=360+Math.random()*300;relocate(e)}e.tele=0;
    if(e.hp<=0){e.dead=true;score++;burst(e.x,cy,14,'#b86ad6');
     ghosts.push({x:e.x,y:cy,s,k:e.k,vx:nx*(10+Math.random()*10)+(Math.random()-0.5)*4,vy:-12-Math.random()*10,rot:0,vr:(Math.random()-0.5)*0.6,life:45})}}}
  sfx('bomb');vib([60,40,140])}
@@ -255,8 +262,8 @@ function update(){
  for(const e of enemies){
   if(e.kx){e.x=Math.max(100,Math.min(WW-100,e.x+e.kx));e.kx*=0.9;if(Math.abs(e.kx)<0.3)e.kx=0}
   if(e.lift>0||e.vl>0){e.lift=(e.lift||0)+e.vl;e.vl-=1.6;if(e.lift<=0){e.lift=0;e.vl=0}}
-  if(e.tier<2&&--e.tn<=0){e.tier++;e.tn=420+Math.random()*520}
-  e.d+=(TIER_D[e.tier]+e.dj-e.d)*0.03;
+  if(e.tier<2&&--e.tn<=0){e.tier++;e.tn=420+Math.random()*520;relocate(e)}
+  e.d+=(TIER_D[e.tier]+e.dj-e.d)*0.07;
   if(e.stun>0){e.stun--;e.tele=0;continue}
   e.fireCd--;
   if(e.fireCd<=0&&e.tele==0){e.tele=24}
@@ -286,6 +293,7 @@ function update(){
    if((burst||trickle)&&steam.length<40)steam.push({x:300+i*gap+(Math.random()-0.5)*24,y:L.ey0+16,vx:0.2+Math.random()*0.35,vy:(burst?-1.1:-0.6)-Math.random()*0.5,r:10,r1:burst?70+Math.random()*40:45+Math.random()*25,life:150,max:150,v:Math.floor(Math.random()*3),ph:Math.random()*6})}}
  for(const o of steam){o.x+=o.vx+Math.sin(o.ph+o.life*0.05)*0.3;o.y+=o.vy;o.vy*=0.988;o.r+=(o.r1-o.r)*0.025;o.life--}steam=steam.filter(o=>o.life>0);
  for(const o of smoke){o.x+=o.vx;o.y+=o.vy;o.vx*=0.97;o.vy=o.vy*0.97-0.02;o.r+=0.7;o.life--}smoke=smoke.filter(o=>o.life>0);
+ for(const o of oldcv)o.life--;oldcv=oldcv.filter(o=>o.life>0);
  for(const q of ghosts){q.x+=q.vx;q.y+=q.vy;q.vy+=0.9;q.rot+=q.vr;q.life--}ghosts=ghosts.filter(q=>q.life>0);
  for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=0.4;p.life--}
  parts=parts.filter(p=>p.life>0);
@@ -333,18 +341,19 @@ function drawWorld(){
  }
  if(smMode==2||smMode==4){smTile(smogSpr,L.ey0-270,260,0.35,0.55,0.6);smTile(smogSpr,L.ey0-190,230,0.7,0.4,0.8)}
  if(smMode==1||smMode==4)smTile(hazeSpr,L.ey0-120,230,0.15,0.6,0.9);
+ for(const o of oldcv)drawEcv(o.c,Math.min(1,o.life/90));
  enemies.slice().sort((a,b)=>a.d-b.d).forEach(e=>{const s=sc(e),y=ey(e)-(e.lift||0),k=e.k;
   if(e.tele>0){g.fillStyle='rgba(255,60,60,'+(0.25+0.4*(1-e.tele/24))+')';g.beginPath();g.arc(e.x,ecy(e)-(e.lift||0),Math.max(52,k.r)*s,0,7);g.fill()}
   const hov=(k.hov||0)*s,bob=hov?Math.sin(t*0.05+e.x)*5*s:0;
   if(hov&&!e.lift){g.fillStyle='rgba(0,0,0,0.3)';g.beginPath();g.ellipse(e.x,y,40*s,10*s,0,0,7);g.fill()}
-  const gy=ey(e);if(e.cv&&e.cv.hp<=0){const wi=cimg(wreckOf(e.cv));if(wi.ok){const ww=105*s,kk=ww/wi.width;g.drawImage(wi,e.x-ww/2,gy-wi.height*kk+6*s,ww,wi.height*kk)}}
+  if(e.cv&&e.cv.hp<=0)drawEcv(e.cv,1);
   let nm=k.img;if(k.fire&&e.tele>0)nm=k.fire;else if(k.hit&&e.stun>0)nm=k.hit;
   const im=eimg(nm);let top;
   if(im.ok){const w=im.width*k.f*s,h=im.height*k.f*s,by=y-hov+bob;g.drawImage(im,e.x-w/2,by-h,w,h);
    if(e.flash>0){g.save();g.globalCompositeOperation='lighter';g.globalAlpha=0.75;g.drawImage(im,e.x-w/2,by-h,w,h);g.restore()}
    top=by-h}
   else{g.fillStyle=e.flash>0?'#fff':'#7a3a9a';g.fillRect(e.x-26*s,y-100*s,52*s,100*s);g.beginPath();g.arc(e.x,y-112*s,22*s,0,7);g.fill();top=y-134*s}
-  if(e.cv&&e.cv.hp>0){const c=e.cv,ci=cimg(c.type);if(ci.ok){const cw=(c.type=='barrels'||c.type=='crate_small'?70:92)*s,kk=cw/ci.width,chh=ci.height*kk,sx=c.sh>0.05?(Math.random()-0.5)*6*c.sh:0;c.sh*=0.8;g.drawImage(c.hp<c.max*0.5?cdark(c.type):ci,e.x-cw/2+sx,gy-chh+8*s,cw,chh);g.fillStyle='rgba(0,0,0,.5)';g.fillRect(e.x-22*s,gy+10*s,44*s,4);g.fillStyle='#e0b060';g.fillRect(e.x-22*s,gy+10*s,44*s*c.hp/c.max,4)}}
+  if(e.cv&&e.cv.hp>0)drawEcv(e.cv,1);
   const bw=(k.hpm>1?80:60)*s;g.fillStyle='#300';g.fillRect(e.x-bw/2,top-12*s,bw,6);g.fillStyle='#f55';g.fillRect(e.x-bw/2,top-12*s,bw*Math.max(0,e.hp)/e.max,6)});
  if(smMode==1||smMode==4)smTile(hazeSpr,L.ey0-40,140,0.25,0.32,0.95);
  if(smMode==3||smMode==4)for(const o of steam){const q=1-o.life/o.max;g.globalAlpha=0.6*Math.min(1,q*6)*Math.pow(1-q,1.2);const dw=o.r*2.6;g.drawImage(steamSpr[o.v],o.x-dw/2,o.y-dw/2,dw,dw)}g.globalAlpha=1;
@@ -452,7 +461,7 @@ function mkHero(r,i){const m=Object.assign({atk:0,aim:0,eva:0,def:0,auto:0,rel:0
  return{x:0,y:0,ht:0,hp,max:hp,cd:0,col:CCOL[r.c],w:WP[r.c],rec:0,hit:0,idx:i,art:heroArt(r.k),name:r.n,c:r.c,hl:0,m,mag:mg,ammo:mg,rl:0,rlt:WP[r.c].rl,cv:{type:PCV[i],hp:cvh,max:cvh,sh:0}}}
 function startGame(){
  heroes.length=0;picks.forEach((r,i)=>heroes.push(mkHero(r,i)));
- setEnemies(side);bullets=[];ebul=[];bombs=[];rings=[];fireballs=[];smoke=[];ghosts=[];parts=[];bombCd=0;enemies=[];t=0;score=0;over=false;won=false;ST.spawned=0;spawnT=0;
+ setEnemies(side);oldcv=[];bullets=[];ebul=[];bombs=[];rings=[];fireballs=[];smoke=[];ghosts=[];parts=[];bombCd=0;enemies=[];t=0;score=0;over=false;won=false;ST.spawned=0;spawnT=0;
  menu=false;applyLayout(portrait);pick(0)}
 // ===== 장면(타이틀·전선·스테이지·출격·대사·결과)은 meta.js가 맡는다. 아래는 meta.js가 덮어쓰기 전까지의 빈 껍데기 =====
 function menuTap(p){}
