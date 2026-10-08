@@ -168,10 +168,11 @@ function lineCard(side, x, y, w, h) {
     txt((i + 1) + '장', cx + cw / 2, cy + 20, { b: true, s: 17, a: 'center', c: op ? '#fff' : '#777' }); txt(op ? done + '/10' : '잠김', cx + cw / 2, cy + 38, { s: 13, a: 'center', c: op ? '#cfc' : '#777' });
   }
   // 영웅 얼굴
-  const n = pool.length, fy = y + 176, fh = Math.min(h - 176 - 96, 150), fw = (w - 40 - (n - 1) * 6) / n; txt('동료', x + 20, fy - 8, { s: 15, c: '#cbb890' });
-  pool.forEach((r, i) => { const fx = x + 20 + i * (fw + 6), av = heroAvail(r); g.save(); if (!av) g.globalAlpha = 0.28; g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(fx, fy, fw, fh);
-    if (r.face.ok) { const k = Math.min(fw / r.face.naturalWidth, fh / r.face.naturalHeight); const dw = r.face.naturalWidth * k, dh = r.face.naturalHeight * k; g.drawImage(r.face, fx + (fw - dw) / 2, fy + (fh - dh) / 2, dw, dh); } g.restore();
-    if (!av) sprFit('ic_lock', fx + fw / 2, fy + fh / 2, Math.min(fw * 0.7, 40)); });
+  const n = pool.length, fy = y + 186, avail = h - 186 - 90, rowsN = Math.ceil(n / 4), perRow = Math.ceil(n / rowsN), fh = Math.min((avail - (rowsN - 1) * 6) / rowsN, 230), fw = (w - 40 - (perRow - 1) * 6) / perRow;
+  txt('동료', x + 20, fy - 8, { s: 15, c: '#cbb890' });
+  pool.forEach((r, i) => { const fx = x + 20 + (i % perRow) * (fw + 6), fyy = fy + Math.floor(i / perRow) * (fh + 6), av = heroAvail(r); g.save(); if (!av) g.globalAlpha = 0.28; g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(fx, fyy, fw, fh);
+    if (r.face.ok) { const k = Math.min(fw / r.face.naturalWidth, fh / r.face.naturalHeight); const dw = r.face.naturalWidth * k, dh = r.face.naturalHeight * k; g.drawImage(r.face, fx + (fw - dw) / 2, fyy + (fh - dh) / 2, dw, dh); } g.restore();
+    if (!av) sprFit('ic_lock', fx + fw / 2, fyy + fh / 2, Math.min(fw * 0.6, 40)); });
   button('출격 준비', x + w / 2 - 130, y + h - 78, 260, 60, () => openStages(side), { red: true, s: 24 });
 }
 function drawLines() {
@@ -214,7 +215,7 @@ function drawStages() {
   }
 }
 function drawBrief() {
-  const m = MODAL, e = epData(m.ch, m.no), P = params(m.ch, m.no), w = Math.min(W - 40, 620), h = portrait ? 520 : 470, x = (W - w) / 2, y = (H - h) / 2;
+  const m = MODAL, e = epData(m.ch, m.no), P = params(m.ch, m.no), w = Math.min(W - 40, 620), h = portrait ? 540 : 500, x = (W - w) / 2, y = (H - h) / 2;
   g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, 0, W, H); panel(x, y, w, h, { fill: 'rgba(16,11,18,.96)', e1: P.boss ? '#ff7a6a' : '#e8b86a' });
   txt(chNo(m.ch) + '-' + m.no + (P.boss ? '  BOSS' : ''), x + w / 2, y + 48, { b: true, s: 28, a: 'center', c: P.boss ? '#ff9a8a' : '#ffe27a' });
   wrap(e.title, w - 50, 26, true).slice(0, 2).forEach((l, i) => txt(l, x + w / 2, y + 86 + i * 32, { b: true, s: 26, a: 'center' }));
@@ -293,7 +294,7 @@ function launch(side0, ch, no, sel) {
   const P = params(ch, no), c = tier(ch); Object.assign(ST, P.st);
   picks = sel.map(r => Object.assign({}, r, { gm: gmFor(r, c) })); side = side0 === 'C' ? 'C' : side0;
   curStage = { side: side0, ch, no, sel, P, bannerT: 0 }; paused = false; res = null; timeUp = false; fireHeld = false;
-  startGame();
+  scene = 'battle'; MODAL = null; startGame();
 }
 function backToStages(adv) { curStage = null; res = null; paused = false; over = false; if (adv && SG.side !== 'C' && SG.ci < 4 && chOpen(SG.side, SG.ci + 1)) { SG.ci++; SV.last.ch[SG.side] = SG.ci; } openStages(SG.side, SG.ci); }
 
@@ -344,23 +345,21 @@ function drawHud() {
   g.fillStyle = '#fff'; g.fillRect(pb.x + 15, pb.y + 8, 5, 18); g.fillRect(pb.x + 26, pb.y + 8, 5, 18); addHit(pb.x, pb.y, pb.w, pb.h, () => { paused = true; fireHeld = false; });
   if (t < 150 && !paused) { g.save(); g.globalAlpha = clamp(Math.min(t / 20, (150 - t) / 40), 0, 1); const lb = chNo(cs.ch) + '-' + cs.no + '  ' + epData(cs.ch, cs.no).title; txt(cs.P.boss ? 'BOSS STAGE' : 'STAGE', W / 2, H * 0.3 - 40, { b: true, s: 22, a: 'center', c: cs.P.boss ? '#ff9a8a' : '#cbb890', sh: true }); txt(lb, W / 2, H * 0.3, { b: true, s: portrait ? 34 : 42, a: 'center', c: '#fff', sh: true }); g.restore(); }
   if (paused) {
-    HIT.length = 0; g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(0, 0, W, H); const w = 420, h = 300, x = (W - w) / 2, y = (H - h) / 2; panel(x, y, w, h);
+    HIT.length = 0; addHit(0, 0, W, H, () => {}); g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(0, 0, W, H); const w = 420, h = 300, x = (W - w) / 2, y = (H - h) / 2; panel(x, y, w, h);
     txt('일시정지', x + w / 2, y + 66, { b: true, s: 38, a: 'center', c: '#ffe9b0', sh: true });
     button('계속', x + w / 2 - 110, y + 100, 220, 60, () => { paused = false; }, { red: true, s: 26 });
     button('포기하고 나가기', x + w / 2 - 110, y + 180, 220, 60, () => { MODAL = { kind: 'confirm', title: '포기할까요?', msg: '이번 전투 진행이 사라집니다.', yes: backToStages }; }, { s: 20 });
-    addHit(0, 0, W, H, () => {});
   }
 }
 
 // ---------- 모달 ----------
 function drawModal() {
-  const m = MODAL; HIT.length = 0;
-  if (m.kind === 'brief') { drawBrief(); addHit(0, 0, W, H, () => {}); return; }
+  const m = MODAL; HIT.length = 0; addHit(0, 0, W, H, () => {});
+  if (m.kind === 'brief') { drawBrief(); return; }
   g.fillStyle = 'rgba(0,0,0,.65)'; g.fillRect(0, 0, W, H); const w = Math.min(W - 40, 480), h = 250, x = (W - w) / 2, y = (H - h) / 2; panel(x, y, w, h);
   txt(m.title, x + w / 2, y + 60, { b: true, s: 28, a: 'center', c: '#ffe9b0', sh: true });
   wrap(m.msg || '', w - 60, 20).forEach((s, i) => txt(s, x + w / 2, y + 100 + i * 28, { s: 20, a: 'center', c: '#e8d8b0' }));
   button('확인', x + w - 190, y + h - 78, 160, 54, () => { const f = m.yes; MODAL = null; f && f(); }, { red: true, s: 22 }); button('취소', x + 30, y + h - 78, 140, 54, () => { MODAL = null; }, { s: 20 });
-  addHit(0, 0, W, H, () => {});
 }
 
 // ================= 코어 연결 =================
@@ -391,6 +390,6 @@ addEventListener('keydown', e => {
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
-window.GW = { get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; },
+window.GW = { get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; },
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
