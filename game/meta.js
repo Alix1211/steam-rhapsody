@@ -1,3 +1,4 @@
+
 /* meta.js — 캠페인 · 장면 · 저장 · 대사 · 별 판정   [Claude 전담 — GPT는 수정 금지, 요청은 inbox/for_claude.md]
    전투 엔진은 index.html. 이 파일은 index.html 뒤에 로드되어 빈 껍데기 함수(drawMenu, menuTap, onOverTap, onBattleTap, drawOver)를 덮어쓰고
    update/draw를 감싼다. 숫자 값(난이도·시간·별 기준)은 모두 가안이며 아래 DIFF / STAR_T / HERO_UNLOCK 에 모여 있다. */
@@ -79,8 +80,15 @@ function plate3(n, x, y, w, h, capR) {
   g.drawImage(i, 0, 0, cap, sh, x, y, cw, h); g.drawImage(i, cap, 0, sw - 2 * cap, sh, x + cw, y, w - 2 * cw, h); g.drawImage(i, sw - cap, 0, cap, sh, x + w - cw, y, cw, h);
 }
 function rr(x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function stretchUi(n, x, y, w, h, alpha) {
+  const i = ui(n); if (!i.ok) return false;
+  g.save(); if (alpha !== undefined) g.globalAlpha = alpha; g.drawImage(i, x, y, w, h); g.restore(); return true;
+}
 function panel(x, y, w, h, o) {
-  o = o || {}; g.save(); rr(x, y, w, h, 8); g.fillStyle = o.fill || 'rgba(16,11,18,.9)'; g.fill();
+  o = o || {};
+  const nm = o.kind || ((h > w * 0.82 && h > 220) ? 'goth_panel_tall' : 'goth_panel_big');
+  if (w >= 150 && h >= 110 && stretchUi(nm, x, y, w, h, o.alpha)) return;
+  g.save(); rr(x, y, w, h, 8); g.fillStyle = o.fill || 'rgba(16,11,18,.9)'; g.fill();
   const gr = g.createLinearGradient(x, y, x, y + h); gr.addColorStop(0, o.e1 || '#e8b86a'); gr.addColorStop(0.5, o.e2 || '#9a6a34'); gr.addColorStop(1, o.e1 || '#e8b86a');
   g.lineWidth = o.lw || 3; g.strokeStyle = gr; g.stroke(); rr(x + 5, y + 5, w - 10, h - 10, 5); g.lineWidth = 1; g.strokeStyle = 'rgba(255,230,170,.28)'; g.stroke();
   if (o.gem !== false && w > 90 && h > 60) for (const [gx, gy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]) sprFit('gem04', gx, gy, 22);
@@ -104,12 +112,78 @@ function wrap(s, maxW, size, bold) {
   }
   return out;
 }
+function fitWrap(s, maxW, maxS, minS, bold, maxLines) {
+  maxLines = maxLines || 1; minS = minS || 12;
+  for (let size = maxS; size >= minS; size--) {
+    const lines = wrap(s, maxW, size, bold);
+    if (lines.length <= maxLines) return { size, lines };
+  }
+  const size = minS;
+  return { size, lines: wrap(s, maxW, size, bold).slice(0, maxLines) };
+}
+function drawFaceCrop(im, x, y, w, h, o) {
+  if (!im || !im.ok) return; o = o || {};
+  const sc = Math.max(w / im.naturalWidth, h / im.naturalHeight) * (o.scale || 1);
+  const dw = im.naturalWidth * sc, dh = im.naturalHeight * sc;
+  const ax = o.ax === undefined ? 0.5 : o.ax, ay = o.ay === undefined ? 0.1 : o.ay;
+  const dx = x + (w - dw) * ax + (o.dx || 0), dy = y + (h - dh) * ay + (o.dy || 0);
+  g.save();
+  if (o.clip !== false) { rr(x, y, w, h, o.rad || 0); g.clip(); }
+  if (o.gray) g.filter = o.gray;
+  g.drawImage(im, dx, dy, dw, dh);
+  g.filter = 'none';
+  g.restore();
+}
 const HIT = [];
 function addHit(x, y, w, h, fn) { HIT.push({ x, y, w, h, fn }); }
+function fitBlock(label, w, h, maxS, minS, bold, maxLines) {
+  const limit=Math.max(1,Math.floor((h-5)/(Math.max(10,minS)+3)));
+  maxLines=Math.min(maxLines||2,Math.max(1,limit));
+  for(let sz=Math.floor(maxS);sz>=minS;sz--){
+    const lines=wrap(String(label),Math.max(20,w),sz,!!bold);
+    if(lines.length<=maxLines && lines.length*(sz+3)<=h-1)return {size:sz,lines};
+  }
+  const sz=Math.max(10,minS),ls=wrap(String(label),Math.max(20,w),sz,!!bold);
+  // A shortened last line is preferable to painting on the ornamental frame.
+  const lines=ls.slice(0,maxLines);
+  if(ls.length>maxLines){let tail=lines[maxLines-1];g.font=(bold?'bold ':'')+sz+'px '+FONT;
+    while(tail.length>1&&g.measureText(tail+'…').width>w)tail=tail.slice(0,-1);
+    lines[maxLines-1]=tail+'…';}
+  return {size:sz,lines};
+}
+function safeText(label, x, y, w, h, opt){
+  opt=opt||{};
+  if(w<=0||h<=0)return;
+  g.save();g.beginPath();g.rect(x,y,w,h);g.clip();
+  const t=fitBlock(label,w-4,h-4,opt.size||21,opt.min||12,opt.bold!==false,opt.lines||2);
+  const lh=t.size+3,start=y+h/2-(t.lines.length-1)*lh/2+t.size*.34;
+  t.lines.forEach((v,i)=>txt(v,x+w/2,start+i*lh,{b:opt.bold!==false,s:t.size,a:'center',c:opt.color||'#f7e6d0',sh:!!opt.shadow}));
+  g.restore();
+}
+function titlePlate(label, x, y, w, h, opt) {
+  opt=opt||{};
+  // Keep decorations at the edges, away from lettering. The original plate had
+  // huge arrow-heads occupying a third of each side when compressed.
+  stretchUi(opt.red?'goth_plate_red':'plate_dark_wide',x,y,w,h);
+  const inset=Math.max(10,Math.min(w*.16,45));
+  safeText(label,x+inset,y+Math.max(3,h*.14),w-2*inset,h*.72,{size:opt.size||22,min:opt.min||12,lines:opt.lines||2,color:opt.color,shadow:true});
+}
+function captionPlate(label,x,y,w,h,opt){
+  opt=opt||{};
+  g.save();stretchUi(opt.red?'goth_plate_red':'plate_dark_wide',x,y,w,h);g.restore();
+  safeText(label,x+w*.12,y+h*.14,w*.76,h*.72,{size:opt.size||20,min:opt.min||12,lines:opt.lines||2,color:opt.color||'#f6e7d7',shadow:false});
+}
+function ornateStar(cx,cy,sz,on){
+  // Previous Canvas star system. Do not draw the ornate image-based stars.
+  star(cx,cy,sz/2,on);
+}
 function button(label, x, y, w, h, fn, o) {
   o = o || {}; g.save(); if (o.dis) g.globalAlpha = 0.45;
-  plate3(o.red ? 'plate_red_a' : (o.gold ? 'plate_parch_a' : 'plate_dark_s'), x, y, w, h);
-  txt(label, x + w / 2, y + h / 2 + (o.s || 22) * 0.35, { b: true, s: o.s || 22, a: 'center', c: o.gold ? '#3a2410' : '#fff', sh: !o.gold }); g.restore();
+  const bn = (o.red || o.gold) ? 'goth_btn_red' : 'goth_btn_dark';
+  if (!stretchUi(bn, x, y, w, h)) plate3(o.red ? 'plate_red_a' : (o.gold ? 'plate_parch_a' : 'plate_dark_s'), x, y, w, h);
+  const lb = fitWrap(label, w - 28, o.s || 22, Math.max(13, (o.s || 22) - 8), true, 2), lh = lb.size + 4, sy = y + h / 2 - ((lb.lines.length - 1) * lh) / 2 + lb.size * 0.34;
+  lb.lines.forEach((ln, i) => txt(ln, x + w / 2, sy + i * lh, { b: true, s: lb.size, a: 'center', c: (o.red || o.gold) ? '#ffe9cd' : '#f4e8dc', sh: true }));
+  g.restore();
   if (!o.dis) addHit(x, y, w, h, fn);
 }
 function star(cx, cy, r, on, pop) {
@@ -118,7 +192,7 @@ function star(cx, cy, r, on, pop) {
   if (on) { g.fillStyle = '#ffd24a'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#fff3b0'; g.stroke(); } else { g.fillStyle = 'rgba(255,255,255,.07)'; g.fill(); g.lineWidth = 2; g.strokeStyle = 'rgba(255,255,255,.28)'; g.stroke(); }
   g.restore();
 }
-function starRow(cx, cy, r, n, gap) { for (let i = 0; i < 3; i++) star(cx + (i - 1) * (r * 2 + (gap || 4)), cy, r, i < n); }
+function starRow(cx, cy, r, n, gap) { for(let i=0;i<3;i++) ornateStar(cx+(i-1)*(r*2+(gap||4)),cy,r*2,i<n); }
 function coverImg(im, fx, fy) { if (!im || !im.ok) return false; const iw = im.naturalWidth, ih = im.naturalHeight, s = Math.max(W / iw, H / ih), dw = iw * s, dh = ih * s; g.drawImage(im, -(dw - W) * fx, -(dh - H) * fy, dw, dh); return true; }
 function dim(a) { g.fillStyle = 'rgba(6,4,10,' + a + ')'; g.fillRect(0, 0, W, H); }
 let toastMsg = '', toastT = 0;
@@ -128,13 +202,20 @@ function drawToast() {
   g.save(); g.globalAlpha = clamp((toastT - nowMs()) / 400, 0, 1); g.fillStyle = 'rgba(0,0,0,.8)'; rr(x, y, w, 46, 10); g.fill(); g.strokeStyle = '#e8b86a'; g.lineWidth = 2; g.stroke();
   txt(toastMsg, W / 2, y + 31, { b: true, s: 22, a: 'center' }); g.restore();
 }
-function header(title, back, sub) {
-  g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, 0, W, 64); g.fillStyle = 'rgba(232,184,106,.55)'; g.fillRect(0, 63, W, 2);
-  if (back) { sprFit('arrow_l_md', 38, 32, 54); addHit(0, 0, 80, 64, back); }
-  txt(title, W / 2, sub ? 34 : 43, { b: true, s: portrait ? 24 : 28, a: 'center', c: '#ffe9b0', sh: true });
-  if (sub) txt(sub, W / 2, 56, { s: 16, a: 'center', c: '#cbb890' });
+function header(title,back,sub){
+  g.save();g.fillStyle='rgba(0,0,0,.48)';g.fillRect(0,0,W,sub?85:75);
+  stretchUi('goth_header',6,0,W-12,72);
+  // A dedicated flat dark center plate hides the large heart and spikes that used
+  // to run through the title. Subtitle has its own baseline below the title plate.
+  const cw=Math.min(portrait?425:530,W-155),cx=(W-cw)/2;
+  captionPlate(title,cx,3,cw,sub?49:57,{size:portrait?25:29,min:18,lines:1});
+  if(sub){
+    g.fillStyle='rgba(16,11,19,.9)';g.fillRect(cx+38,51,cw-76,27);
+    safeText(sub,cx+49,52,cw-98,24,{size:16,min:11,lines:1,bold:false,color:'#ead9c6'});
+  }
+  if(back){stretchUi('goth_back',12,5,58,58);addHit(8,2,72,72,back);}
+  g.restore();
 }
-
 // ================= 장면 상태 =================
 let scene = 'title', MODAL = null, PS = null, DL = null, curStage = null, res = null, paused = false, timeUp = false, devTaps = 0, devT = 0;
 function go(s) { scene = s; menu = true; MODAL = null; }
@@ -170,22 +251,34 @@ function lineCard(side, x, y, w, h) {
   // 영웅 얼굴
   const n = pool.length, fy = y + 186, avail = h - 186 - 90, rowsN = Math.ceil(n / 4), perRow = Math.ceil(n / rowsN), fh = Math.min((avail - (rowsN - 1) * 6) / rowsN, 230), fw = (w - 40 - (perRow - 1) * 6) / perRow;
   txt('동료', x + 20, fy - 8, { s: 15, c: '#cbb890' });
-  pool.forEach((r, i) => { const fx = x + 20 + (i % perRow) * (fw + 6), fyy = fy + Math.floor(i / perRow) * (fh + 6), av = heroAvail(r); g.save(); if (!av) g.globalAlpha = 0.28; g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect(fx, fyy, fw, fh);
-    if (r.face.ok) { const k = Math.min(fw / r.face.naturalWidth, fh / r.face.naturalHeight); const dw = r.face.naturalWidth * k, dh = r.face.naturalHeight * k; g.drawImage(r.face, fx + (fw - dw) / 2, fyy + (fh - dh) / 2, dw, dh); } g.restore();
+  pool.forEach((r, i) => { const fx = x + 20 + (i % perRow) * (fw + 6), fyy = fy + Math.floor(i / perRow) * (fh + 6), av = heroAvail(r); g.save(); if (!av) g.globalAlpha = 0.28; g.fillStyle = 'rgba(0,0,0,.42)'; g.fillRect(fx, fyy, fw, fh);
+    if (r.face.ok) drawFaceCrop(r.face, fx, fyy, fw, fh, { ay: 0.08, gray: !av ? 'grayscale(1) brightness(.6) saturate(0.2)' : null }); g.restore();
     if (!av) sprFit('ic_lock', fx + fw / 2, fyy + fh / 2, Math.min(fw * 0.6, 40)); });
   button('출격 준비', x + w / 2 - 130, y + h - 78, 260, 60, () => openStages(side), { red: true, s: 24 });
 }
 function drawLines() {
-  coverImg(bg, 0.5, 0.5); dim(0.72); header('전선 선택', () => go('title'));
-  const c11 = c11Open(), bot = 80, top = 78, gap = 14;
-  if (!portrait) { const cw = (W - 40 - gap) / 2, ch = H - top - bot - (c11 ? 0 : -10); lineCard('F', 20, top, cw, ch - 10); lineCard('M', 20 + cw + gap, top, cw, ch - 10); }
-  else { const ch = (H - top - bot - gap - 20) / 2; lineCard('F', 20, top, W - 40, ch); lineCard('M', 20, top + ch + gap, W - 40, ch); }
-  const by = H - 72;
-  if (c11) { button('마계 · 11장', W / 2 - 230, by, 300, 58, () => openStages('C'), { gold: true, s: 24 }); }
-  else { g.save(); g.globalAlpha = 0.55; plate3('plate_dark_s', W / 2 - 230, by, 300, 58); g.restore(); sprFit('ic_lock', W / 2 - 205, by + 29, 34); txt('???', W / 2 - 70, by + 38, { b: true, s: 24, a: 'center', c: '#9a8a70' }); }
-  button('장비', W / 2 + 90, by, 140, 58, () => openInv(() => go('lines')), { s: 22 });
+  // 오프닝 배경은 재사용하되 무채색·저대비 처리해 문장만 선명하게 보이도록 한다.
+  g.fillStyle='#100d11';g.fillRect(0,0,W,H);
+  g.save();g.filter='grayscale(1) brightness(.46) contrast(.80)';coverImg(ui('keyart'),.5,.34);g.restore();
+  dim(.20);header('세력 선택',()=>go('title'));
+  const sides=[['F','faction_dominaria'],['M','faction_valhalion']];
+  const large=portrait, gap=large?12:52;
+  const cw=large?Math.min(W-90,560):Math.min((W-92-gap)/2,550);
+  const ch=large?Math.min((H-190-gap)/2,cw*.88):Math.min(H-178,cw*.95);
+  const startX=large?(W-cw)/2:(W-(2*cw+gap))/2;
+  sides.forEach(([side,nm],i)=>{
+    const x=startX+(large?0:i*(cw+gap)),y=large?82+i*(ch+gap):82+(H-178-ch)/2;
+    const im=ui(nm);
+    if(im.ok){const k=Math.min(cw/im.naturalWidth,ch/im.naturalHeight);const dw=im.naturalWidth*k,dh=im.naturalHeight*k;
+      g.save();g.shadowColor='rgba(162,57,86,.48)';g.shadowBlur=23;
+      g.drawImage(im,x+(cw-dw)/2,y+(ch-dh)/2,dw,dh);g.restore();}
+    else{titlePlate(LINES[side].name,x,y,cw,ch,{size:28,red:side==='F'});}
+    addHit(x,y,cw,ch,()=>openStages(side));
+  });
+  // 기능을 없애지 않으면서 문장 2개의 시각적 우선순위를 유지하는 보조 메뉴.
+  button('장비',W-178,H-67,140,52,()=>openInv(()=>go('lines')),{s:20});
+  if(c11Open())button('마계 11장',38,H-67,180,52,()=>openStages('C'),{s:20,red:true});
 }
-
 // ---------- 스테이지 목록 ----------
 let SG = { side: 'F', ci: 0 };
 function openStages(side, ci) {
@@ -194,39 +287,56 @@ function openStages(side, ci) {
   SG = { side, ci }; SV.last.side = side; go('stages');
 }
 function drawStages() {
-  const side = SG.side, Ln = LINES[side], ci = SG.ci, ch = Ln.chs[ci];
-  coverImg(bg, 0.5, 0.5); dim(0.72); header(Ln.name, () => go('lines'), chNo(ch) + '장 · ' + chTitle(ch));
-  const n = Ln.chs.length, tw = Math.min(110, (W - 40 - (n - 1) * 8) / n);
-  if (n > 1) for (let i = 0; i < n; i++) {
-    const op = chOpen(side, i), x = 20 + i * (tw + 8), y = 72; g.fillStyle = i === ci ? Ln.col : 'rgba(0,0,0,.5)'; g.fillRect(x, y, tw, 44); g.strokeStyle = i === ci ? '#ffe27a' : 'rgba(255,255,255,.3)'; g.lineWidth = i === ci ? 3 : 2; g.strokeRect(x, y, tw, 44);
-    txt(op ? (i + 1) + '장' : '', x + tw / 2, y + 30, { b: true, s: 20, a: 'center', c: op ? '#fff' : '#777' }); if (!op) sprFit('ic_lock', x + tw / 2, y + 22, 30);
-    addHit(x, y, tw, 44, () => { if (!op) { toast('이전 장의 마지막 편을 클리어하세요'); return; } SG.ci = i; SV.last.ch[side] = i; });
+  const side=SG.side,Ln=LINES[side],ci=SG.ci,ch=Ln.chs[ci];
+  coverImg(bg,.5,.5);dim(.72);header(Ln.name,()=>go('lines'),chNo(ch)+'장 · '+chTitle(ch));
+  const n=Ln.chs.length,tw=Math.min(110,(W-40-(n-1)*8)/n);
+  if(n>1)for(let i=0;i<n;i++){
+    const op=chOpen(side,i),x=20+i*(tw+8),y=73;
+    stretchUi(i===ci?'goth_btn_red':'goth_btn_dark',x,y,tw,46,op?1:.42);
+    if(op)txt((i+1)+'장',x+tw/2,y+30,{b:true,s:18,a:'center',sh:true});
+    else sprFit('ic_lock',x+tw/2,y+22,27);
+    addHit(x,y,tw,44,()=>{if(!op){toast('이전 장의 마지막 편을 클리어하세요');return;}SG.ci=i;SV.last.ch[side]=i;});
   }
-  const top = n > 1 ? 128 : 76, cols = portrait ? 2 : 5, rows = portrait ? 5 : 2, gx = 12, bot = 16;
-  const cw = (W - 40 - (cols - 1) * gx) / cols, chh = (H - top - bot - (rows - 1) * gx) / rows;
-  for (let no = 1; no <= 10; no++) {
-    const e = epData(ch, no), i = no - 1, x = 20 + (i % cols) * (cw + gx), y = top + Math.floor(i / cols) * (chh + gx), op = epOpen(side, ci, no), sv = starsOf(ch, no), boss = no === 10;
-    panel(x, y, cw, chh, { fill: op ? 'rgba(20,14,22,.88)' : 'rgba(10,8,12,.8)', e1: boss ? '#ff7a6a' : (sv ? '#ffd24a' : '#c89a5a'), e2: boss ? '#8a2a2a' : '#7a5230', gem: false });
-    txt(chNo(ch) + '-' + no, x + 14, y + 34, { b: true, s: 26, c: boss ? '#ff9a8a' : '#ffe27a' });
-    if (boss) { plate3('plate_red_a', x + cw - 92, y + 8, 84, 30); txt('BOSS', x + cw - 50, y + 29, { b: true, s: 16, a: 'center' }); }
-    const lines = wrap(e.title, cw - 28, portrait ? 22 : 20, true).slice(0, 2); lines.forEach((l, k) => txt(l, x + 14, y + 66 + k * 26, { b: true, s: portrait ? 22 : 20, c: op ? '#fff' : '#666' }));
-    starRow(x + cw / 2, y + chh - 28, 15, sv, 4);
-    if (!op) { g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(x + 4, y + 4, cw - 8, chh - 8); sprFit('ic_lock', x + cw / 2, y + chh / 2, 58); }
-    addHit(x, y, cw, chh, () => { if (!op) { toast(no === 1 ? '이전 장을 먼저 끝내야 합니다' : '이전 편을 먼저 클리어하세요'); return; } MODAL = { kind: 'brief', side, ci, ch, no }; });
+  const top=n>1?128:76,cols=portrait?2:5,rows=portrait?5:2,gx=12,bot=16;
+  const cw=(W-40-(cols-1)*gx)/cols,chh=(H-top-bot-(rows-1)*gx)/rows;
+  const sceneBg=chBg(ch);
+  for(let no=1;no<=10;no++){
+    const e=epData(ch,no),i=no-1,x=20+(i%cols)*(cw+gx),y=top+Math.floor(i/cols)*(chh+gx),op=epOpen(side,ci,no),sv=starsOf(ch,no),boss=no===10;
+    panel(x,y,cw,chh,{kind:'goth_panel_tall',gem:false});
+    // 새 플레이트를 배치할 카드 내측 배경을 덜 비어 보이게 낮은 대비로 채운다.
+    const ix=x+18,iy=y+26,iw=cw-36,ih=chh-59;
+    g.save();rr(ix,iy,iw,ih,3);g.clip();
+    if(sceneBg.ok){g.globalAlpha=op?.24:.12;g.filter='grayscale(.8) brightness(.58)';
+      const scale=Math.max(iw/sceneBg.naturalWidth,ih/sceneBg.naturalHeight),dw=sceneBg.naturalWidth*scale,dh=sceneBg.naturalHeight*scale;
+      g.drawImage(sceneBg,ix+(iw-dw)*.5,iy+(ih-dh)*.4,dw,dh);g.filter='none';}
+    g.fillStyle=op?'rgba(9,5,12,.51)':'rgba(7,5,10,.71)';g.fillRect(ix,iy,iw,ih);g.restore();
+    titlePlate(chNo(ch)+'-'+no,x+cw/2-58,y+9,116,41,{size:20,min:15,color:boss?'#ffbdad':'#f6dfb9'});
+    if(boss)titlePlate('BOSS',x+cw-83,y+11,70,32,{red:true,size:15});
+    titlePlate(e.title,x+13,y+54,cw-26,Math.min(chh*.27,78),{size:portrait?19:20,min:13,lines:2});
+    starRow(x+cw/2,y+chh-34,15,sv,2);
+    if(!op){g.fillStyle='rgba(0,0,0,.35)';g.fillRect(ix,iy+Math.min(chh*.27,78)+43,iw,Math.max(5,ih-Math.min(chh*.27,78)-65));sprFit('ic_lock',x+cw/2,y+chh*.62,56);}
+    addHit(x,y,cw,chh,()=>{if(!op){toast(no===1?'이전 장을 먼저 끝내야 합니다':'이전 편을 먼저 클리어하세요');return;}MODAL={kind:'brief',side,ci,ch,no};});
   }
 }
-function drawBrief() {
-  const m = MODAL, e = epData(m.ch, m.no), P = params(m.ch, m.no), w = Math.min(W - 40, 620), h = portrait ? 540 : 500, x = (W - w) / 2, y = (H - h) / 2;
-  g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(0, 0, W, H); panel(x, y, w, h, { fill: 'rgba(16,11,18,.96)', e1: P.boss ? '#ff7a6a' : '#e8b86a' });
-  txt(chNo(m.ch) + '-' + m.no + (P.boss ? '  BOSS' : ''), x + w / 2, y + 48, { b: true, s: 28, a: 'center', c: P.boss ? '#ff9a8a' : '#ffe27a' });
-  wrap(e.title, w - 50, 26, true).slice(0, 2).forEach((l, i) => txt(l, x + w / 2, y + 86 + i * 32, { b: true, s: 26, a: 'center' }));
-  const sv = starsOf(m.ch, m.no); starRow(x + w / 2, y + 140, 20, sv, 8);
-  const rows = [['목표', '적 ' + P.goal + '명 처치' + (P.boss ? ' (보스 포함)' : '')], ['제한 시간', mmss(P.st.limit)], ['별 3개', '남은 시간 ' + Math.round(STAR_T[0] * 100) + '% 이상'], ['별 2개', '남은 시간 ' + Math.round(STAR_T[1] * 100) + '% 이상'], ['별 1개', '클리어'], ['적', LINES[m.side].foe]];
-  rows.forEach((r, i) => { const yy = y + 196 + i * 36; txt(r[0], x + 40, yy, { s: 20, c: '#cbb890' }); txt(r[1], x + w - 40, yy, { s: 20, a: 'right', b: true }); g.fillStyle = 'rgba(255,255,255,.08)'; g.fillRect(x + 36, yy + 10, w - 72, 1); });
-  const by = y + h - 76, hasSeen = SV.seen[epId(m.ch, m.no) + 'b'] || sv;
-  button('출격', x + w - 200, by, 170, 56, () => { MODAL = null; openParty(m.side, m.ci, m.ch, m.no); }, { red: true, s: 24 });
-  if (hasSeen) button('대사 보기', x + w / 2 - 80, by, 150, 56, () => { MODAL = null; replayStory(m.ch, m.no); }, { s: 20 });
-  button('닫기', x + 30, by, 110, 56, () => { MODAL = null; }, { s: 20 });
+function drawBrief(){
+  const m=MODAL,e=epData(m.ch,m.no),P=params(m.ch,m.no);
+  const w=Math.min(W-40,650),h=portrait?560:500,x=(W-w)/2,y=(H-h)/2;
+  g.fillStyle='rgba(0,0,0,.70)';g.fillRect(0,0,W,H);panel(x,y,w,h);
+  captionPlate(chNo(m.ch)+'-'+m.no+(P.boss?' BOSS':''),x+w/2-101,y+11,202,53,{size:24,min:16,red:P.boss});
+  captionPlate(e.title,x+73,y+69,w-146,56,{size:24,min:14,lines:2});
+  starRow(x+w/2,y+145,17,starsOf(m.ch,m.no),8);
+  const rows=[['목표','적 '+P.goal+'명 처치'+(P.boss?' (보스 포함)':'')],['제한 시간',mmss(P.st.limit)],['별 3개','남은 시간 '+Math.round(STAR_T[0]*100)+'% 이상'],['별 2개','남은 시간 '+Math.round(STAR_T[1]*100)+'% 이상'],['별 1개','클리어'],['적',LINES[m.side].foe]];
+  const insideX=x+57,insideW=w-114,rowsY=y+184,rowH=Math.min(39,(h-280)/6+10);
+  rows.forEach(([label,value],i)=>{
+    const ry=rowsY+i*rowH,labW=insideW*.32,valX=insideX+labW+10,valW=insideW-labW-10;
+    g.fillStyle=i%2?'rgba(31,22,29,.35)':'rgba(22,15,23,.54)';g.fillRect(insideX,ry,insideW,rowH-3);
+    safeText(label,insideX+7,ry+3,labW-14,rowH-8,{size:18,min:14,lines:1,color:'#dbc4a5'});
+    safeText(value,valX,ry+3,valW-8,rowH-8,{size:18,min:13,lines:1,color:'#fff',bold:true});
+  });
+  const by=y+h-75,seen=SV.seen[epId(m.ch,m.no)+'b']||starsOf(m.ch,m.no);
+  button('닫기',x+32,by,120,54,()=>{MODAL=null;},{s:20});
+  if(seen)button('대사 보기',x+w/2-84,by,168,54,()=>{MODAL=null;replayStory(m.ch,m.no);},{s:19});
+  button('출격',x+w-202,by,170,54,()=>{MODAL=null;openParty(m.side,m.ci,m.ch,m.no);},{red:true,s:23});
 }
 function replayStory(ch, no) { const e = epData(ch, no); setBattleBg(ch); const back = () => { openStages(SG.side, SG.ci); }; playDialogue(e.before.concat(e.after), back); }
 
@@ -237,22 +347,34 @@ function openParty(side, ci, ch, no) {
 }
 function drawParty() {
   const { side, ch, no } = PS, pool = poolOf(side), n = pool.length;
-  coverImg(bg, 0.5, 0.5); dim(0.78); header('출격 편성', () => openStages(side, PS.ci), chNo(ch) + '-' + no + ' · ' + epData(ch, no).title);
-  const cols = n > 8 ? (portrait ? 4 : 8) : (portrait ? 2 : 4), rows = Math.ceil(n / cols), top = 80, bot = 110, gx = 12, cw = (W - 40 - (cols - 1) * gx) / cols, chh = Math.min((H - top - bot - (rows - 1) * gx) / rows, 330), small = cw < 200;
+  coverImg(bg, 0.5, 0.5); dim(0.82); header('출격 편성', () => openStages(side, PS.ci), chNo(ch) + '-' + no + ' · ' + epData(ch, no).title);
+  const cols = n > 8 ? (portrait ? 4 : 8) : (portrait ? 2 : 4), rows = Math.ceil(n / cols), top = 92, bot = 118, gx = 14;
+  const rawH = Math.min((H - top - bot - (rows - 1) * gx) / rows, 330), cw = (W - 40 - (cols - 1) * gx) / cols, cardH = Math.min(rawH, cw * 1.36), small = cw < 170;
+  const drawCard = (r, x, y, w, h, on, av, idx) => {
+    const artX=x+w*.15,artY=y+h*.16,artW=w*.70,artH=h*.54,fi=r.face;
+    g.save(); rr(artX, artY, artW, artH, 16); g.clip();
+    if(fi.ok){const sh=artH*1.43,sw=sh*fi.naturalWidth/fi.naturalHeight;g.save();if(!av)g.filter='grayscale(1) brightness(.55) saturate(.2)';g.drawImage(fi,artX+(artW-sw)/2,artY-2,sw,sh);g.filter='none';g.restore();}
+    g.restore();
+    stretchUi(av ? 'goth_frame_open' : 'goth_frame_locked', x, y, w, h);
+    if (on) {
+      g.save();
+      g.shadowColor = 'rgba(237,83,134,.84)'; g.shadowBlur = 22; g.globalAlpha = .96;
+      stretchUi(av ? 'goth_frame_open' : 'goth_frame_locked', x + 2, y + 2, w - 4, h - 4);
+      g.restore();
+      sprFit('num' + String(idx + 1), x + w - 30, y + 32, 54);
+    }
+    titlePlate(r.n,x+w*.12,y+h*.74,w*.76,Math.min(38,h*.17),{size:small?17:20,min:13,lines:1});
+    if(!av)txt(HERO_UNLOCK[r.k]+'장 해금',x+w/2,y+h*.68,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
+    txt(CLS[r.c],x+w/2,y+h*.94,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
+  };
   pool.forEach((r, i) => {
-    const x = 20 + (i % cols) * (cw + gx), y = top + Math.floor(i / cols) * (chh + gx), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
-    g.fillStyle = on ? 'rgba(255,226,122,.2)' : 'rgba(0,0,0,.55)'; g.fillRect(x, y, cw, chh); g.strokeStyle = on ? '#ffe27a' : 'rgba(255,255,255,.25)'; g.lineWidth = on ? 4 : 2; g.strokeRect(x, y, cw, chh);
-    const ih = chh - (small ? 46 : 62), fi = r.face;
-    g.save(); if (!av) g.globalAlpha = 0.3; if (fi.ok) { const k = Math.min((cw - 12) / fi.naturalWidth, ih / fi.naturalHeight), dw = fi.naturalWidth * k, dh = fi.naturalHeight * k; g.drawImage(fi, x + (cw - dw) / 2, y + 6, dw, dh); } g.restore();
-    txt(r.n, x + 10, y + chh - (small ? 22 : 30), { b: true, s: small ? 18 : 24, c: av ? '#fff' : '#777' }); txt(CLS[r.c], x + 10, y + chh - (small ? 6 : 8), { b: true, s: small ? 14 : 18, c: CCOL[r.c] });
-    if (!av) { sprFit('ic_lock', x + cw / 2, y + ih / 2, 46); txt(HERO_UNLOCK[r.k] + '장 해금', x + cw / 2, y + ih / 2 + 44, { b: true, s: 16, a: 'center', c: '#ffd0a0', sh: true }); }
-    if (on) { sprFit('ring_dark_s1', x + cw - 26, y + 26, 40); txt(String(j + 1), x + cw - 26, y + 35, { b: true, s: 22, a: 'center', c: '#ffe27a' }); }
-    addHit(x, y, cw, chh, () => { if (!av) { toast(HERO_UNLOCK[r.k] + '장에 도달하면 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
+    const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
+    drawCard(r, x, y, cw, cardH, on, av, j);
+    addHit(x, y, cw, cardH, () => { if (!av) { toast(HERO_UNLOCK[r.k] + '장에 도달하면 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
   const rd = PS.sel.length === 3;
-  txt('출격할 3명을 고르세요 (' + PS.sel.length + '/3)', 24, H - 52, { b: true, s: 22, c: '#ffe27a', sh: true });
-  button('장비', W - 440, H - 88, 190, 68, () => openInv(() => go('party')), { s: 24 });
-  button('출격', W - 230, H - 88, 200, 68, () => { SV.party[side] = PS.sel.map(r => r.k); saveNow(); beginStage(); }, { red: true, s: 30, dis: !rd });
+  button('장비', W - 440, H - 92, 190, 72, () => openInv(() => go('party')), { s: 24 });
+  button('출격', W - 230, H - 92, 200, 72, () => { SV.party[side] = PS.sel.map(r => r.k); saveNow(); beginStage(); }, { red: true, s: 30, dis: !rd });
 }
 
 // ---------- 대사 ----------
@@ -327,7 +449,7 @@ function drawResult() {
   txt(res.won ? 'STAGE CLEAR' : '임무 실패', x + w / 2, y + 66, { b: true, s: 46, a: 'center', c: res.won ? '#ffe27a' : '#ff9a8a', sh: true });
   txt(chNo(cs.ch) + '-' + cs.no + ' · ' + epData(cs.ch, cs.no).title, x + w / 2, y + 100, { s: 20, a: 'center', c: '#cbb890' });
   if (res.won) {
-    for (let i = 0; i < 3; i++) { const on = i < res.stars, sh = el - 450 - i * 380, pop = on ? (sh < 0 ? 0 : sh < 220 ? 0.4 + sh / 220 * 0.9 : 1.3 - Math.min(0.3, (sh - 220) / 600)) : 1; star(x + w / 2 + (i - 1) * 84, y + 175, 36, on && sh >= 0, on ? Math.max(0.01, pop) : 1); }
+    for (let i = 0; i < 3; i++) { const on = i < res.stars, sh = el - 450 - i * 380, pop = on ? (sh < 0 ? 0 : sh < 220 ? 0.4 + sh / 220 * 0.9 : 1.3 - Math.min(0.3, (sh - 220) / 600)) : 1; g.save();g.translate(x+w/2+(i-1)*84,y+175);g.scale(on?Math.max(.01,pop):1,on?Math.max(.01,pop):1);ornateStar(0,0,72,on&&sh>=0);g.restore(); }
     txt('처치 ' + score + '/' + ST.goal + ' · 남은 시간 ' + mmss(res.remain), x + w / 2, y + 250, { b: true, s: 22, a: 'center' });
     if (res.first) txt('첫 클리어!', x + w / 2, y + 282, { b: true, s: 18, a: 'center', c: '#9fe6a8' });
     if (res.line && el > 450 + 3 * 380) { const lh = wrap(res.line.text, w - 80, 21, false); panel(x + 26, y + 300, w - 52, 28 + lh.length * 30 + 28, { fill: 'rgba(40,24,30,.8)', gem: false, lw: 2 }); txt(res.line.who, x + 46, y + 328, { b: true, s: 18, c: '#ffe27a' }); lh.forEach((s, i) => txt(s, x + 46, y + 358 + i * 30, { s: 21 })); }
@@ -348,11 +470,9 @@ function afterWin() {
 function drawHud() {
   const cs = curStage; if (!cs || over || menu) return;
   const rem = Math.max(0, ST.limit - t), frac = rem / ST.limit, bw = 190, bx = W - bw - 62, by = 58;
-  g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(bx, by, bw, 34); g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 2; g.strokeRect(bx, by, bw, 34);
-  const col = frac >= STAR_T[0] ? '#ffd24a' : frac >= STAR_T[1] ? '#d8e0ff' : '#ff7a6a';
-  g.fillStyle = col; g.globalAlpha = 0.35; g.fillRect(bx + 2, by + 2, (bw - 4) * frac, 30); g.globalAlpha = 1;
-  for (const th of STAR_T) { g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(bx + 2 + (bw - 4) * th, by + 2, 2, 30); }
-  txt(mmss(rem), bx + 12, by + 25, { b: true, s: 22, c: col }); txt('★'.repeat(starsFor(frac)), bx + bw - 10, by + 25, { b: true, s: 18, a: 'right', c: '#ffd24a' });
+  stretchUi('goth_plate_dark',bx-8,by-2,bw+16,39);
+  txt(mmss(rem),bx+34,by+25,{b:true,s:20,a:'center',c:'#f6e8dd',sh:true});
+  const ns=starsFor(frac);for(let i=0;i<3;i++)ornateStar(bx+104+i*25,by+16,22,i<ns);
   const pb = { x: W - 54, y: 58, w: 46, h: 34 }; g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(pb.x, pb.y, pb.w, pb.h); g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2; g.strokeRect(pb.x, pb.y, pb.w, pb.h);
   g.fillStyle = '#fff'; g.fillRect(pb.x + 15, pb.y + 8, 5, 18); g.fillRect(pb.x + 26, pb.y + 8, 5, 18); addHit(pb.x, pb.y, pb.w, pb.h, () => { paused = true; fireHeld = false; });
   if (t < 150 && !paused) { g.save(); g.globalAlpha = clamp(Math.min(t / 20, (150 - t) / 40), 0, 1); const lb = chNo(cs.ch) + '-' + cs.no + '  ' + epData(cs.ch, cs.no).title; txt(cs.P.boss ? 'BOSS STAGE' : 'STAGE', W / 2, H * 0.3 - 40, { b: true, s: 22, a: 'center', c: cs.P.boss ? '#ff9a8a' : '#cbb890', sh: true }); txt(lb, W / 2, H * 0.3, { b: true, s: portrait ? 34 : 42, a: 'center', c: '#fff', sh: true }); g.restore(); }
@@ -433,16 +553,15 @@ function cardFront(c, x, y, w, h, dimmed) {
   const big = w > 150;
   if (c.kind === 'gear') {
     const g0 = c.gear, col = RARC[g0.rar - 1]; panel(x, y, w, h, { fill: 'rgba(18,12,22,.96)', e1: col, e2: col, lw: 4 });
-    gearIcon(g0, x + w / 2, y + h * 0.17, w * 0.3); txt(RARN[g0.rar - 1], x + w / 2, y + h * 0.38, { b: true, s: big ? 18 : 14, a: 'center', c: col });
-    wrap(g0.base, w - 20, big ? 21 : 16, true).slice(0, 2).forEach((l, i) => txt(l, x + w / 2, y + h * 0.48 + i * (big ? 24 : 19), { b: true, s: big ? 21 : 16, a: 'center' }));
-    g0.opts.forEach((o, i) => txt(optLine(o), x + w / 2, y + h * 0.68 + i * (big ? 24 : 19), { s: big ? 18 : 14, a: 'center', c: '#cfe8ff' }));
-    txt('Lv.' + g0.lv, x + w / 2, y + h - 12, { s: 14, a: 'center', c: '#cbb890' });
+    gearIcon(g0, x + w / 2, y + h * 0.17, w * 0.3); captionPlate(RARN[g0.rar-1]+' · Lv.'+g0.lv,x+w*.13,y+h*.29,w*.74,h*.105,{size:big?16:13,min:11,color:col,lines:1});
+    captionPlate(g0.base,x+w*.11,y+h*.40,w*.78,h*.20,{size:big?20:16,min:12,lines:2});
+    safeText(g0.opts.map(optLine).join(' · '),x+w*.13,y+h*.63,w*.74,h*.23,{size:big?17:14,min:11,lines:4,bold:false,color:'#cfe8ff'});
   } else {
     panel(x, y, w, h, { fill: 'rgba(24,20,24,.96)', e1: '#8a7a6a', e2: '#5a4a3a' }); sprFit('ic_warn', x + w / 2, y + h * 0.18, w * 0.28);
-    txt('꽝', x + w / 2, y + h * 0.5, { b: true, s: big ? 40 : 28, a: 'center', c: '#bba' });
-    wrap(c.blank.title || '', w - 20, 16, true).slice(0, 2).forEach((l, i) => txt(l, x + w / 2, y + h * 0.6 + i * 20, { b: true, s: 16, a: 'center', c: '#ddd' }));
-    wrap(c.blank.caption || '', w - 24, 14).slice(0, 3).forEach((l, i) => txt(l, x + w / 2, y + h * 0.74 + i * 18, { s: 14, a: 'center', c: '#aaa' }));
-    txt('부품 +' + (c.blank.parts || 1), x + w / 2, y + h - 12, { s: 14, a: 'center', c: '#cbb890' });
+    captionPlate('꽝',x+w*.18,y+h*.40,w*.64,h*.16,{size:big?32:24,min:18,lines:1,color:'#ccc3b3'});
+    if(c.blank.title&&c.blank.title!=='꽝')safeText(c.blank.title,x+w*.13,y+h*.59,w*.74,h*.13,{size:16,min:12,lines:2});
+    safeText(c.blank.caption||'',x+w*.13,y+h*.72,w*.74,h*.15,{size:14,min:11,lines:3,bold:false,color:'#c7bdb6'});
+    captionPlate('부품 +'+(c.blank.parts||1),x+w*.19,y+h*.85,w*.62,h*.09,{size:13,min:11,lines:1,color:'#cbb890'});
   }
   if (dimmed) { g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(x + 3, y + 3, w - 6, h - 6); }
 }
@@ -454,7 +573,7 @@ function drawCards() {
     if (c.t0 && tt < 1) sx = Math.abs(Math.cos(tt * Math.PI)); else sx = 1;
     g.save(); g.translate(q.x + q.w / 2, q.y + q.h / 2); g.scale(Math.max(0.02, sx), 1); g.translate(-q.w / 2, -q.h / 2);
     if (face) cardFront(c, 0, 0, q.w, q.h, c.dim); else {
-      panel(0, 0, q.w, q.h, { fill: 'rgba(60,14,24,.95)', e1: '#e8b86a', e2: '#8a5a2a', lw: 4 }); sprFit('ic_wings_big', q.w / 2, q.h / 2, q.w * 0.6); txt('?', q.w / 2, q.h * 0.88, { b: true, s: 30, a: 'center', c: '#ffe27a' });
+      panel(0, 0, q.w, q.h, { fill: 'rgba(60,14,24,.95)', e1: '#e8b86a', e2: '#8a5a2a', lw: 4 }); sprFit('ic_wings_big', q.w / 2, q.h / 2, q.w * 0.6);
     }
     g.restore();
     if (c.picked && tt >= 1) { sprFit('ok_sm', q.x + q.w - 8, q.y + 8, 34); }
@@ -465,7 +584,7 @@ function drawCards() {
     });
   });
   if (RW.left === 0 && nowMs() > RW.doneT) button('확인', W / 2 - 110, H - 90, 220, 62, () => { const f = RW.then; RW = null; f(); }, { red: true, s: 26 });
-  txt('부품 ' + SV.parts, W - 70, 96, { b: true, s: 18, a: 'right', c: '#cbb890' });
+  captionPlate('부품 '+SV.parts,W-200,77,162,43,{size:16,min:12,lines:1});
 }
 
 // ---------- 인벤토리 ----------
@@ -479,39 +598,42 @@ function drawInv() {
   coverImg(bg, 0.5, 0.5); dim(0.8); header('장비', INV.back); txt('부품 ' + SV.parts, W - 70, 40, { b: true, s: 20, a: 'right', c: '#ffe27a', sh: true });
   const pool = ROSTER.F.concat(ROSTER.M).filter(heroAvail), per = portrait ? 8 : pool.length, rowsN = Math.ceil(pool.length / per), cs = Math.min(76, (W - 40 - (per - 1) * 6) / per), top = 74;
   pool.forEach((r, i) => { const x = 20 + (i % per) * (cs + 6), y = top + Math.floor(i / per) * (cs + 6), on = INV.hero === r.k, eq = SV.eq[r.k];
-    g.fillStyle = on ? 'rgba(255,226,122,.25)' : 'rgba(0,0,0,.5)'; g.fillRect(x, y, cs, cs); g.strokeStyle = on ? '#ffe27a' : 'rgba(255,255,255,.25)'; g.lineWidth = on ? 3 : 1.5; g.strokeRect(x, y, cs, cs);
-    if (r.face.ok) { const k = Math.max(cs / r.face.naturalWidth, cs / r.face.naturalHeight) * 1.0; g.save(); g.beginPath(); g.rect(x, y, cs, cs); g.clip(); g.drawImage(r.face, x + (cs - r.face.naturalWidth * k) / 2, y, r.face.naturalWidth * k, r.face.naturalHeight * k); g.restore(); }
+    g.fillStyle=on?'rgba(148,32,64,.22)':'rgba(0,0,0,.5)';g.fillRect(x,y,cs,cs);
+    if(on){g.save();g.shadowColor='rgba(222,85,117,.8)';g.shadowBlur=16;g.fillStyle='rgba(207,70,90,.16)';g.fillRect(x+3,y+3,cs-6,cs-6);g.restore();}
+    if (r.face.ok) drawFaceCrop(r.face, x, y, cs, cs, { ay: 0.08, clip: true });
     if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - 6, cs, 6); } }
     addHit(x, y, cs, cs, () => { INV.hero = r.k; });
   });
   const lt = top + rowsN * (cs + 6) + 6, hero = heroByKey(INV.hero), eqG = gearById(SV.eq[INV.hero]);
   const listW = portrait ? W - 40 : W - 40 - 360, listH = portrait ? 6 * 74 + 100 : H - lt - 14;
   // 가방 목록
-  const gs = sortedGear(), rowH = 74, perPage = Math.max(1, Math.floor((listH - 100) / rowH)), pages = Math.max(1, Math.ceil(gs.length / perPage)); INV.page = clamp(INV.page, 0, pages - 1);
-  panel(20, lt, listW, listH, { gem: false }); txt('가방 ' + gs.length + '개', 36, lt + 34, { b: true, s: 22, c: '#ffe9b0' });
+  const gs = sortedGear(), rowH = 74, perPage = Math.max(1, Math.floor((listH - 145) / rowH)), pages = Math.max(1, Math.ceil(gs.length / perPage)); INV.page = clamp(INV.page, 0, pages - 1);
+  panel(20,lt,listW,listH,{gem:false});titlePlate('가방 '+gs.length+'개',46,lt+54,175,43,{size:20,lines:1});
   if (!gs.length) txt('아직 장비가 없습니다. 스테이지를 클리어하고 카드를 고르세요.', 20 + listW / 2, lt + listH / 2, { s: 20, a: 'center', c: '#9a8a70' });
   gs.slice(INV.page * perPage, INV.page * perPage + perPage).forEach((g0, i) => {
-    const x = 32, y = lt + 48 + i * rowH, w = listW - 24, on = INV.sel === g0.id, own = gearOwner(g0.id);
-    g.fillStyle = on ? 'rgba(255,226,122,.18)' : 'rgba(255,255,255,.05)'; g.fillRect(x, y, w, rowH - 6); g.strokeStyle = on ? '#ffe27a' : RARC[g0.rar - 1]; g.lineWidth = on ? 3 : 1.5; g.strokeRect(x, y, w, rowH - 6);
-    gearIcon(g0, x + 38, y + (rowH - 6) / 2, 52); txt(g0.base, x + 78, y + 28, { b: true, s: 21, c: RARC[g0.rar - 1] }); txt(RARN[g0.rar - 1] + ' · Lv.' + g0.lv, x + w - 12, y + 28, { s: 16, a: 'right', c: '#cbb890' });
+    const x = 46, y = lt + 110 + i * rowH, w = listW - 52, on = INV.sel === g0.id, own = gearOwner(g0.id);
+    g.fillStyle=on?'rgba(123,28,52,.32)':'rgba(255,255,255,.04)';g.fillRect(x,y,w,rowH-6);g.save();g.strokeStyle=on?'rgba(224,97,122,.58)':'rgba(255,255,255,.16)';g.lineWidth=1;g.strokeRect(x,y,w,rowH-6);g.restore();
+    gearIcon(g0,x+38,y+(rowH-6)/2,52);
+    g.save();g.beginPath();g.rect(x+76,y+4,Math.max(80,w-245),rowH-12);g.clip();const nm=fitWrap(g0.base,Math.max(90,w-265),20,14,true,2);nm.lines.forEach((v,j)=>txt(v,x+78,y+24+j*(nm.size+1),{b:true,s:nm.size,c:RARC[g0.rar-1]}));g.restore();
+    txt(RARN[g0.rar-1]+' · Lv.'+g0.lv,x+w-12,y+27,{s:15,a:'right',c:'#cbb890'});
     txt(g0.opts.map(optLine).join('  '), x + 78, y + 54, { s: portrait ? 15 : 17, c: '#cfe8ff' });
     if (own) { const h2 = heroByKey(own); txt('착용: ' + (h2 ? h2.n : own), x + w - 12, y + 54, { b: true, s: 15, a: 'right', c: '#9fe6a8' }); }
     addHit(x, y, w, rowH - 6, () => { INV.sel = on ? null : g0.id; });
   });
-  if (pages > 1) { button('◀', 20 + listW / 2 - 110, lt + listH - 46, 70, 38, () => { INV.page = Math.max(0, INV.page - 1); }, { s: 18 }); txt((INV.page + 1) + ' / ' + pages, 20 + listW / 2, lt + listH - 20, { b: true, s: 18, a: 'center' }); button('▶', 20 + listW / 2 + 40, lt + listH - 46, 70, 38, () => { INV.page = Math.min(pages - 1, INV.page + 1); }, { s: 18 }); }
-  button('일반 일괄 분해', 20 + listW - 190, lt + 6, 176, 36, () => { const n = SV.gear.filter(x => x.rar === 1 && !gearOwner(x.id)).length; if (!n) { toast('분해할 일반 장비가 없습니다'); return; } MODAL = { kind: 'confirm', title: '일반 장비 ' + n + '개를 분해할까요?', msg: '착용 중인 장비는 제외됩니다.', yes: () => { let p = 0; for (const x of SV.gear.slice()) if (x.rar === 1 && !gearOwner(x.id)) p += dismantle(x.id); toast('부품 +' + p); INV.sel = null; } }; }, { s: 15 });
+  if (pages > 1) { button('◀', 20 + listW / 2 - 110, lt + listH - 58, 70, 38, () => { INV.page = Math.max(0, INV.page - 1); }, { s: 18 }); txt((INV.page + 1) + ' / ' + pages, 20 + listW / 2, lt + listH - 32, { b: true, s: 18, a: 'center' }); button('▶', 20 + listW / 2 + 40, lt + listH - 58, 70, 38, () => { INV.page = Math.min(pages - 1, INV.page + 1); }, { s: 18 }); }
+  button('일반 일괄 분해', 20 + listW - 213, lt + 57, 176, 40, () => { const n = SV.gear.filter(x => x.rar === 1 && !gearOwner(x.id)).length; if (!n) { toast('분해할 일반 장비가 없습니다'); return; } MODAL = { kind: 'confirm', title: '일반 장비 ' + n + '개를 분해할까요?', msg: '착용 중인 장비는 제외됩니다.', yes: () => { let p = 0; for (const x of SV.gear.slice()) if (x.rar === 1 && !gearOwner(x.id)) p += dismantle(x.id); toast('부품 +' + p); INV.sel = null; } }; }, { s: 15 });
   // 영웅 / 상세 패널
   const px = portrait ? 20 : 20 + listW + 12, pw = portrait ? W - 40 : 348, py = portrait ? lt + listH + 10 : lt, ph = portrait ? H - py - 10 : listH;
   panel(px, py, pw, ph, { gem: false }); if (!hero) return;
-  txt(hero.n + ' · ' + CLS[hero.c], px + 16, py + 32, { b: true, s: 22, c: CCOL[hero.c] });
-  let yy = py + 58; if (eqG) { gearIcon(eqG, px + 34, yy + 22, 46); txt(eqG.base, px + 66, yy + 18, { b: true, s: 18, c: RARC[eqG.rar - 1] }); txt(eqG.opts.map(optLine).join(' '), px + 66, yy + 40, { s: 13, c: '#cfe8ff' }); button('해제', px + pw - 86, yy, 70, 38, () => { equip(eqG.id, null); }, { s: 16 }); } else txt('착용 장비 없음', px + 16, yy + 28, { s: 18, c: '#9a8a70' });
-  yy += 62; const sl = statLines(INV.hero); txt('합계(장비)', px + 16, yy, { s: 15, c: '#cbb890' }); (sl.length ? sl : ['—']).forEach((s, i) => txt(s, px + 16 + (portrait ? (i % 3) * (pw / 3) : 0), yy + 24 + (portrait ? Math.floor(i / 3) * 22 : i * 22), { s: 16, c: '#e8f0ff' }));
+  titlePlate(hero.n+' · '+CLS[hero.c],px+26,py+55,pw-52,44,{size:22,lines:1});
+  let yy=py+119; if (eqG) { gearIcon(eqG, px + 34, yy + 22, 46); txt(eqG.base, px + 66, yy + 18, { b: true, s: 18, c: RARC[eqG.rar - 1] }); txt(eqG.opts.map(optLine).join(' '), px + 66, yy + 40, { s: 13, c: '#cfe8ff' }); button('해제', px + pw - 86, yy, 70, 38, () => { equip(eqG.id, null); }, { s: 16 }); } else titlePlate('착용 장비 없음',px+43,yy+4,pw-86,46,{size:17,min:13});
+  yy += 76; const sl = statLines(INV.hero); titlePlate('장비 효과 합계',px+43,yy-14,pw-86,38,{size:16,min:13}); (sl.length ? sl : ['—']).forEach((s, i) => txt(s, px + 43 + (portrait ? (i % 3) * ((pw - 86) / 3) : 0), yy + 49 + (portrait ? Math.floor(i / 3) * 22 : i * 22), { s: 16, c: '#e8f0ff' }));
   const sg = gearById(INV.sel); if (sg) {
     const by = py + ph - 156; g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(px + 12, by - 8, pw - 24, 1); txt(sg.base, px + 16, by + 16, { b: true, s: 18, c: RARC[sg.rar - 1] }); if (sg.flavor) wrap(sg.flavor, pw - 32, 14).slice(0, 2).forEach((l, i) => txt(l, px + 16, by + 38 + i * 18, { s: 14, c: '#bbb' }));
     const bw = (pw - 44) / 3; button('장착', px + 12, by + 70, bw, 50, () => { equip(sg.id, INV.hero); toast(hero.n + '에게 장착'); }, { red: true, s: 18 });
     button('분해', px + 22 + bw, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '분해할까요?', msg: sg.base + ' → 부품 +' + PARTS_GET[sg.rar - 1], yes: () => { const p = dismantle(sg.id); INV.sel = null; toast('부품 +' + p); } }; }, { s: 18 });
     button('재설정', px + 32 + bw * 2, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '옵션 재설정', msg: '부품 ' + rerollCost(sg) + '개를 써서 수치를 다시 굴립니다.', yes: () => reroll(sg.id) }; }, { s: 16 });
-  } else txt('목록에서 장비를 눌러 선택하세요', px + pw / 2, py + ph - 40, { s: 16, a: 'center', c: '#9a8a70' });
+  } else titlePlate('목록에서 장비를 선택하세요',px+18,py+ph-90,pw-36,45,{size:16,min:12});
 }
 
 
@@ -577,3 +699,4 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && !me
 window.GW = { openParty, get PS() { return PS; }, beginStage, poolOf, LINES, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
+

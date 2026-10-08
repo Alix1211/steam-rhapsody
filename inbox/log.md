@@ -1,5 +1,12 @@
 # 작업 로그 (최신이 위)
 
+- 2026-10-08 [claude] **GPT 단일 HTML(GENDER_WARFARE_스코프총구_에셋적용_바로실행.html)의 UI 수정을 GitHub main에 병합 — 헤드리스 캡처 확인(실기 미확인)**
+  - GPT 코드 기준점은 `12fdc9e`. 3방향 병합(기준 12fdc9e / Claude 최신 / GPT)으로 합침.
+  - 반영(GPT): 고딕 UI 전체(타이틀·세력 선택·스테이지·편성·장비 화면, `ui/goth_*.webp` 19 + `ui/faction_*.webp` 2), 선택 영웅 발밑 분홍 광원, 링 게이지 색, 상단 버튼 색, 탄흔 타원 제거·전장 어둡게, **대기 자세 웅크림/사격 시 일어섬(poseOf 반전)**, **직접 조작하지 않는 영웅 피격 0.78배(guardMul)**.
+  - 제외(GPT): 총구 화염 PNG(`mz_front_*`, pushFlash 호출) → Claude 코드 화염 유지. 스코프 PNG 코드 → Claude `meta.js` lensFx(SCH) 유지. 조준점/렌즈 비활성화(`drawReticle = function(){}`) → 조준점 판정에 조준점이 필요하므로 Claude 것 유지. 단일 HTML용 내장 이미지 로더(__GW_EMBED_ASSETS) 제외.
+  - 남은 죽은 코드(동작 영향 없음): index.html의 GPT `lensFx`·`drawVisibleMuzzleFlashes`·`MZ_*` 정의 — meta.js가 덮어쓰거나 호출 안 함.
+  - 앞으로 GPT 수정은 GitHub main 기준으로만. 단일 HTML 전달본은 테스트용.
+
 - 2026-10-08 [claude] **사격 판정 + 스코프 프레임 + 총구 화염 — GitHub main 반영, 헤드리스 캡처로 화면 확인(실기 미확인)**
   - 사격 판정(커밋 94167d5): 수동 사격이 조준점과 무관하게 가장 가까운 적을 맞히던 구조 → 조준점으로 발사, 조준점 근처만 소폭 보정(`aimPt`), 조준점 자석 범위 40%. 조준점이 적 위=피해 120, 허공=0 확인.
   - 스코프: 케인 제공 8종 → `game/ui/scope_{F|M}_{0~3}.webp`(테두리 밖 파편 제거). 번호=총기(0연사 1산탄 2저격 3점사). 렌즈 구멍 중심·반지름을 측정해 `meta.js`의 `SCH`에 저장, **`meta.js`의 `lensFx`에서** 그림(index.html의 lensFx는 meta.js가 덮어쓰므로 거기 고치면 안 보임). F·M 캡처 확인.
