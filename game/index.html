@@ -12,7 +12,8 @@ canvas{display:block;width:100%;height:100%;object-fit:contain;background:var(--
 <script src="csets.js"></script>
 <script>
 const cv=document.getElementById('c');let g=cv.getContext('2d');const mainG=g;
-const wc=document.createElement('canvas'),wg=wc.getContext('2d'),bc=document.createElement('canvas'),bgx=bc.getContext('2d'),b2=document.createElement('canvas'),b2x=b2.getContext('2d');let scope=0;
+// 조준경은 메인 캔버스의 기존 화면만 이용하므로 별도 전체화면 렌더 버퍼를 두지 않는다.
+let scope=0;
 let HZF=0.40;let W=1280,H=720,WW=2600,portrait=false,forced=null,L={},btns=[];
 // 폰의 로컬 서버가 이미지를 한꺼번에 요청받으면 일부를 놓치는 일이 있어, 실패하면 잠시 뒤 다시 받는다
 function loadImg(src){const i=new Image();i.ok=false;let n=0;i.onload=()=>{i.ok=true};i.onerror=()=>{if(n++<6)setTimeout(()=>{i.src=src+(src.indexOf('?')<0?'?':'&')+'r='+n},300*n)};i.src=src;return i}
@@ -165,7 +166,7 @@ function layout(p){
   btns:[{x:1010,y:630,r:46,a:'sel0'},{x:1100,y:630,r:46,a:'sel1'},{x:1190,y:630,r:46,a:'sel2'},{x:1130,y:490,r:70,a:'fire'},{x:990,y:505,r:52,a:'bomb'}]};
 }
 function applyLayout(p){
- const oldWW=WW;portrait=p;L=layout(p);W=L.W;H=L.H;WW=L.WW;cv.width=W;cv.height=H;wc.width=W;wc.height=H;bc.width=Math.ceil(W/4);bc.height=Math.ceil(H/4);b2.width=Math.ceil(W/2);b2.height=Math.ceil(H/2);
+ const oldWW=WW;portrait=p;L=layout(p);W=L.W;H=L.H;WW=L.WW;cv.width=W;cv.height=H;
  heroes.forEach((h,i)=>{h.x=WW/2+(i-1)*L.sp;h.y=L.hy;h.ht=L.hht});
  for(const e of enemies)e.x*=WW/oldWW;
  bullets=[];ebul=[];efl=[];bombs=[];btns=L.btns;stick.on=false;stick.dx=stick.dy=0;fireHeld=false;
@@ -514,29 +515,30 @@ function draw(){
  const ox=Math.sin(t/70)*14+Math.sin(t/31)*4+(Math.random()-0.5)*shk*4.5,oy=Math.sin(t/53)*11+Math.sin(t/25)*3+(Math.random()-0.5)*shk*4.5;
  const rt=Math.sin(t/120)*0.01+(Math.random()-0.5)*shk*0.003,zs=zsB+Math.sin(t/100)*0.02+zp;
  const shakeT=f=>{g.translate(W/2+ox*f,H/2+oy*f);g.rotate(rt*f);g.scale(zs,zs);g.translate(-W/2,-H/2)};
- if(scope<0.01){
-  // 조준경이 없을 땐 별도 캔버스 없이 바로 화면에 그린다 (가볍게)
-  g.save();shakeT(1);g.translate(-Math.round(camX),0);drawWorld();g.restore();
- }else{
-  // 조준경 중: 월드를 별도 캔버스에 그려 두고, 바깥은 흐리게 / 원 안은 확대해서 얹는다
-  g=wg;wg.clearRect(0,0,W,H);wg.save();wg.translate(-Math.round(camX),0);drawWorld();wg.restore();g=mainG;
-  g.save();shakeT(1-0.5*scope);
-  const z1=1;
-  // 부드러운 흐림: 1/2 → 1/4로 두 번에 나눠 줄이고, 1/4 → 1/2 → 원본으로 두 번에 나눠 키운다 (한 번에 줄이고 키우면 네모 무늬가 생김)
-  b2x.imageSmoothingEnabled=bgx.imageSmoothingEnabled=g.imageSmoothingEnabled=true;
-  b2x.clearRect(0,0,b2.width,b2.height);b2x.drawImage(wc,0,0,b2.width,b2.height);
-  bgx.clearRect(0,0,bc.width,bc.height);bgx.drawImage(b2,0,0,bc.width,bc.height);
-  b2x.clearRect(0,0,b2.width,b2.height);b2x.drawImage(bc,0,0,b2.width,b2.height);
-  g.drawImage(b2,0,0,W,H);
-  g.fillStyle='rgba(0,0,0,'+(0.45*scope)+')';g.fillRect(0,0,W,H);
-  g.restore();
-  // 안쪽 원: 원 주변의 작은 영역만 잘라서 확대 (전체 화면을 키우지 않음)
-  const z2=1+heroes[sel].w.zoom*scope;ringR=26+(R-26)*scope;
-  const hs=ringR/zs+40;
-  g.save();g.beginPath();g.arc(vx,vy,ringR,0,7);g.clip();
-  g.save();shakeT(heroes[sel].w.ishake);
-  g.drawImage(wc,cx-hs/z2,cy-hs/z2,2*hs/z2,2*hs/z2,cx-hs,cy-hs,2*hs,2*hs);
-  g.restore();g.restore();lensFx(vx,vy,ringR);drawReticle(vx,vy,ringR);
+ // 전투 월드는 조준 여부와 무관하게 메인 캔버스에 딱 한 번만 렌더링한다.
+ // 예전의 전체화면 보조 버퍼 + 4회 축소/확대 블러 과정 제거.
+ g.save();shakeT(scope<0.01?1:1-0.5*scope);
+ g.translate(-Math.round(camX),0);drawWorld();g.restore();
+ if(scope>=0.01){
+  const z2=1+heroes[sel].w.zoom*scope;
+  ringR=26+(R-26)*scope;
+  // 방금 그린 화면의 스코프 주변 작은 직사각형만 원 안에 확대 복사한다.
+  // 화면 가장자리의 소스 좌표를 잘라 drawImage 범위 오류를 방지한다.
+  const radius=ringR+32,srcR=radius/z2;
+  const sx=Math.max(0,vx-srcR),sy=Math.max(0,vy-srcR);
+  const ex=Math.min(W,vx+srcR),ey2=Math.min(H,vy+srcR);
+  if(ex>sx&&ey2>sy){
+   g.save();g.beginPath();g.arc(vx,vy,ringR,0,Math.PI*2);g.clip();
+   g.drawImage(cv,sx,sy,ex-sx,ey2-sy,
+     vx-radius+(sx-vx+srcR)*z2,vy-radius+(sy-vy+srcR)*z2,
+     (ex-sx)*z2,(ey2-sy)*z2);
+   g.restore();
+  }
+  // 블러 대신 조준경 바깥만 검정 45%로 가볍게 가린다.
+  g.save();g.fillStyle='rgba(0,0,0,'+(0.45*scope)+')';
+  g.beginPath();g.rect(0,0,W,H);g.arc(vx,vy,ringR,0,Math.PI*2,true);
+  g.fill('evenodd');g.restore();
+  lensFx(vx,vy,ringR);drawReticle(vx,vy,ringR);
  }
  // 실사격 총구 화염: 조준 확대/흐림 처리가 끝난 뒤에 렌더링.
  // 월드 카메라와 동일한 흔들림 변환으로 위치를 맞춘다.

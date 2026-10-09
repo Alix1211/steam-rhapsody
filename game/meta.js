@@ -900,9 +900,25 @@ function drawBattleSkillButton(){
   g.beginPath();g.arc(b.cx,b.cy,b.r-2,0,7);g.stroke();
   if(!ready){g.fillStyle='rgba(0,0,0,.55)';g.beginPath();g.moveTo(b.cx,b.cy);
     g.arc(b.cx,b.cy,b.r-4,-Math.PI/2,-Math.PI/2+2*Math.PI*percent);g.closePath();g.fill();}
-  g.textAlign='center';g.fillStyle=ready?'#fff':'#aaa';
-  g.font='bold '+(portrait?21:19)+'px sans-serif';g.fillText(ready?'필살기':String(Math.ceil(remain/60)),b.cx,b.cy+4);
-  g.font='bold '+(portrait?14:12)+'px sans-serif';g.fillStyle=col;
+  // 기존 고딕 아이콘을 현재 임시 버튼 크기에 맞춰 같은 위치에 표시한다.
+  // 공습: 사용자가 올린 불꽃 그림과 동일한 ic_flame, 감전/저격/회복은 보유 에셋.
+  const iconName=['ic_flame','ic_bolt','ic_aim','ic_cross'][skillType];
+  const skillImg=ui(iconName);
+  if(skillImg.ok){
+    const sz=b.r*2*.94;
+    g.drawImage(skillImg,b.cx-sz/2,b.cy-sz/2,sz,sz);
+  }else{
+    g.fillStyle=ready?'#fff':'#aaa';g.textAlign='center';
+    g.font='bold '+(portrait?21:19)+'px sans-serif';g.fillText('필살기',b.cx,b.cy+4);
+  }
+  if(!ready){
+    g.fillStyle='rgba(0,0,0,.42)';
+    g.beginPath();g.arc(b.cx,b.cy,b.r-6,0,Math.PI*2);g.fill();
+    g.fillStyle='#fff';g.textAlign='center';g.font='bold '+(portrait?21:19)+'px sans-serif';
+    g.fillText(String(Math.ceil(remain/60)),b.cx,b.cy+8);
+  }
+  g.textAlign='center';g.fillStyle=col;
+  g.font='bold '+(portrait?14:12)+'px sans-serif';
   g.fillText(SKILL_NAMES[skillType]||'스킬',b.cx,b.cy+b.r+17);
   g.restore();
   addHit(b.x,b.y,b.w,b.h,useBattleSkill);
