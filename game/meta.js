@@ -30,7 +30,7 @@ function params(ch, no) {
     spB: Math.max(60, 86 - no * 2 - c * 2), spMin: Math.max(36, 54 - no - c * 2), eliteP: Math.min(0.45, 0.08 + 0.03 * no + 0.03 * c),
     fMin: Math.max(50, Math.round((100 - c * 4 - no) * (c === 0 ? 1 : 0.95))), fVar: c === 0 ? 70 : 60, mechHp: 4, mechDm: 0.7, droneHp: 0.3, droneDm: 0.5, droneP: 0.55,
     cvHp: Math.round(220 * Math.pow(DIFF.cover, c)), ecv: Math.round(30 * Math.pow(DIFF.ecover, c)), bombCv: Math.round(250 * Math.pow(DIFF.ecover, c)),
-    bombDmg: Math.round(140 * Math.pow(DIFF.heroDmg, c)), hhp: Math.round(100 * Math.pow(DIFF.heroHp, c)), heal: +(6 * Math.pow(DIFF.heroHp, c)).toFixed(1) } };
+    bombDmg: Math.round(140 * Math.pow(DIFF.heroDmg, c)), hhp: Math.round(110 * Math.pow(DIFF.heroHp, c)), heal: +(6 * Math.pow(DIFF.heroHp, c)).toFixed(1) } };
 }
 const mmss = fr => { const s = Math.max(0, Math.ceil(fr / 60)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
