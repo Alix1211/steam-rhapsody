@@ -69,10 +69,11 @@ window.sfxDeath=function(e){
  }catch(e){}
 };
 function chosenBgm(){
- const sc=window.GW&&window.GW.scene;
- let faction=window.GW&&window.GW.SV&&window.GW.SV.last?window.GW.SV.last.side:'F';
- const fighting=!menu && !!curStage;
- if(fighting)faction=curStage.side||side;
+ // meta.js의 curStage는 별도 IIFE의 지역 변수라 여기서 직접 참조할 수 없다.
+ // 전투 여부는 공개된 GW.scene, 진영은 전투 코어의 side를 기준으로 판단한다.
+ const fighting=!menu && !!window.GW && window.GW.scene==='battle';
+ const faction=fighting?side:
+   (window.GW&&window.GW.SV&&window.GW.SV.last?window.GW.SV.last.side:'F');
  if(faction==='C')return 'demon';
  return (faction==='M'?'male_':'female_')+(fighting?'battle':'theme');
 }

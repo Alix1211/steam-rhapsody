@@ -1,5 +1,7 @@
 # 작업 로그 (최신이 위)
 
+- 2026-10-09 [gpt] 사용자 보고: 남성국·여성국 게임 진입 직후 총소리와 함께 화면 정지. 원인: `game/audio_options.js`의 `chosenBgm()`에서 `meta.js` IIFE 내부 비공개 `curStage`를 참조해 `ReferenceError` 발생, 렌더 루프 종료. `curStage` 직접 접근을 제거하고 공개 `window.GW.scene`와 전투 코어 `side`로 BGM 전환. 구 버전 ReferenceError 재현 / 수정본 여성국 테마·남성국 테마·양 진영 전투·마계 등 5종 모의 전환과 81회 프레임 호출·스크립트 문법 검사 통과. 다른 밸런스·음원·에셋 무변경. Android 실기 미검증.
+
 - 2026-10-09 [gpt] 최종 음원 GitHub 합본 완료. GitHub Actions 임시 import 성공(run 37888533255). 원본 7곡/음성 OpenGameArt CC0 다운로드 후 업로드한 원본과 SHA-256 해시 7개 전부 일치 확인, ffmpeg로 `game/audio/bgm/*.mp3` 5개와 `game/audio/voice/*.ogg` 남녀 2개, `segments.json` 생성·GitHub main 반영(자동 커밋 d3f444a). `game/index.html`과 `game/audio_options.js`를 포함한 전체 게임 최신 ZIP은 GitHub main 저장소 아카이브에서 한 번에 다운로드 가능. 임시 자동음원업로드 workflow는 완료 후 삭제. 브라우저/Android 실기 청음 및 UI 확인은 아직 미실시.
 
 - 2026-10-09 [gpt] 사용자 승인: 음원 5개(여성국 테마/전투, 남성국 테마/전투, 마계) 오디오 라우팅 및 전투 사망 음성(여 7/남 19구간 무음 기준 전체 랜덤) 연결. `game/index.html` 장식 효과 토글, 기존 상단 소리·진동 토글 제거, 적 사망 재생 연결, `audio_options.js` 로딩 추가. `game/audio_options.js` 별도 설정창(전투 중 일시정지/세로·가로/설정 저장), 시각효과·진동·전체 사운드 On/Off, SFX/BGM 볼륨 별도, 메뉴 테마/전투곡 자동 전환, 음성 동시 2개 제한. **GitHub에는 JS만 저장; 음원 바이너리는 별도 overlay ZIP 제공되므로 음원 파일을 game/audio 아래로 복사해야 실제 재생.** JS 정적 문법 통과, Android 실기 미검증.
