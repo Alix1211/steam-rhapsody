@@ -38,7 +38,7 @@ const mmss = fr => { const s = Math.max(0, Math.ceil(fr / 60)); return Math.floo
 
 // ================= 저장 =================
 const SAVE_KEY = 'gw_save_v1';
-const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, last: { side: 'F', ch: {} } });
+const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, corrupt: {}, rampage: {}, purifyDialogue: {}, last: { side: 'F', ch: {} } });
 let SV = defSave();
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); if (s) { const o = JSON.parse(s); SV = Object.assign(defSave(), o); SV.opt = Object.assign({ dev: false }, o.opt); } } catch (e) {} }
 function saveNow() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SV)); } catch (e) {} }
@@ -434,7 +434,7 @@ function replayStory(ch, no) { const e = epData(ch, no); setBattleBg(ch); const 
 
 // ---------- 출격(파티) ----------
 function openParty(side, ci, ch, no) {
-  const pool = poolOf(side), saved = SV.party[side] || []; let sel = saved.map(k => pool.find(r => r.k === k)).filter(r => r && heroAvail(r)).slice(0, 3);
+  const pool = poolOf(side), saved = SV.party[side] || []; let sel = saved.map(k => pool.find(r => r.k === k)).filter(r => r && heroAvail(r) && !(window.GW_PRISON&&window.GW_PRISON.locked(r.k))).slice(0, 3);
   PS = { side, ci, ch, no, sel }; go('party');
 }
 function drawParty() {
@@ -462,7 +462,14 @@ function drawParty() {
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
     drawCard(r, x, y, cw, cardH, on, av, j);
-    addHit(x, y, cw, cardH, () => { if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
+    if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
+      const ma=window.GW_PRISON.percentage(r.k),locked=window.GW_PRISON.locked(r.k);
+      const label=(locked?'⛔ ':'☠ ')+ma+'%';
+      g.save();g.fillStyle='rgba(0,0,0,.73)';rr(x+cw*.2,y+Math.max(10,cardH*.14),cw*.6,Math.max(23,cardH*.095),7);g.fill();g.restore();
+      txt(label,x+cw*.5,y+Math.max(28,cardH*.14+20),{b:true,s:Math.min(17,Math.max(12,cw*.078)),a:'center',c:'#fff',sh:true});
+      if(locked)txt('폭주: '+SV.rampage[r.k]+'회 출전 금지',x+cw*.5,y+cardH*.81,{b:true,s:13,a:'center',c:'#ff9cab',sh:true});
+    }
+    addHit(x, y, cw, cardH, () => { if(window.GW_PRISON&&window.GW_PRISON.locked(r.k)){toast('폭주로 '+SV.rampage[r.k]+'회 출전 불가');return;} if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
   const rd = PS.sel.length === 3;
   button('장비', W - 440, H - 92, 190, 72, () => openInv(() => go('party')), { s: 24 });
@@ -527,7 +534,7 @@ function launch(side0, ch, no, sel) {
   const P = params(ch, no), c = tier(ch); Object.assign(ST, P.st);
   picks = sel.map(r => Object.assign({}, r, { gm: gmFor(r, c) })); side = side0 === 'C' ? 'C' : side0;
   curStage = { side: side0, ch, no, sel, P, bannerT: 0 }; paused = false; res = null; timeUp = false; fireHeld = false;
-  setBattleBg(ch); scene = 'battle'; MODAL = null; startGame(); resetBattleSkills();
+  if(window.GW_PRISON)window.GW_PRISON.stageStarted();setBattleBg(ch); scene = 'battle'; MODAL = null; startGame(); resetBattleSkills();
 }
 function backToStages(adv) { curStage = null; res = null; paused = false; over = false; if (adv && SG.side !== 'C' && SG.ci < 4 && chOpen(SG.side, SG.ci + 1)) { SG.ci++; SV.last.ch[SG.side] = SG.ci; } openStages(SG.side, SG.ci); }
 
@@ -700,6 +707,10 @@ function drawInv() {
     g.fillStyle=on?'rgba(148,32,64,.22)':'rgba(0,0,0,.5)';g.fillRect(x,y,cs,cs);
     if(on){g.save();g.shadowColor='rgba(222,85,117,.8)';g.shadowBlur=16;g.fillStyle='rgba(207,70,90,.16)';g.fillRect(x+3,y+3,cs-6,cs-6);g.restore();}
     if (r.face.ok) drawFaceCrop(r.face, x, y, cs, cs, { ay: 0.08, clip: true });
+    if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
+      g.fillStyle='rgba(0,0,0,.76)';g.fillRect(x,y+cs-18,cs,18);
+      txt((window.GW_PRISON.locked(r.k)?'⛔':'☠')+window.GW_PRISON.percentage(r.k)+'%',x+cs*.5,y+cs-4,{b:true,s:Math.max(10,Math.min(13,cs*.19)),a:'center',c:'#fff',sh:true});
+    }
     if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - 6, cs, 6); } }
     addHit(x, y, cs, cs, () => { INV.hero = r.k; });
   });
@@ -819,7 +830,7 @@ function fireMagicShot(q) {
   magicTrails.push({x1:q.x,y1:q.y,x2:x,y2:y,age:0,life:20});
   q.x=x;q.y=y;q.used.push(e);q.count++;
   // 적 엄폐물을 관통하여 본체만 공격. 중장갑은 최대 체력 35%, 일반 병사는 즉사.
-  e.hp-=heavy?e.max*0.35:e.hp;
+  {const owner=ROSTER.F.concat(ROSTER.M).find(r=>r.n===q.hero.name);if(owner)e._gwKiller=owner.k;}e.hp-=heavy?e.max*0.35:e.hp;
   e.flash=10;e.stun=Math.max(e.stun||0,heavy?28:0);
   burst(x,y,heavy?16:11,'#ff75cf');sfx('sn',1.05);
   shk=Math.max(shk,heavy?8:5);bflash=Math.max(bflash,0.07);
@@ -896,7 +907,7 @@ function useBattleSkill() {
       for(const e of targets){const d=Math.abs(e.x-middle);if(d<dist){dist=d;nearest=e;}}
       const x=clamp((nearest?nearest.x:middle)+(Math.random()-.5)*66,140,WW-140);
       const y=nearest?ecy(nearest):L.ey0+L.ed*(.48+.28*Math.random());
-      skillBombs.push({x,y,life:48+j*12,max:48+j*12});
+      {const owner=ROSTER.F.concat(ROSTER.M).find(r=>r.n===h.name);skillBombs.push({x,y,life:48+j*12,max:48+j*12,ownerKey:owner?owner.k:null});}
     }
     sfx('throw');vib(50);banners.push({t:0,txt:'항공 지원 · 5발'});
   } else return;
@@ -906,7 +917,7 @@ function useBattleSkill() {
 function stepBattleSkills() {
   if(skillPulse>0)skillPulse--;
   for(const b of skillBombs){if(--b.life<=0){
-    runBlast({x:b.x,y:b.y,R:230,mul:1.6,gy:b.y+20,src:null});
+    runBlast({x:b.x,y:b.y,R:230,mul:1.6,gy:b.y+20,src:null,ownerKey:b.ownerKey});
   }}
   skillBombs=skillBombs.filter(b=>b.life>0);
   for(const q of magicChains)if(t>=q.next&&q.count<5){
