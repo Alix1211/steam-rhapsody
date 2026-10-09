@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>팸돔 러시 슈터</title>
+<title>GENDER WARFARE</title>
 <style>
 /* 레이아웃: 캔버스 하나. 가로(1280x720)와 세로(720x1280)를 화면 방향에 따라 자동 전환. 큰 맵을 좌우로 스크롤. 단일 어두운 화면으로 고정 */
 :root{--bg:#0d0a10;--fg:#ffffff;--accent:#ff5a5a;--gold:#ffe27a;--auto:#8cf;color-scheme:dark}
@@ -534,12 +534,12 @@ function draw(){
   g.save();g.beginPath();g.arc(vx,vy,ringR,0,7);g.clip();
   g.save();shakeT(heroes[sel].w.ishake);
   g.drawImage(wc,cx-hs/z2,cy-hs/z2,2*hs/z2,2*hs/z2,cx-hs,cy-hs,2*hs,2*hs);
-  g.restore();g.restore();lensFx(vx,vy,ringR);
+  g.restore();g.restore();lensFx(vx,vy,ringR);drawReticle(vx,vy,ringR);
  }
  // 실사격 총구 화염: 조준 확대/흐림 처리가 끝난 뒤에 렌더링.
  // 월드 카메라와 동일한 흔들림 변환으로 위치를 맞춘다.
  if(bflash>0.02){g.fillStyle='rgba(255,244,214,'+(bflash*0.8)+')';g.fillRect(0,0,W,H);bflash*=0.9}zp*=0.9;
- // 조준선은 제거하고, 대신 클래스/진영별 스코프 프레임 PNG만 얹는다.
+ // 클래스/진영별 스코프 프레임과 중앙 조준선은 위에서 표시한다.
  if(hurtF>0.02){const gr=g.createRadialGradient(W/2,H/2,Math.min(W,H)*0.32,W/2,H/2,Math.hypot(W,H)*0.55);gr.addColorStop(0,'rgba(255,0,0,0)');gr.addColorStop(1,'rgba(255,24,24,'+Math.min(0.8,hurtF*0.85)+')');g.fillStyle=gr;g.fillRect(0,0,W,H);hurtF*=0.9}
  for(const b of banners){const p=b.t/110,pop=1+0.7*Math.max(0,1-b.t/9),al=p<0.7?1:(1-p)/0.3;g.save();g.globalAlpha=Math.max(0,al);g.translate(W/2,H*(portrait?0.24:0.22));g.scale(pop,pop);g.textAlign='center';g.font='bold '+(portrait?54:68)+'px sans-serif';g.lineWidth=8;g.strokeStyle='rgba(0,0,0,.8)';g.lineJoin='round';g.strokeText(b.txt,0,0);g.fillStyle='#ffe27a';g.fillText(b.txt,0,0);g.restore()}
  // 상단바
