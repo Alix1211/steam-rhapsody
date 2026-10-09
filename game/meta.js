@@ -245,8 +245,10 @@ function safeText(label,x,y,w,h,opt){
   drawTextInBox(label,{x,y,w,h},(opt&&opt.size)||21,opt||{});
 }
 function panelText(label,kind,x,y,w,h,opt){
-  const area=pixelTextBox(kind,x,y,w,h);
-  if(!area)return;  // 패널이 아직 로드되지 않았다면 측정 뒤 다음 프레임에 표시
+  // 픽셀 측정이 일시적으로 실패해도 텍스트 자체를 숨기지 않는다.
+  const measured=pixelTextBox(kind,x,y,w,h);
+  const mx=Math.max(7,w*.13),my=Math.max(3,h*.13);
+  const area=measured||{x:x+mx,y:y+my,w:w-2*mx,h:h-2*my};
   drawTextInBox(label,area,(opt&&opt.size)||21,opt||{});
 }
 
@@ -268,7 +270,10 @@ function button(label,x,y,w,h,fn,o){
   o=o||{};g.save();if(o.dis)g.globalAlpha=.45;
   const bn=(o.red||o.gold)?'goth_btn_red':'goth_btn_dark';
   if(!stretchUi(bn,x,y,w,h))plate3(o.red?'plate_red_a':(o.gold?'plate_parch_a':'plate_dark_s'),x,y,w,h);
-  panelText(label,bn,x,y,w,h,{size:o.s||22,min:Math.max(11,(o.s||22)-9),lines:2,color:(o.red||o.gold)?'#ffe9cd':'#f4e8dc',shadow:true});
+  // 버튼 문구는 패널 픽셀 검출 성공 여부와 무관하게 항상 그린다.
+  // 화려한 장식에서 읽기 어려워지는 문제는 글자 뒤 그림자와 자동 줄바꿈으로 처리한다.
+  drawTextInBox(label,{x:x+Math.min(16,w*.13),y:y+4,w:w-2*Math.min(16,w*.13),h:h-8},
+    o.s||22,{min:Math.max(11,(o.s||22)-9),lines:2,color:(o.red||o.gold)?'#ffe9cd':'#f4e8dc',shadow:true});
   g.restore();if(!o.dis)addHit(x,y,w,h,fn);
 }
 function star(cx, cy, r, on, pop) {
@@ -298,7 +303,7 @@ function header(title,back,sub){
     g.fillStyle='rgba(16,11,19,.9)';g.fillRect(cx+38,51,cw-76,27);
     safeText(sub,cx+49,52,cw-98,24,{size:16,min:11,lines:1,bold:false,color:'#ead9c6'});
   }
-  if(back){stretchUi('goth_back',12,5,58,58);addHit(8,2,72,72,back);}
+  if(back)button('뒤로가기',12,7,112,54,back,{s:17});
   g.restore();
 }
 // ================= 장면 상태 =================
@@ -486,7 +491,7 @@ function drawDialogue() {
     panelText(l.who,'plate_red_a',bx+26,by-34,250,68,{size:26,min:13,lines:2,color:'#fff',shadow:true});}
   const inside=pixelTextBox(bh>bw*.82&&bh>220?'goth_panel_tall':'goth_panel_big',bx,by,bw,bh);
   if(inside){
-    const body={x:inside.x+5,y:inside.y+40,w:inside.w-10,h:Math.max(20,inside.h-78)};
+    const body={x:inside.x+25,y:inside.y+40,w:inside.w-30,h:Math.max(20,inside.h-78)};
     drawTextInBox(l.text.slice(0,dlShown()),body,portrait?27:28,{min:14,lines:12,bold:false,
        align:narr?'center':'left',valign:narr?'center':'top',color:narr?'#ffd9a0':'#fff',fitFor:l.text});
     if(dlShown()>=l.text.length&&Math.sin(nowMs()/180)>-.2)
@@ -707,9 +712,9 @@ function drawInv() {
     g.fillStyle=on?'rgba(123,28,52,.32)':'rgba(255,255,255,.04)';g.fillRect(x,y,w,rowH-6);g.save();g.strokeStyle=on?'rgba(224,97,122,.58)':'rgba(255,255,255,.16)';g.lineWidth=1;g.strokeRect(x,y,w,rowH-6);g.restore();
     gearIcon(g0,x+38,y+(rowH-6)/2,52);
     drawTextInBox(g0.base,{x:x+76,y:y+3,w:Math.max(80,w-245),h:39},20,{min:12,lines:2,align:'left',color:RARC[g0.rar-1]});
-    txt(RARN[g0.rar-1]+' · Lv.'+g0.lv,x+w-12,y+27,{s:15,a:'right',c:'#cbb890'});
+    txt(RARN[g0.rar-1]+' · Lv.'+g0.lv,x+w-78,y+27,{s:15,a:'right',c:'#cbb890'});
     drawTextInBox(g0.opts.map(optLine).join('  '),{x:x+76,y:y+42,w:Math.max(80,w-(own?255:100)),h:22},portrait?15:17,{min:11,lines:1,align:'left',bold:false,color:'#cfe8ff'});
-    if (own) { const h2 = heroByKey(own); txt('착용: ' + (h2 ? h2.n : own), x + w - 12, y + 54, { b: true, s: 15, a: 'right', c: '#9fe6a8' }); }
+    if (own) { const h2 = heroByKey(own); txt('착용: ' + (h2 ? h2.n : own), x + w - 78, y + 54, { b: true, s: 15, a: 'right', c: '#9fe6a8' }); }
     addHit(x, y, w, rowH - 6, () => { INV.sel = on ? null : g0.id; });
   });
   if (pages > 1) { button('◀', 20 + listW / 2 - 110, lt + listH - 58, 70, 38, () => { INV.page = Math.max(0, INV.page - 1); }, { s: 18 }); txt((INV.page + 1) + ' / ' + pages, 20 + listW / 2, lt + listH - 32, { b: true, s: 18, a: 'center' }); button('▶', 20 + listW / 2 + 40, lt + listH - 58, 70, 38, () => { INV.page = Math.min(pages - 1, INV.page + 1); }, { s: 18 }); }
@@ -717,15 +722,15 @@ function drawInv() {
   // 영웅 / 상세 패널
   const px = portrait ? 20 : 20 + listW + 12, pw = portrait ? W - 40 : 348, py = portrait ? lt + listH + 10 : lt, ph = portrait ? H - py - 10 : listH;
   panel(px, py, pw, ph, { gem: false }); if (!hero) return;
-  titlePlate(hero.n+' · '+CLS[hero.c],px+26,py+55,pw-52,44,{size:22,lines:1});
-  let yy=py+119; if (eqG) { gearIcon(eqG, px + 34, yy + 22, 46); drawTextInBox(eqG.base,{x:px+66,y:yy-3,w:Math.max(80,pw-155),h:27},18,{min:12,lines:1,align:'left',color:RARC[eqG.rar - 1]}); drawTextInBox(eqG.opts.map(optLine).join(' '),{x:px+66,y:yy+27,w:Math.max(80,pw-155),h:24},13,{min:10,lines:1,align:'left',bold:false,color:'#cfe8ff'}); button('해제', px + pw - 86, yy, 70, 38, () => { equip(eqG.id, null); }, { s: 16 }); } else titlePlate('착용 장비 없음',px+43,yy+4,pw-86,46,{size:17,min:13});
-  yy += 76; const sl = statLines(INV.hero); titlePlate('장비 효과 합계',px+43,yy-14,pw-86,38,{size:16,min:13}); (sl.length ? sl : ['—']).forEach((s, i) => txt(s, px + 43 + (portrait ? (i % 3) * ((pw - 86) / 3) : 0), yy + 49 + (portrait ? Math.floor(i / 3) * 22 : i * 22), { s: 16, c: '#e8f0ff' }));
+  titlePlate(hero.n+' · '+CLS[hero.c],px+38,py+55,pw-64,44,{size:22,lines:1});
+  let yy=py+119; if (eqG) { gearIcon(eqG, px + 34, yy + 22, 46); drawTextInBox(eqG.base,{x:px+78,y:yy-3,w:Math.max(80,pw-167),h:27},18,{min:12,lines:1,align:'left',color:RARC[eqG.rar - 1]}); drawTextInBox(eqG.opts.map(optLine).join(' '),{x:px+78,y:yy+27,w:Math.max(80,pw-167),h:24},13,{min:10,lines:1,align:'left',bold:false,color:'#cfe8ff'}); button('해제', px + pw - 86, yy, 70, 38, () => { equip(eqG.id, null); }, { s: 16 }); } else titlePlate('착용 장비 없음',px+55,yy+4,pw-98,46,{size:17,min:13});
+  yy += 76; const sl = statLines(INV.hero); titlePlate('장비 효과 합계',px+55,yy-14,pw-98,38,{size:16,min:13}); (sl.length ? sl : ['—']).forEach((s, i) => txt(s, px + 55 + (portrait ? (i % 3) * ((pw - 98) / 3) : 0), yy + 49 + (portrait ? Math.floor(i / 3) * 22 : i * 22), { s: 16, c: '#e8f0ff' }));
   const sg = gearById(INV.sel); if (sg) {
-    const by = py + ph - 156; g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(px + 12, by - 8, pw - 24, 1); drawTextInBox(sg.base,{x:px+16,y:by-6,w:pw-32,h:28},18,{min:12,lines:1,align:'left',color:RARC[sg.rar-1]}); if(sg.flavor)drawTextInBox(sg.flavor,{x:px+16,y:by+24,w:pw-32,h:40},14,{min:10,lines:2,align:'left',valign:'top',bold:false,color:'#bbb'});
+    const by = py + ph - 156; g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(px + 12, by - 8, pw - 24, 1); drawTextInBox(sg.base,{x:px+28,y:by-6,w:pw-44,h:28},18,{min:12,lines:1,align:'left',color:RARC[sg.rar-1]}); if(sg.flavor)drawTextInBox(sg.flavor,{x:px+28,y:by+24,w:pw-44,h:40},14,{min:10,lines:2,align:'left',valign:'top',bold:false,color:'#bbb'});
     const bw = (pw - 44) / 3; button('장착', px + 12, by + 70, bw, 50, () => { equip(sg.id, INV.hero); toast(hero.n + '에게 장착'); }, { red: true, s: 18 });
     button('분해', px + 22 + bw, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '분해할까요?', msg: sg.base + ' → 부품 +' + PARTS_GET[sg.rar - 1], yes: () => { const p = dismantle(sg.id); INV.sel = null; toast('부품 +' + p); } }; }, { s: 18 });
     button('재설정', px + 32 + bw * 2, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '옵션 재설정', msg: '부품 ' + rerollCost(sg) + '개를 써서 수치를 다시 굴립니다.', yes: () => reroll(sg.id) }; }, { s: 16 });
-  } else titlePlate('목록에서 장비를 선택하세요',px+18,py+ph-90,pw-36,45,{size:16,min:12});
+  } else titlePlate('목록에서 장비를 선택하세요',px+30,py+ph-90,pw-48,45,{size:16,min:12});
 }
 
 
