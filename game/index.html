@@ -470,6 +470,8 @@ function drawWorld(){
  for(const o of fxs){const im=fxi(o.n);if(!im.ok)continue;const p=o.t/o.life,e=1-(1-p)*(1-p),w=o.w*(0.4+0.6*e),h=w*im.height/im.width,al=p<0.55?1:Math.max(0,1-(p-0.55)/0.45);g.globalAlpha=al;g.drawImage(im,o.x-w/2,(o.n=='mush'?o.y-h:o.y-h/2),w,h)}g.globalAlpha=1;
  g.globalCompositeOperation='lighter';for(const o of fires){const im=fxi('fan');if(!im.ok)continue;const p=o.t/o.life,fl=0.75+0.25*Math.sin(o.t*0.7+o.ph),al=Math.min(1,o.t/10)*Math.min(1,(1-p)*3)*fl*0.75,w=o.w*(0.9+0.1*Math.sin(o.t*0.4+o.ph)),h=w*im.height/im.width;g.globalAlpha=al;g.drawImage(im,o.x-w/2,o.y-h+6,w,h)}g.globalAlpha=1;g.globalCompositeOperation='source-over';
  for(const p of parts){g.globalAlpha=Math.min(1,p.life/10);g.fillStyle=p.col;g.fillRect(p.x,p.y,p.s,p.s)}g.globalAlpha=1;
+ // 필살기 이펙트는 월드와 같은 좌표·확대·조준경 레이어에서 그린다.
+ if(window.GW_DRAW_SKILL_WORLD)window.GW_DRAW_SKILL_WORLD();
 }
 
 function drawVisibleMuzzleFlashes(){
@@ -504,7 +506,7 @@ function drawVisibleMuzzleFlashes(){
 function draw(){
  if(menu){drawMenu();drawFS();return}
  const cx=cross.x-camX,cy=cross.y;
- scope+=((fireHeld&&!over?1:0)-scope)*0.2;
+ scope+=(((fireHeld||window.GW_SKILL_SNIPER)&&!over?1:0)-scope)*0.2;
  const R=(portrait?200:170)*0.75*heroes[sel].w.r;let ringR=26;
  // 화면 흔들림: 평소엔 천천히 출렁, 사격·피격 때 크게 떨림
  // 조준점(화면에 보이는 위치): 흔들리지 않고 고정. 배경 확대 비율만 맞춰 둔다

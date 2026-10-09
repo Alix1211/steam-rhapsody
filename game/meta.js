@@ -525,7 +525,7 @@ function launch(side0, ch, no, sel) {
   const P = params(ch, no), c = tier(ch); Object.assign(ST, P.st);
   picks = sel.map(r => Object.assign({}, r, { gm: gmFor(r, c) })); side = side0 === 'C' ? 'C' : side0;
   curStage = { side: side0, ch, no, sel, P, bannerT: 0 }; paused = false; res = null; timeUp = false; fireHeld = false;
-  setBattleBg(ch); scene = 'battle'; MODAL = null; startGame();
+  setBattleBg(ch); scene = 'battle'; MODAL = null; startGame(); resetBattleSkills();
 }
 function backToStages(adv) { curStage = null; res = null; paused = false; over = false; if (adv && SG.side !== 'C' && SG.ci < 4 && chOpen(SG.side, SG.ci + 1)) { SG.ci++; SV.last.ch[SG.side] = SG.ci; } openStages(SG.side, SG.ci); }
 
@@ -765,6 +765,147 @@ lensFx = function (vx, vy, ringR) {
   g.lineWidth = 2; g.strokeStyle = '#c89a5a'; g.beginPath(); g.arc(vx, vy, ringR + 0.5, 0, 7); g.stroke(); g.restore();
 };
 
+// ================= 병과별 필살기 (임시 전투 버튼) =================
+// 캐릭터별 50초 재사용. 전투 시작 시 초기화; 전투 밸런스 수치(DIFF/ST)는 건드리지 않는다.
+const SKILL_COOLDOWN = 50 * 60, EMP_FRAMES = 11 * 60, SNIPER_FRAMES = 7 * 60;
+const SKILL_NAMES = ['공습 지원','감전 펄스','자동 추적','전체 치료'];
+const SKILL_COLORS = ['#efb36b','#8ceeff','#f2a0bd','#9fffd2'];
+let skillReady = [0,0,0], skillBombs = [], skillPulse = 0, sniperUntil = 0;
+window.GW_SKILL_SNIPER = false;
+function resetBattleSkills() {
+  skillReady = [0,0,0]; skillBombs = []; skillPulse = 0; sniperUntil = 0;
+  window.GW_SKILL_SNIPER = false;
+}
+function skillButtonRect() {
+  const fire = btns.find(b => b.a === 'fire');
+  if (!fire) return null;
+  const r = portrait ? 51 : 44, gap = portrait ? 186 : 155;
+  return { x:fire.x-r, y:fire.y-gap-r, w:r*2, h:r*2, cx:fire.x, cy:fire.y-gap, r };
+}
+function useBattleSkill() {
+  if (menu || over || paused || MODAL || !curStage) return;
+  const h = heroes[sel], i=sel;
+  if (!h || h.hp<=0 || i>=skillReady.length || t<skillReady[i]) return;
+  if (h.c===3) {
+    const targets=heroes.filter(a=>a.hp>0 && a.hp<a.max);
+    if (!targets.length) { toast('회복할 아군이 없습니다'); return; }
+    for(const a of targets){
+      const before=a.hp;
+      a.hp=Math.min(a.max,a.hp+a.max*.3);
+      for(let k=0;k<15;k++)parts.push({x:a.x+(Math.random()-.5)*95,y:a.y-a.ht*(.3+Math.random()*.55),
+        vx:(Math.random()-.5)*4,vy:-1.5-Math.random()*3,life:26+Math.random()*24,col:k%3?'#7fffc7':'#ffffff',s:3+Math.random()*3});
+      a.hit=0;
+    }
+    sfx('heal');vib([40,25,75]);banners.push({t:0,txt:'전체 치료 +30%'});
+  } else if (h.c===1) {
+    for (const e of enemies) if (!e.dead && e.hp>0) {
+      e.stun=Math.max(e.stun||0,EMP_FRAMES);
+      e.tele=0; e._gwEmpUntil=t+EMP_FRAMES;
+    }
+    skillPulse=34;sfx('scope');vib([35,35,85]);banners.push({t:0,txt:'전자기 펄스 · 11초'});
+  } else if (h.c===2) {
+    sniperUntil=t+SNIPER_FRAMES;window.GW_SKILL_SNIPER=true;
+    cross.used=SNIPER_FRAMES;sfx('scope');vib(60);banners.push({t:0,txt:'자동 추적 · 7초'});
+  } else if (h.c===0) {
+    // 전역 5개 구간에 분산 투하하되, 해당 구간의 적에게 가능한 한 가까이 낙하시킨다.
+    const targets=enemies.filter(e=>!e.dead&&e.hp>0);
+    for(let j=0;j<5;j++){
+      const middle=180+(WW-360)*(j+.5)/5;
+      let nearest=null,dist=WW*.18;
+      for(const e of targets){const d=Math.abs(e.x-middle);if(d<dist){dist=d;nearest=e;}}
+      const x=clamp((nearest?nearest.x:middle)+(Math.random()-.5)*66,140,WW-140);
+      const y=nearest?ecy(nearest):L.ey0+L.ed*(.48+.28*Math.random());
+      skillBombs.push({x,y,life:48+j*12,max:48+j*12});
+    }
+    sfx('throw');vib(50);banners.push({t:0,txt:'항공 지원 · 5발'});
+  } else return;
+  skillReady[i]=t+SKILL_COOLDOWN;
+}
+function stepBattleSkills() {
+  if(skillPulse>0)skillPulse--;
+  for(const b of skillBombs){if(--b.life<=0){
+    runBlast({x:b.x,y:b.y,R:230,mul:1.6,gy:b.y+20,src:null});
+  }}
+  skillBombs=skillBombs.filter(b=>b.life>0);
+  if(sniperUntil>t){
+    if(heroes[sel]&&heroes[sel].hp>0&&heroes[sel].c===2){
+      // 가까운 살아 있는 적을 연속 추적하며 카메라도 따라간다. 자동 발사는 하지 않는다.
+      let nearest=null,dist=Infinity;
+      for(const e of enemies){if(e.dead||e.hp<=0)continue;
+        const d=(e.x-cross.x)**2+((ecy(e)-cross.y)*1.3)**2;
+        if(d<dist){nearest=e;dist=d;}}
+      if(nearest){
+        cross.x+=clamp((nearest.x-cross.x)*.4,-120,120);
+        cross.y+=clamp((ecy(nearest)-cross.y)*.4,-70,70);
+        cross.used=30;
+        camX+=clamp(cross.x-W/2-camX,-80,80)*.26;
+        camX=clamp(camX,0,WW-W);
+      }
+      window.GW_SKILL_SNIPER=true;
+    }else{sniperUntil=0;window.GW_SKILL_SNIPER=false;}
+  }else window.GW_SKILL_SNIPER=false;
+}
+function drawBattleSkillWorld(){
+  if(menu||over||!curStage)return;
+  g.save();g.lineCap='round';
+  // 기존 올리브색 수류탄 에셋으로 하늘에서 떨어지는 폭탄 다섯 발
+  const sprite=skillBombs.length?fxi('gren'):null;
+  for(const b of skillBombs){
+    const p=clamp(1-b.life/b.max,0,1),fall=(1-p)**2;
+    const yy=b.y-(H*.7+160)*fall,rad=15+22*p;
+    g.save();g.strokeStyle='rgba(250,114,84,'+(.3+.55*p)+')';g.lineWidth=3;g.setLineDash([6,7]);
+    g.beginPath();g.ellipse(b.x,b.y,rad*2,rad*.65,0,0,Math.PI*2);g.stroke();g.setLineDash([]);
+    if(sprite&&sprite.ok){const hh=65,ww=hh*sprite.width/sprite.height;g.translate(b.x,yy);g.rotate(.25*Math.sin(t*.12));g.drawImage(sprite,-ww/2,-hh/2,ww,hh);}
+    else{g.fillStyle='#566348';g.translate(b.x,yy);g.beginPath();g.ellipse(0,0,14,29,0,0,Math.PI*2);g.fill();g.fillStyle='#b3a56e';g.fillRect(-12,17,24,8);}
+    g.restore();
+  }
+  // 대상에게 부착된 번개: EMP가 끝나거나 대상이 죽을 때 제거
+  const active=enemies.filter(e=>!e.dead&&e.hp>0&&e._gwEmpUntil>t);
+  g.globalCompositeOperation='lighter';
+  for(const e of active){
+    const cx=e.x,cy=ecy(e),radius=clamp(e.k.r*sc(e)*.7,18,65);
+    for(let j=0;j<3;j++){
+      const a=(t*.22+j*2.1+e.x*.005),r=radius*(.65+.3*Math.sin(t*.27+j));
+      const x1=cx+Math.cos(a)*r,y1=cy+Math.sin(a)*r;
+      g.strokeStyle=j===0?'rgba(230,252,255,.96)':'rgba(76,195,255,.82)';
+      g.lineWidth=j===0?2.7:1.8;g.beginPath();g.moveTo(x1-14,y1-18);
+      g.lineTo(x1+8,y1-6);g.lineTo(x1-7,y1+6);g.lineTo(x1+16,y1+18);g.stroke();
+    }
+  }
+  g.restore();
+}
+window.GW_DRAW_SKILL_WORLD=drawBattleSkillWorld;
+function drawBattleSkillButton(){
+  if(menu||over||paused||MODAL||!curStage)return;
+  const h=heroes[sel],b=skillButtonRect();if(!h||!b)return;
+  const ready=h.hp>0 && t>=skillReady[sel],remain=Math.max(0,skillReady[sel]-t);
+  const col=SKILL_COLORS[h.c]||'#eee',percent=clamp(remain/SKILL_COOLDOWN,0,1);
+  g.save();
+  g.shadowColor=ready?col:'transparent';g.shadowBlur=ready?15:0;
+  g.fillStyle=ready?'rgba(27,20,37,.94)':'rgba(20,20,25,.83)';
+  g.beginPath();g.arc(b.cx,b.cy,b.r,0,7);g.fill();
+  g.shadowBlur=0;g.strokeStyle=ready?col:'#5d5d65';g.lineWidth=4;
+  g.beginPath();g.arc(b.cx,b.cy,b.r-2,0,7);g.stroke();
+  if(!ready){g.fillStyle='rgba(0,0,0,.55)';g.beginPath();g.moveTo(b.cx,b.cy);
+    g.arc(b.cx,b.cy,b.r-4,-Math.PI/2,-Math.PI/2+2*Math.PI*percent);g.closePath();g.fill();}
+  g.textAlign='center';g.fillStyle=ready?'#fff':'#aaa';
+  g.font='bold '+(portrait?21:19)+'px sans-serif';g.fillText(ready?'필살기':String(Math.ceil(remain/60)),b.cx,b.cy+4);
+  g.font='bold '+(portrait?14:12)+'px sans-serif';g.fillStyle=col;
+  g.fillText(SKILL_NAMES[h.c]||'스킬',b.cx,b.cy+b.r+17);
+  g.restore();
+  addHit(b.x,b.y,b.w,b.h,useBattleSkill);
+}
+function drawBattleSkillPulse(){
+  if(!skillPulse||menu||over)return;
+  const p=skillPulse/34;g.save();g.globalCompositeOperation='lighter';
+  g.fillStyle='rgba(105,184,255,'+(p*.2)+')';g.fillRect(0,0,W,H);
+  g.strokeStyle='rgba(179,234,255,'+(p*.8)+')';g.lineWidth=3;
+  for(let i=0;i<8;i++){const y=H*(i+.5)/8;
+    g.beginPath();g.moveTo(0,y);for(let x=40;x<=W;x+=40)
+      g.lineTo(x,y+Math.sin(x*.06+i+t*.3)*25*p);g.stroke();}
+  g.restore();
+}
+
 // ================= 코어 연결 =================
 function sceneDraw() {
   switch (scene) {
@@ -781,19 +922,22 @@ onBattleTap = function (p) { if (paused || MODAL) { menuTap(p); return true; } f
 const _update = update, _draw = draw;
 update = function () {
   if (menu || paused) return; const was = over; _update();
+  if(!over && curStage)stepBattleSkills();
   if (!over && ST.limit && t >= ST.limit) { over = true; won = false; timeUp = true; sfx('over'); vib([100, 60, 200]); }
   if (over && !was) onBattleEnd();
 };
 draw = function () {
-  HIT.length = 0; _draw(); if (!menu && !over) { drawHud(); if (MODAL) drawModal(); drawToast(); }
+  HIT.length = 0; _draw(); if (!menu && !over) { drawBattleSkillPulse(); drawHud(); drawBattleSkillButton(); if (MODAL) drawModal(); drawToast(); }
 };
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (menu && scene === 'dialogue' && (k === 'enter' || k === ' ')) { dlAdvance(); e.preventDefault(); }
+  if (!menu && !over && k === 'q' && !e.repeat) { useBattleSkill(); e.preventDefault(); }
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
 window.GW = { openParty, get PS() { return PS; }, beginStage, poolOf, LINES, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
+  get skillCooldowns(){return skillReady.map(v=>Math.max(0,v-t));}, useSkill:useBattleSkill,
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
 
