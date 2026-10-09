@@ -1,5 +1,7 @@
 # 작업 로그 (최신이 위)
 
+- 2026-10-09 [gpt] 최종 음원 GitHub 합본 완료. GitHub Actions 임시 import 성공(run 37888533255). 원본 7곡/음성 OpenGameArt CC0 다운로드 후 업로드한 원본과 SHA-256 해시 7개 전부 일치 확인, ffmpeg로 `game/audio/bgm/*.mp3` 5개와 `game/audio/voice/*.ogg` 남녀 2개, `segments.json` 생성·GitHub main 반영(자동 커밋 d3f444a). `game/index.html`과 `game/audio_options.js`를 포함한 전체 게임 최신 ZIP은 GitHub main 저장소 아카이브에서 한 번에 다운로드 가능. 임시 자동음원업로드 workflow는 완료 후 삭제. 브라우저/Android 실기 청음 및 UI 확인은 아직 미실시.
+
 - 2026-10-09 [gpt] 사용자 승인: 음원 5개(여성국 테마/전투, 남성국 테마/전투, 마계) 오디오 라우팅 및 전투 사망 음성(여 7/남 19구간 무음 기준 전체 랜덤) 연결. `game/index.html` 장식 효과 토글, 기존 상단 소리·진동 토글 제거, 적 사망 재생 연결, `audio_options.js` 로딩 추가. `game/audio_options.js` 별도 설정창(전투 중 일시정지/세로·가로/설정 저장), 시각효과·진동·전체 사운드 On/Off, SFX/BGM 볼륨 별도, 메뉴 테마/전투곡 자동 전환, 음성 동시 2개 제한. **GitHub에는 JS만 저장; 음원 바이너리는 별도 overlay ZIP 제공되므로 음원 파일을 game/audio 아래로 복사해야 실제 재생.** JS 정적 문법 통과, Android 실기 미검증.
 
 - 2026-10-09 [gpt] 사용자 요청: 아군 총소리만 증폭. `game/index.html` 실제 `shoot` 사운드 출력에서 직접 조작 사격 볼륨 배율 1.0→1.25(+25%), 동료 자동사격 0.4→0.5(+25%). 적 사격·폭발·음성·게임 난이도·게임 플레이 변경 없음. 사운드 JS 정적 문법 검사 통과, 모바일 청음은 미검증. 여성국 2/남성국 2/마계 1 CC0 배경음악 후보 조사 완료, **원본 음원 바이너리 미확보로 BGM 연동은 미구현.**
