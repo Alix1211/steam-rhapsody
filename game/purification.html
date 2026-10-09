@@ -527,7 +527,7 @@ function drawFrame(){ctx.clearRect(0,0,W,H);ctx.save();ctx.fillStyle=theme==='F'
  ctx.restore();}
 function tick(ts){const dt=S.lastTs?Math.max(0,Math.min(34,ts-S.lastTs)):16.667;S.lastTs=ts;update(dt);dialogueTick(dt);drawFrame();requestAnimationFrame(tick)}
 function boardPointer(ev){const rect=canvas.getBoundingClientRect();const x=(ev.clientX-rect.left)*W/rect.width;S.paddleX=Math.min(W-85,Math.max(85,x));ev.preventDefault();}
-canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture?.(e.pointerId);boardPointer(e)});
+canvas.addEventListener('pointerdown',e=>{ensureSound();canvas.setPointerCapture?.(e.pointerId);boardPointer(e)});
 canvas.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch'||e.pointerType==='pen')boardPointer(e)});
 window.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft')S.paddleX=Math.max(85,S.paddleX-35);if(e.key==='ArrowRight')S.paddleX=Math.min(W-85,S.paddleX+35);if(e.key===' '&&S.phase==='ready')start();});
 $('start').addEventListener('click',start);$('btnReset').addEventListener('click',resetRound);
