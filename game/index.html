@@ -357,7 +357,7 @@ function update(){
  for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life--}
  for(const b of bullets)for(const e of enemies){if(!b.dead&&!e.dead&&bhit(b,e)){
   if(e.cv&&e.cv.hp>0){b.dead=true;burst(b.x,b.y,5,'#d9b27a');hitCover(e.cv,b.dmg,e.x,ey(e));continue}
-  e.hp-=b.dmg;e.flash=3;b.dead=true;sfx('hit');
+  if(b._gwKiller)e._gwKiller=b._gwKiller;e.hp-=b.dmg;e.flash=3;b.dead=true;sfx('hit');
   burst(b.x,b.y,5,'#ffb35a');if(e.hp<=0)killEnemy(e);else if(e.k.drone)smallPop(b.x,b.y,0.6)}}
  bullets=bullets.filter(b=>!b.dead&&b.life>0&&b.x<WW+50&&b.y>0&&b.y<H&&b.x>-50);
  for(const b of bombs){b.p+=1/30;
@@ -621,3 +621,4 @@ let fpsT=performance.now(),fpsN=0,fps=0,acc=0,lastT=performance.now();
 <script src="dialogue_bundle.js"></script>
 <script src="meta.js"></script>
 <script src="audio_options.js"></script>
+<script src="purification_integration.js"></script>
