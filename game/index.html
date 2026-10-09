@@ -249,7 +249,7 @@ function runBlast(q){const x=q.x,y=q.y,R=q.R,mul=q.mul,big=mul>=1,gy=q.gy||y+24;
  addFx(big?'big':'cloud',x,y,R*(big?2.5:2),big?32:26);if(mul>=2)addFx('mush',x,gy,R*2.6,44);else if(big)addFx('ray',x,y,R*2.3,22);addFire(x,gy,R*(big?0.85:0.6),big?200:130);
  for(const e of enemies){if(e.dead||e===q.src)continue;const cy=ecy(e),dx=e.x-x,dy=cy-y,d=Math.hypot(dx,dy*1.4);
   if(e.cv&&e.cv.hp>0&&Math.hypot(e.cv.x-x,(L.ey0+e.cv.d*L.ed-30-y)*1.4)<R)hitCover(e.cv,ST.bombCv*0.8*mul,e.cv.x,L.ey0+e.cv.d*L.ed,q.ex);
-  if(d<R){const f=1-0.5*d/R,nx=dx/(d+1),cva=e.cv&&e.cv.hp>0;e.hp-=ST.bombDmg*0.6*f*mul*(cva?0.5:1)*(q.ex?0.5:1);e.flash=8;e.kx=nx*14*f;e.vl=12*f;e.lift=1;e.stun=Math.max(e.stun||0,30);
+  if(d<R){if(q.ownerKey)e._gwKiller=q.ownerKey;const f=1-0.5*d/R,nx=dx/(d+1),cva=e.cv&&e.cv.hp>0;e.hp-=ST.bombDmg*0.6*f*mul*(cva?0.5:1)*(q.ex?0.5:1);e.flash=8;e.kx=nx*14*f;e.vl=12*f;e.lift=1;e.stun=Math.max(e.stun||0,30);
    if(e.hp<=0)killEnemy(e,nx)}}}
 function killEnemy(e,nx){if(e.dead)return;e.dead=true;score++;const k=e.k,s=sc(e),cy=ecy(e)-(e.lift||0);
  streak=(streakT>0?streak:0)+1;streakT=170;if(streak>=5&&streak%5==0)banners.push({t:0,txt:streak+'연속 처치!'});
@@ -292,8 +292,8 @@ function shoot(h,tg,manual,cont){const w=h.w,m=muzzle(h);let tp;if(manual)tp=aim
 
 
 function throwBomb(){const h=heroes[sel];if(over||bombCd>0||bombs.length||h.hp<=0)return;bombCd=BCD;const m=muzzle(h);
- bombs.push({sx:m.x,sy:m.y,tx:cross.x,ty:cross.y,p:0,arc:portrait?320:220});h.rec=1;sfx('throw');vib(20)}
-function boom(x,y){
+ {const owner=ROSTER.F.concat(ROSTER.M).find(r=>r.n===h.name);bombs.push({sx:m.x,sy:m.y,tx:cross.x,ty:cross.y,p:0,arc:portrait?320:220,ownerKey:owner?owner.k:null});}h.rec=1;sfx('throw');vib(20)}
+function boom(x,y,ownerKey){
  const R=L.bombR;bflash=1;zp=0.15;shk=Math.max(shk,portrait?32:28);
  rings.push({x,y,max:R*1.7,life:30,t:0,col:'255,255,255',w:12},{x,y,max:R*1.35,life:26,t:0,col:'255,255,255',w:10},{x,y,max:R*1.05,life:36,t:0,col:'255,150,50',w:18});
  fireballs.push({x,y,max:R*0.95,life:32,t:0},{x:x+(Math.random()-0.5)*R*0.5,y:y-R*0.2,max:R*0.6,life:40,t:0});
@@ -306,7 +306,7 @@ function boom(x,y){
  for(const e of enemies){if(e.dead)continue;const s=sc(e),cy=ecy(e),dx=e.x-x,dy=cy-y,d=Math.hypot(dx,dy);
   const cvOk=e.cv&&e.cv.hp>0&&Math.hypot(e.cv.x-x,(L.ey0+e.cv.d*L.ed-30-y))<R;
   if(cvOk)hitCover(e.cv,ST.bombCv,e.cv.x,L.ey0+e.cv.d*L.ed);
-  if(d<R){const f=1-0.55*d/R,nx=dx/(d+1);
+  if(d<R){if(ownerKey)e._gwKiller=ownerKey;const f=1-0.55*d/R,nx=dx/(d+1);
    const cva=e.cv&&e.cv.hp>0;
    e.hp-=ST.bombDmg*f*(cva?0.5:1);e.flash=8;e.kx=nx*22*f;e.vl=24*f;e.lift=1;e.stun=90;if(f>0.45&&e.tier>0&&!e.k.drone){e.tier--;e.tn=360+Math.random()*300;relocate(e)}e.tele=0;
    if(e.hp<=0){e.vlx=nx;killEnemy(e,nx*1.6)}}}
@@ -362,7 +362,7 @@ function update(){
  bullets=bullets.filter(b=>!b.dead&&b.life>0&&b.x<WW+50&&b.y>0&&b.y<H&&b.x>-50);
  for(const b of bombs){b.p+=1/30;
   parts.push({x:b.sx+(b.tx-b.sx)*b.p,y:b.sy+(b.ty-b.sy)*b.p-b.arc*Math.sin(Math.PI*b.p),vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,life:12,col:'#ff9a3a',s:3+Math.random()*2});
-  if(b.p>=1){b.done=true;boom(b.tx,b.ty)}}
+  if(b.p>=1){b.done=true;boom(b.tx,b.ty,b.ownerKey)}}
  bombs=bombs.filter(b=>!b.done);
  for(const q of blastQ)if(!q.done&&--q.d<=0){q.done=true;runBlast(q)}blastQ=blastQ.filter(q=>!q.done);
  for(const o of fxs)o.t++;fxs=fxs.filter(o=>o.t<o.life);for(const o of fires)o.t++;fires=fires.filter(o=>o.t<o.life); for(const f of flashes)f.t++; flashes=flashes.filter(f=>f.t<f.life);
