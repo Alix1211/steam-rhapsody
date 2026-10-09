@@ -1,4 +1,4 @@
-# 증기발정 랩소디 시나리오 공통 기준서 (모든 집필자 필독)
+# GENDER WARFARE 시나리오 공통 기준서 (모든 집필자 필독)
 
 폴더: /tmp/claude-0/-home-claude/1343940d-f912-5515-8df0-3c1be93ea743/scratchpad/scenario/
 함께 읽을 파일: synopsis_v1.md(큰 시놉·배치·보스), gag_notes.md(케인 개그 원문·순응 곡선), F2_6_sample_v3.md(케인 요청으로 쓴 "뻔뻔 톤" 기준 샘플 — 이 톤이 기준), F1_harbor_v2.md / F2_factory.md(구버전 — 사건 흐름과 목소리 참고용. 문체는 구버전을 따르지 말 것).
