@@ -68,7 +68,7 @@ function pickCv(){let t=ECV[Math.floor(Math.random()*ECV.length)];if(EXPL[t]&&en
 function setCovers(ch){const c=window.CSETS&&CSETS[ch];if(c&&c.c.length){ECV=c.c.slice();PCV=[c.p[0],c.p[1]||c.p[0],c.p[2]||c.p[0]];WRKS=c.w.slice();EXPL={};for(const n of c.x)EXPL[n]=1}else{PCV=['sandbag','crate_large','crate_sandbag'];ECV=['crate_small','crate_large','crate_stack','sandbag','crate_sandbag','barrels'];WRKS=null;EXPL={barrels:1}}}
 function coverW(t,iw){return t.startsWith('oc_')?Math.max(80,Math.min(175,iw*0.62)):(t=='barrels'||t=='crate_small'?96:124)}
 for(const n of PCV.concat(ECV,['wreck_crate','wreck_stack']))cimg(n);
-const ST={cvHp:220,ecv:30,cvDm:0.7,bombCv:250,goal:20,spawned:0,ehp:40,maxAlive:7,spB:80,spMin:50,fMin:95,fVar:70,edmg:6,autoDm:0.6,healT:150,heal:6,eliteP:0.15,mechHp:4,mechDm:0.55,droneHp:0.3,droneDm:0.4,droneP:0.55,hhp:120,bombDmg:140,boss:false,bossHp:6,limit:0};let won=false;
+const ST={cvHp:176,ecv:30,cvDm:0.7,bombCv:250,goal:20,spawned:0,ehp:40,maxAlive:7,spB:80,spMin:50,fMin:95,fVar:70,edmg:6,autoDm:0.6,healT:150,heal:6,eliteP:0.15,mechHp:4,mechDm:0.55,droneHp:0.3,droneDm:0.4,droneP:0.55,hhp:120,bombDmg:140,boss:false,bossHp:6,limit:0};let won=false;
 let efl=[],sel=0,bullets=[],ebul=[],enemies=[],parts=[],shk=0,t=0,spawnT=0,score=0,over=false;
 const BI={},FXI={};function fxi(n){return FXI[n]||(FXI[n]=loadImg('fx_'+n+'.webp'))}
 function addFx(n,x,y,w,life,o){if(fxs.length<9)fxs.push(Object.assign({n,x,y,w,life,t:0},o||{}))}
@@ -350,7 +350,7 @@ function update(){
     e.fireCd=(ST.fMin+Math.random()*ST.fVar)*(e.boss?0.55:1)*(e.k.mech?1.35:e.k.drone?1.1:1)}}
  }
  for(const b of ebul){b.p+=1/85;if(b.p>=1&&!b.done){b.done=true;const hh=b.h;
-  if(!manualHero(hh)&&hh.cv&&hh.cv.hp>0){hh.cv.hp=Math.max(0,hh.cv.hp-ST.edmg*ST.cvDm*b.dm);hh.cv.sh=1;sfx('hit');burst(hh.x+(Math.random()-0.5)*L.cvW*0.5,covB()-L.cvW*0.3,7,'#d9b27a');shk=Math.max(shk,2);if(hh.cv.hp<=0){burst(hh.x,covB()-L.cvW*0.25,26,'#a07a4a');sfx('kill');shk=Math.max(shk,8)}}
+  if(!manualHero(hh)&&hh.cv&&hh.cv.hp>0){hh.cv.hp=Math.max(0,hh.cv.hp-ST.edmg*ST.cvDm*b.dm);if(hh.hp>0&&Math.random()>=hh.m.eva){hh.hp-=ST.edmg*b.dm*(1-hh.m.def)*0.7;hh.hit=Math.max(hh.hit,0.35);hurtF=Math.max(hurtF,0.2)}hh.cv.sh=1;sfx('hit');burst(hh.x+(Math.random()-0.5)*L.cvW*0.5,covB()-L.cvW*0.3,7,'#d9b27a');shk=Math.max(shk,2);if(hh.cv.hp<=0){burst(hh.x,covB()-L.cvW*0.25,26,'#a07a4a');sfx('kill');shk=Math.max(shk,8)}}
   else if(Math.random()<hh.m.eva){burst(b.tx,b.ty,5,'#9cf');sfx('switch')}
   else{hh.hit=1;sfx('hurt');vib(35);hurtF=Math.max(hurtF,0.5+0.4*Math.min(1,b.dm));if(hh.hp>0)hh.hp-=ST.edmg*b.dm*(1-hh.m.def)*guardMul(hh);burst(b.tx,b.ty,6,'#ff7a5a');shk=Math.max(shk,3)}}}
  ebul=ebul.filter(b=>!b.done);for(const e of enemies)if(e.ff>0)e.ff--;
