@@ -770,10 +770,21 @@ lensFx = function (vx, vy, ringR) {
 const SKILL_COOLDOWN = 50 * 60, EMP_FRAMES = 11 * 60, SNIPER_FRAMES = 7 * 60;
 const SKILL_NAMES = ['공습 지원','감전 펄스','자동 추적','전체 치료'];
 const SKILL_COLORS = ['#efb36b','#8ceeff','#f2a0bd','#9fffd2'];
-let skillReady = [0,0,0], skillBombs = [], skillPulse = 0, sniperUntil = 0;
+// 무기별 필살기: 실제 장착한 무기 이름으로 일관되게 구분한다.
+function battleSkillType(h) {
+  if (!h || !h.w) return -1;
+  switch (h.w.n) {
+    case '연사': return 0;
+    case '산탄': return 1;
+    case '저격': return 2;
+    case '점사': return 3;
+    default: return -1;
+  }
+}
+let skillReady = [0,0,0], skillBombs = [], skillPulse = 0, sniperUntil = 0, sniperOwner = -1;
 window.GW_SKILL_SNIPER = false;
 function resetBattleSkills() {
-  skillReady = [0,0,0]; skillBombs = []; skillPulse = 0; sniperUntil = 0;
+  skillReady = [0,0,0]; skillBombs = []; skillPulse = 0; sniperUntil = 0; sniperOwner = -1;
   window.GW_SKILL_SNIPER = false;
 }
 function skillButtonRect() {
@@ -784,9 +795,9 @@ function skillButtonRect() {
 }
 function useBattleSkill() {
   if (menu || over || paused || MODAL || !curStage) return;
-  const h = heroes[sel], i=sel;
+  const h = heroes[sel], i=sel, skillType=battleSkillType(h);
   if (!h || h.hp<=0 || i>=skillReady.length || t<skillReady[i]) return;
-  if (h.c===3) {
+  if (skillType===3) {
     const targets=heroes.filter(a=>a.hp>0 && a.hp<a.max);
     if (!targets.length) { toast('회복할 아군이 없습니다'); return; }
     for(const a of targets){
@@ -797,16 +808,16 @@ function useBattleSkill() {
       a.hit=0;
     }
     sfx('heal');vib([40,25,75]);banners.push({t:0,txt:'전체 치료 +30%'});
-  } else if (h.c===1) {
+  } else if (skillType===1) {
     for (const e of enemies) if (!e.dead && e.hp>0) {
       e.stun=Math.max(e.stun||0,EMP_FRAMES);
       e.tele=0; e._gwEmpUntil=t+EMP_FRAMES;
     }
     skillPulse=34;sfx('scope');vib([35,35,85]);banners.push({t:0,txt:'전자기 펄스 · 11초'});
-  } else if (h.c===2) {
-    sniperUntil=t+SNIPER_FRAMES;window.GW_SKILL_SNIPER=true;
+  } else if (skillType===2) {
+    sniperUntil=t+SNIPER_FRAMES;sniperOwner=i;window.GW_SKILL_SNIPER=true;
     cross.used=SNIPER_FRAMES;sfx('scope');vib(60);banners.push({t:0,txt:'자동 추적 · 7초'});
-  } else if (h.c===0) {
+  } else if (skillType===0) {
     // 전역 5개 구간에 분산 투하하되, 해당 구간의 적에게 가능한 한 가까이 낙하시킨다.
     const targets=enemies.filter(e=>!e.dead&&e.hp>0);
     for(let j=0;j<5;j++){
@@ -828,7 +839,7 @@ function stepBattleSkills() {
   }}
   skillBombs=skillBombs.filter(b=>b.life>0);
   if(sniperUntil>t){
-    if(heroes[sel]&&heroes[sel].hp>0&&heroes[sel].c===2){
+    if(sel===sniperOwner&&heroes[sel]&&heroes[sel].hp>0&&battleSkillType(heroes[sel])===2){
       // 가까운 살아 있는 적을 연속 추적하며 카메라도 따라간다. 자동 발사는 하지 않는다.
       let nearest=null,dist=Infinity;
       for(const e of enemies){if(e.dead||e.hp<=0)continue;
@@ -842,8 +853,8 @@ function stepBattleSkills() {
         camX=clamp(camX,0,WW-W);
       }
       window.GW_SKILL_SNIPER=true;
-    }else{sniperUntil=0;window.GW_SKILL_SNIPER=false;}
-  }else window.GW_SKILL_SNIPER=false;
+    }else{sniperUntil=0;sniperOwner=-1;window.GW_SKILL_SNIPER=false;}
+  }else{sniperOwner=-1;window.GW_SKILL_SNIPER=false;}
 }
 function drawBattleSkillWorld(){
   if(menu||over||!curStage)return;
@@ -878,8 +889,9 @@ window.GW_DRAW_SKILL_WORLD=drawBattleSkillWorld;
 function drawBattleSkillButton(){
   if(menu||over||paused||MODAL||!curStage)return;
   const h=heroes[sel],b=skillButtonRect();if(!h||!b)return;
+  const skillType=battleSkillType(h);if(skillType<0)return;
   const ready=h.hp>0 && t>=skillReady[sel],remain=Math.max(0,skillReady[sel]-t);
-  const col=SKILL_COLORS[h.c]||'#eee',percent=clamp(remain/SKILL_COOLDOWN,0,1);
+  const col=SKILL_COLORS[skillType]||'#eee',percent=clamp(remain/SKILL_COOLDOWN,0,1);
   g.save();
   g.shadowColor=ready?col:'transparent';g.shadowBlur=ready?15:0;
   g.fillStyle=ready?'rgba(27,20,37,.94)':'rgba(20,20,25,.83)';
@@ -891,7 +903,7 @@ function drawBattleSkillButton(){
   g.textAlign='center';g.fillStyle=ready?'#fff':'#aaa';
   g.font='bold '+(portrait?21:19)+'px sans-serif';g.fillText(ready?'필살기':String(Math.ceil(remain/60)),b.cx,b.cy+4);
   g.font='bold '+(portrait?14:12)+'px sans-serif';g.fillStyle=col;
-  g.fillText(SKILL_NAMES[h.c]||'스킬',b.cx,b.cy+b.r+17);
+  g.fillText(SKILL_NAMES[skillType]||'스킬',b.cx,b.cy+b.r+17);
   g.restore();
   addHit(b.x,b.y,b.w,b.h,useBattleSkill);
 }

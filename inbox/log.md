@@ -1,5 +1,7 @@
 # 작업 로그 (최신이 위)
 
+- 2026-10-09 [gpt] 사용자 지시(스킬 아이콘 제외) 3건 수정: `game/index.html` 플레이어 수동 발사 시 진동 지속시간 연사/점사 14→48ms, 산탄 45→110ms, 저격 70→155ms(네이티브 진동 세기 자체 제어는 APK 이후). `game/meta.js` 16명 모두 실제 `h.w.n` 무기명으로 공습/EMP/저격추적/전체힐 대응, 저격 추적은 원 발동 캐릭터에서 전환하면 해제하도록 sniperOwner 기록. 이그니스 남성 드워프 산탄=감전 11초 모의 검증; 다른 3스킬·개별 쿨타임 확인, 16명 일치 검사. `game/audio_options.js` 여성국 전투곡 `female_battle`만 BGM 설정값의 1.35배(최대 1), 테마/남성국/마계 무변경. 5곡 라우팅·설정 재적용·스킬 전환 모의 테스트 및 JS 문법 검사 통과. 기존 이미지·아이콘·전투 밸런스·음원 파일 변경 없음. Android 실제 진동 세기/동작 미검증.
+
 - 2026-10-09 [gpt] 사용자 보고: 남성국·여성국 게임 진입 직후 총소리와 함께 화면 정지. 원인: `game/audio_options.js`의 `chosenBgm()`에서 `meta.js` IIFE 내부 비공개 `curStage`를 참조해 `ReferenceError` 발생, 렌더 루프 종료. `curStage` 직접 접근을 제거하고 공개 `window.GW.scene`와 전투 코어 `side`로 BGM 전환. 구 버전 ReferenceError 재현 / 수정본 여성국 테마·남성국 테마·양 진영 전투·마계 등 5종 모의 전환과 81회 프레임 호출·스크립트 문법 검사 통과. 다른 밸런스·음원·에셋 무변경. Android 실기 미검증.
 
 - 2026-10-09 [gpt] 최종 음원 GitHub 합본 완료. GitHub Actions 임시 import 성공(run 37888533255). 원본 7곡/음성 OpenGameArt CC0 다운로드 후 업로드한 원본과 SHA-256 해시 7개 전부 일치 확인, ffmpeg로 `game/audio/bgm/*.mp3` 5개와 `game/audio/voice/*.ogg` 남녀 2개, `segments.json` 생성·GitHub main 반영(자동 커밋 d3f444a). `game/index.html`과 `game/audio_options.js`를 포함한 전체 게임 최신 ZIP은 GitHub main 저장소 아카이브에서 한 번에 다운로드 가능. 임시 자동음원업로드 workflow는 완료 후 삭제. 브라우저/Android 실기 청음 및 UI 확인은 아직 미실시.

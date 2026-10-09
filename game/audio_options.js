@@ -27,7 +27,7 @@ let musicKey='',loadedVoices={},voicePending={},liveVoices=0,lastDeath=0;
 function configure(){
  soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_EFFECTS_ON=cfg.effects;
  if(AC&&master)master.gain.value=cfg.sound ? 0.85*cfg.sfx : 0;
- music.volume=cfg.sound?cfg.bgm:0;
+ configureMusicVolume();
  if(!cfg.sound)music.pause();
  else if(musicKey&&music.paused)music.play().catch(()=>{});
 }
@@ -85,7 +85,11 @@ function syncMusic(){
  configureMusicVolume();
  if(cfg.sound && AC&&music.paused && !optionsOpen)music.play().catch(()=>{});
 }
-function configureMusicVolume(){music.volume=cfg.sound?cfg.bgm:0;}
+function configureMusicVolume(){
+ // 여성국 전투곡(Breves dies hominis)만 +35%. 기본 BGM 슬라이더 설정값은 유지.
+ const factor=musicKey==='female_battle'?1.35:1;
+ music.volume=cfg.sound?Math.min(1,cfg.bgm*factor):0;
+}
 const audioDraw=draw,audioUpdate=update;
 update=function(){if(optionsOpen)return;audioUpdate();};
 let drawCounter=0;
