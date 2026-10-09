@@ -60,9 +60,32 @@ const hasProgress = () => Object.keys(SV.clr).length > 0;
 // ================= 대사 데이터 =================
 const DATA = {}; let REACT = null;
 function loadData() {
-  for (const side of ['F', 'M', 'C']) for (const ch of LINES[side].chs)
-    fetch(new URL('../data/dialogue/' + ch + '.json', location.href)).then(r => r.json()).then(j => { DATA[ch] = j; }).catch(() => { DATA[ch] = null; });
-  fetch(new URL('../data/dialogue/C11_reactions.json', location.href)).then(r => r.json()).then(j => { REACT = j; }).catch(() => {});
+  const fromBundle = () => {
+    const all = window.GW_DIALOGUE_DATA;
+    if (!all) return false;
+    for (const side of ['F', 'M', 'C']) for (const ch of LINES[side].chs) {
+      if (all[ch] && Array.isArray(all[ch].episodes)) DATA[ch] = all[ch];
+    }
+    REACT = all.C11_reactions || null;
+    return true;
+  };
+  if (fromBundle()) return;
+  const byFetch = () => {
+    for (const side of ['F', 'M', 'C']) for (const ch of LINES[side].chs)
+      fetch(new URL('../data/dialogue/' + ch + '.json', location.href)).then(r => {
+        if (!r.ok) throw Error('HTTP ' + r.status);
+        return r.json();
+      }).then(j => { DATA[ch] = j; }).catch(() => { DATA[ch] = null; });
+    fetch(new URL('../data/dialogue/C11_reactions.json', location.href)).then(r => r.json()).then(j => { REACT = j; }).catch(() => {});
+  };
+  // file:// 환경에서는 JSON fetch가 막힐 수 있어 동일 JSON 묶음 JS를 사용한다.
+  if (location.protocol === 'file:') {
+    const script = document.createElement('script');
+    script.src = 'dialogue_bundle.js';
+    script.onload = () => { if (!fromBundle()) byFetch(); };
+    script.onerror = byFetch;
+    document.head.appendChild(script);
+  } else byFetch();
 }
 function epData(ch, no) {
   const d = DATA[ch]; const e = d && d.episodes && d.episodes[no - 1];
@@ -307,10 +330,10 @@ function drawStages() {
     // 새 플레이트를 배치할 카드 내측 배경을 덜 비어 보이게 낮은 대비로 채운다.
     const ix=x+18,iy=y+26,iw=cw-36,ih=chh-59;
     g.save();rr(ix,iy,iw,ih,3);g.clip();
-    if(sceneBg.ok){g.globalAlpha=op?.24:.12;g.filter='grayscale(.8) brightness(.58)';
+    if(sceneBg.ok){g.globalAlpha=op?.76:.36;g.filter='grayscale(.22) brightness(.93)';
       const scale=Math.max(iw/sceneBg.naturalWidth,ih/sceneBg.naturalHeight),dw=sceneBg.naturalWidth*scale,dh=sceneBg.naturalHeight*scale;
       g.drawImage(sceneBg,ix+(iw-dw)*.5,iy+(ih-dh)*.4,dw,dh);g.filter='none';}
-    g.fillStyle=op?'rgba(9,5,12,.51)':'rgba(7,5,10,.71)';g.fillRect(ix,iy,iw,ih);g.restore();
+    g.fillStyle=op?'rgba(9,5,12,.24)':'rgba(7,5,10,.62)';g.fillRect(ix,iy,iw,ih);g.restore();
     titlePlate(chNo(ch)+'-'+no,x+cw/2-58,y+9,116,41,{size:20,min:15,color:boss?'#ffbdad':'#f6dfb9'});
     if(boss)titlePlate('BOSS',x+cw-83,y+11,70,32,{red:true,size:15});
     titlePlate(e.title,x+13,y+54,cw-26,Math.min(chh*.27,78),{size:portrait?19:20,min:13,lines:2});
@@ -528,7 +551,7 @@ function sumMods(key) {
 }
 function gmFor(r, c) { const m = sumMods(r.k); m.atk = (1 + m.atk) * Math.pow(DIFF.heroDmg, c) - 1; return m; }
 const optLine = o => optName(o.k) + ' +' + (Math.round(o.v * 10) / 10) + '%';
-const GI_N = 78;   // ui/gi_01~78.webp (01~36 FEMDOM RUSH, 37~ GPT 개그 시트). 아이템 이름 → 고정 아이콘(같은 이름=같은 그림, 안 맞는 건 개그)
+const GI_N = 78;   // ui/gi_01~78.webp (01~36 기존 장비 아이콘, 37~ GPT 개그 시트). 아이템 이름 → 고정 아이콘(같은 이름=같은 그림, 안 맞는 건 개그)
 const giIdx = nm => { const bl = baseList().map(b => b.name), k = bl.indexOf(nm); if (k >= 0) return k % GI_N; let h = 0; for (const ch of nm) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % GI_N; };
 const gearIconKey = g0 => 'gi_' + String(giIdx(g0.base) + 1).padStart(2, '0');
 function gearIcon(g0, cx, cy, sz) { g.save(); g.fillStyle = RARC[g0.rar - 1]; g.globalAlpha = 0.28; g.beginPath(); g.arc(cx, cy, sz * 0.52, 0, 7); g.fill(); g.globalAlpha = 1; g.restore(); sprFit(gearIconKey(g0), cx, cy, sz * 1.12); }
@@ -656,6 +679,16 @@ drawReticle = function (vx, vy, ringR) {
   if (k > 0.01) {
     retDraw(rt.n, '#ffffff', vx, vy, ringR * 2 * 0.94, k * 0.5);
     if (rt.dot) { g.save(); g.globalAlpha = k * 0.7; g.fillStyle = '#ff4a4a'; g.beginPath(); g.arc(vx, vy, 3, 0, 7); g.fill(); g.restore(); }
+  }
+  // 사용자가 요청한 스코프 정중앙 '+' 표시. 총기별 기존 조준선은 유지한다.
+  if (k > 0.01) {
+    g.save(); g.globalAlpha = k; g.lineCap = 'round';
+    for (const [color, width] of [['rgba(0,0,0,.93)', 5], ['#ffffff', 2]]) {
+      g.strokeStyle = color; g.lineWidth = width; g.beginPath();
+      g.moveTo(vx - 12, vy); g.lineTo(vx + 12, vy);
+      g.moveTo(vx, vy - 12); g.lineTo(vx, vy + 12); g.stroke();
+    }
+    g.restore();
   }
 };
 const SCH = {"scope_F_0":[0.5069,0.5254,0.2801],"scope_F_1":[0.5131,0.4562,0.3083],"scope_F_2":[0.4984,0.5332,0.2863],"scope_F_3":[0.4835,0.4593,0.2886],"scope_M_0":[0.4966,0.4511,0.3325],"scope_M_1":[0.5344,0.4835,0.3569],"scope_M_2":[0.4668,0.522,0.2762],"scope_M_3":[0.4886,0.4924,0.3]};   // 렌즈 구멍 중심x,y / 반지름(이미지 폭 비율)
