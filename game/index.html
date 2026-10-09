@@ -350,7 +350,7 @@ function update(){
     e.fireCd=(ST.fMin+Math.random()*ST.fVar)*(e.boss?0.55:1)*(e.k.mech?1.35:e.k.drone?1.1:1)}}
  }
  for(const b of ebul){b.p+=1/85;if(b.p>=1&&!b.done){b.done=true;const hh=b.h;
-  if(hh.rl>0&&hh.cv&&hh.cv.hp>0){hh.cv.hp=Math.max(0,hh.cv.hp-ST.edmg*ST.cvDm*b.dm);hh.cv.sh=1;sfx('hit');burst(hh.x+(Math.random()-0.5)*L.cvW*0.5,covB()-L.cvW*0.3,7,'#d9b27a');shk=Math.max(shk,2);if(hh.cv.hp<=0){burst(hh.x,covB()-L.cvW*0.25,26,'#a07a4a');sfx('kill');shk=Math.max(shk,8)}}
+  if(!manualHero(hh)&&hh.cv&&hh.cv.hp>0){hh.cv.hp=Math.max(0,hh.cv.hp-ST.edmg*ST.cvDm*b.dm);hh.cv.sh=1;sfx('hit');burst(hh.x+(Math.random()-0.5)*L.cvW*0.5,covB()-L.cvW*0.3,7,'#d9b27a');shk=Math.max(shk,2);if(hh.cv.hp<=0){burst(hh.x,covB()-L.cvW*0.25,26,'#a07a4a');sfx('kill');shk=Math.max(shk,8)}}
   else if(Math.random()<hh.m.eva){burst(b.tx,b.ty,5,'#9cf');sfx('switch')}
   else{hh.hit=1;sfx('hurt');vib(35);hurtF=Math.max(hurtF,0.5+0.4*Math.min(1,b.dm));if(hh.hp>0)hh.hp-=ST.edmg*b.dm*(1-hh.m.def)*guardMul(hh);burst(b.tx,b.ty,6,'#ff7a5a');shk=Math.max(shk,3)}}}
  ebul=ebul.filter(b=>!b.done);for(const e of enemies)if(e.ff>0)e.ff--;
