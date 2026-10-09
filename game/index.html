@@ -31,8 +31,8 @@ function guardMul(h){return manualHero(h)?1:0.78}
 function poseOf(h,i){return h.hp<=0?'down':(h.rl>0?'reload':(i==sel&&fireHeld?'stand':'kneel'))}
 const heroes=[];
 // 출격 명단: c=병종(0연사 1산탄 2저격 3힐러)
-const ROSTER={F:[{k:'human',n:'클레어',c:0},{k:'goblin',n:'핀',c:0},{k:'dwarf',n:'그레타',c:1},{k:'harpy',n:'벨루가',c:1},{k:'elf',n:'실비아',c:2},{k:'lamia',n:'자하라',c:2},{k:'fox',n:'로제',c:3},{k:'fmedic',n:'아네트',c:3}],
- M:[{k:'mhuman',n:'렌',c:0},{k:'mwolf',n:'카이단',c:0},{k:'mdwarf',n:'이그니스',c:1},{k:'morc',n:'그로크',c:1},{k:'melf',n:'루시안',c:2},{k:'mlizard',n:'베르단',c:2},{k:'mmedic',n:'톰',c:3},{k:'mgoblin',n:'코그',c:3}]};
+const ROSTER={F:[{k:'human',n:'클레어',c:0},{k:'dwarf',n:'그레타',c:1},{k:'elf',n:'실비아',c:2},{k:'fmedic',n:'아네트',c:3},{k:'mmedic',n:'톰',c:3},{k:'mhuman',n:'렌',c:0},{k:'mwolf',n:'카이단',c:0},{k:'morc',n:'그로크',c:1}],
+ M:[{k:'mdwarf',n:'이그니스',c:1},{k:'mlizard',n:'베르단',c:2},{k:'mgoblin',n:'코그',c:3},{k:'melf',n:'루시안',c:2},{k:'fox',n:'로제',c:3},{k:'goblin',n:'핀',c:0},{k:'harpy',n:'벨루가',c:1},{k:'lamia',n:'자하라',c:2}]};
 const CLS=['연사','산탄','저격','힐러'],CCOL=['#e8c35a','#e86a8a','#6aa8e8','#6fe08a'];
 let menu=true,side='F',picks=[];
 for(const r of ROSTER.F.concat(ROSTER.M))r.face=loadImg('h_'+r.k+'_face.webp');
@@ -68,12 +68,12 @@ function pickCv(){let t=ECV[Math.floor(Math.random()*ECV.length)];if(EXPL[t]&&en
 function setCovers(ch){const c=window.CSETS&&CSETS[ch];if(c&&c.c.length){ECV=c.c.slice();PCV=[c.p[0],c.p[1]||c.p[0],c.p[2]||c.p[0]];WRKS=c.w.slice();EXPL={};for(const n of c.x)EXPL[n]=1}else{PCV=['sandbag','crate_large','crate_sandbag'];ECV=['crate_small','crate_large','crate_stack','sandbag','crate_sandbag','barrels'];WRKS=null;EXPL={barrels:1}}}
 function coverW(t,iw){return t.startsWith('oc_')?Math.max(80,Math.min(175,iw*0.62)):(t=='barrels'||t=='crate_small'?96:124)}
 for(const n of PCV.concat(ECV,['wreck_crate','wreck_stack']))cimg(n);
-const ST={cvHp:220,ecv:30,cvDm:0.7,bombCv:250,goal:20,spawned:0,ehp:40,maxAlive:7,spB:80,spMin:50,fMin:95,fVar:70,edmg:6,autoDm:0.6,healT:150,heal:6,eliteP:0.15,mechHp:4,mechDm:0.55,droneHp:0.3,droneDm:0.4,droneP:0.55,hhp:100,bombDmg:140,boss:false,bossHp:6,limit:0};let won=false;
+const ST={cvHp:220,ecv:30,cvDm:0.7,bombCv:250,goal:20,spawned:0,ehp:40,maxAlive:7,spB:80,spMin:50,fMin:95,fVar:70,edmg:6,autoDm:0.6,healT:150,heal:6,eliteP:0.15,mechHp:4,mechDm:0.55,droneHp:0.3,droneDm:0.4,droneP:0.55,hhp:120,bombDmg:140,boss:false,bossHp:6,limit:0};let won=false;
 let efl=[],sel=0,bullets=[],ebul=[],enemies=[],parts=[],shk=0,t=0,spawnT=0,score=0,over=false;
 const BI={},FXI={};function fxi(n){return FXI[n]||(FXI[n]=loadImg('fx_'+n+'.webp'))}
 function addFx(n,x,y,w,life,o){if(fxs.length<9)fxs.push(Object.assign({n,x,y,w,life,t:0},o||{}))}
 function addFire(x,y,w,life){if(fires.length<5)fires.push({n:'fan',x,y,w,life,t:0,ph:Math.random()*6})}
-let bombs=[],rings=[],fireballs=[],smoke=[],ghosts=[],bombCd=0,bflash=0,zp=0,slowT=0,slowAcc=0,scorch=[],fxs=[],fires=[],blastQ=[],streak=0,streakT=0,banners=[],hurtF=0,flashes=[];const BCD=600;
+let bombs=[],rings=[],fireballs=[],smoke=[],ghosts=[],bombCd=0,bflash=0,zp=0,scorch=[],fxs=[],fires=[],blastQ=[],streak=0,streakT=0,banners=[],hurtF=0,flashes=[];const BCD=600;
 let smMode=0,steam=[];
 function mkTex(w,h,blobs,seed,fade){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');let r=seed;const rnd=()=>(r=(r*16807)%2147483647)/2147483647;
  for(const b of blobs)for(let i=0;i<b.n;i++){const bx=rnd()*w,by=h*(b.y0+rnd()*(b.y1-b.y0)),br=b.r*(0.6+rnd()*0.8);
@@ -240,7 +240,7 @@ function popFx(x,y,s){addFx('star',x,y,170*s,14);bflash=Math.max(bflash,0.08);sh
  for(let k=0;k<14;k++){const a=Math.random()*6.283,sp=3+Math.random()*9;parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-3,life:20+Math.random()*16,col:['#fff3b0','#ffb35a','#7a7a8a'][k%3],s:2+Math.random()*4})}
  if(smoke.length<80)smoke.push({x,y,vx:0,vy:-0.8,r:14*s,life:40,max:40});sfx('bomb')}
 function runBlast(q){const x=q.x,y=q.y,R=q.R,mul=q.mul,big=mul>=1,gy=q.gy||y+24;
- bflash=Math.max(bflash,0.22*mul);shk=Math.max(shk,15*mul);slowT=Math.max(slowT,big?36:14);zp=Math.max(zp,0.04*mul);
+ bflash=Math.max(bflash,0.22*mul);shk=Math.max(shk,15*mul);zp=Math.max(zp,0.04*mul);
  rings.push({x,y,max:R*1.15,life:22,t:0,col:'255,235,180',w:10},{x,y,max:R*0.85,life:30,t:0,col:'255,130,40',w:14});
  fireballs.push({x,y,max:R*0.8,life:26,t:0});if(big)fireballs.push({x:x+(Math.random()-0.5)*R*0.6,y:y-R*0.18,max:R*0.55,life:34,t:0});
  for(let k=0;k<(big?12:6)&&smoke.length<80;k++){const a=Math.random()*6.283,sp=0.8+Math.random()*3,l=60+Math.random()*50;smoke.push({x:x+Math.cos(a)*R*0.25,y:y+Math.sin(a)*R*0.15,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*0.6-1.4,r:24+Math.random()*32,life:l,max:l})}
@@ -294,7 +294,7 @@ function shoot(h,tg,manual,cont){const w=h.w,m=muzzle(h);let tp;if(manual)tp=aim
 function throwBomb(){const h=heroes[sel];if(over||bombCd>0||bombs.length||h.hp<=0)return;bombCd=BCD;const m=muzzle(h);
  bombs.push({sx:m.x,sy:m.y,tx:cross.x,ty:cross.y,p:0,arc:portrait?320:220});h.rec=1;sfx('throw');vib(20)}
 function boom(x,y){
- const R=L.bombR;bflash=1;zp=0.15;slowT=70;shk=Math.max(shk,portrait?32:28);
+ const R=L.bombR;bflash=1;zp=0.15;shk=Math.max(shk,portrait?32:28);
  rings.push({x,y,max:R*1.7,life:30,t:0,col:'255,255,255',w:12},{x,y,max:R*1.35,life:26,t:0,col:'255,255,255',w:10},{x,y,max:R*1.05,life:36,t:0,col:'255,150,50',w:18});
  fireballs.push({x,y,max:R*0.95,life:32,t:0},{x:x+(Math.random()-0.5)*R*0.5,y:y-R*0.2,max:R*0.6,life:40,t:0});
  for(let k=0;k<22&&smoke.length<80;k++){const a=Math.random()*6.283,sp=1+Math.random()*4,l=80+Math.random()*70;
@@ -612,7 +612,7 @@ function startGame(){
 function menuTap(p){}
 function drawMenu(){g.fillStyle='#14101a';g.fillRect(0,0,W,H)}
 applyLayout(wantPortrait());
-function step(){if(slowT>0){slowT--;slowAcc+=0.3;if(slowAcc>=1){slowAcc-=1;update()}}else update()}
+function step(){update()}
 let fpsT=performance.now(),fpsN=0,fps=0,acc=0,lastT=performance.now();
 (function loop(){const p=wantPortrait();if(p!==portrait)applyLayout(p);const nw0=performance.now();acc+=Math.min(100,nw0-lastT);lastT=nw0;let nn=0;while(acc>=16.667&&nn<4){step();acc-=16.667;nn++}draw();
  fpsN++;const nw=performance.now();if(nw-fpsT>=500){fps=Math.round(fpsN*1000/(nw-fpsT));fpsN=0;fpsT=nw}
