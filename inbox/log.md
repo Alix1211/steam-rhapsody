@@ -1,5 +1,7 @@
 # 작업 로그 (최신이 위)
 
+- 2026-10-09 [gpt] 케인 승인 범위 1·3·5·6·7·8 적용(2 저장 동기화 제외): `game/index.html` 중앙 조준선 호출·GENDER WARFARE 타이틀, `game/meta.js` 스코프 '+' 표시·챕터 배경 가시성·로컬 대사 번들 로더, `game/dialogue_bundle.js` 11장×10편+반응 대사, `data/items.json` 이름·설명 60종, `data/blank_cards.json` 꽝 16종, `README.md`·`scenario/STYLE_BIBLE.md` 명칭. `docs/blank_card_prompts.md`, `tools/build_android_icons.py` 추가. JS 문법·데이터 수량 검사 통과, 실기 미검증. 앱 아이콘 PNG는 로컬 ZIP에 생성했으나 GitHub 바이너리 미업로드(빌드 스크립트로 재생성 가능). 9·10·11·12 미작업.
+
 - 2026-10-08 [claude] 드럼통(터지는 엄폐물) 약화 3종: ①폭발 피해 절반(runBlast `q.ex`) ②연쇄 폭발 0.5초 지연(hitCover 5번째 인자 ch → d:30) ③화면에 터지는 엄폐물 최대 2개(`pickCv`). 헤드리스 수치 확인: 최대 2개, 연쇄 지연 동작, 폭발 1회 피해 25~32(적 체력 60). 실기 미확인.
 
 - 2026-10-08 [claude] 적 체력 1.5배(meta.js params ehp 40→60, 보병·기계·드론·보스 공통). 케인 실기: 1장이 쉬워졌고 조준경이 닿기 전에 아군이 적을 먼저 처치함.
