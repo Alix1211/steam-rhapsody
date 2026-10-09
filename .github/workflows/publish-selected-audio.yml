@@ -1,0 +1,65 @@
+name: Publish Selected Game Audio
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-selected-audio.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download exact CC0 source files, verify upload hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _audio_source game/audio/bgm game/audio/voice
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/war%20theme_0.ogg' -o '_audio_source/war theme.ogg'
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/breves_dies_hominis.ogg' -o '_audio_source/breves_dies_hominis.ogg'
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/the_march_of_devils_dome_2.mp3' -o '_audio_source/the_march_of_devils_dome.mp3'
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/heavy_battle_1_bpm190.mp3' -o '_audio_source/heavy_battle_1_bpm190.mp3'
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/dark_cavern_ambient_001.ogg' -o '_audio_source/dark_cavern_ambient_001.ogg'
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/death%20pain%20grunts.wav' -o '_audio_source/death pain grunts.wav'
+          curl -fLSs --retry 4 --retry-all-errors 'https://opengameart.org/sites/default/files/female_hurt_grunts_groans_1.ogg' -o '_audio_source/female_hurt_grunts_groans_1.ogg'
+          cat > _audio_source/SHA256SUMS <<'SHAS'
+          ed4405b49aee8fc6b7ab61f0270e716e500f1870b9803e8d79e0e7e3b2c54fa4  war theme.ogg
+          2f796c2ac3fb441acd6f40970ead975d342d276fe30de365f0fa0f5ad616a810  breves_dies_hominis.ogg
+          fb0de8ebe5fb9db27266c6442cfdee3508134ad0a5e41428afb9bf18ce9d0361  the_march_of_devils_dome.mp3
+          790bf97caead77553df5b75aa658323750ba2816df3071616c207612c6d69d7e  heavy_battle_1_bpm190.mp3
+          3e364b94dc1fceff13d8d067af9f034f297cfa5d15ff9cecfbe02fd857801dce  dark_cavern_ambient_001.ogg
+          3f00fba827f20ff9ccea1bc07d2c21ab8d3a36e81b48a6005cf8459f02779586  death pain grunts.wav
+          80a9fb09203bb8feb065ba15197609b118cbe167c9a2264670a31ee22c384adb  female_hurt_grunts_groans_1.ogg
+          SHAS
+          (cd _audio_source && sha256sum -c SHA256SUMS)
+      - name: Convert audio into exact game filenames
+        shell: bash
+        run: |
+          set -euo pipefail
+          ffmpeg -v error -y -i '_audio_source/war theme.ogg' -vn -ac 2 -ar 44100 -c:a libmp3lame -b:a 112k game/audio/bgm/female_theme.mp3
+          ffmpeg -v error -y -i '_audio_source/breves_dies_hominis.ogg' -vn -ac 2 -ar 44100 -c:a libmp3lame -b:a 112k game/audio/bgm/female_battle.mp3
+          ffmpeg -v error -y -i '_audio_source/the_march_of_devils_dome.mp3' -vn -ac 2 -ar 44100 -c:a libmp3lame -b:a 112k game/audio/bgm/male_theme.mp3
+          ffmpeg -v error -y -i '_audio_source/heavy_battle_1_bpm190.mp3' -vn -ac 2 -ar 44100 -c:a libmp3lame -b:a 112k game/audio/bgm/male_battle.mp3
+          ffmpeg -v error -y -i '_audio_source/dark_cavern_ambient_001.ogg' -vn -ac 2 -ar 44100 -c:a libmp3lame -b:a 112k game/audio/bgm/demon.mp3
+          ffmpeg -v error -y -i '_audio_source/death pain grunts.wav' -vn -ac 1 -ar 32000 -c:a libvorbis -q:a 3 game/audio/voice/male_deaths.ogg
+          ffmpeg -v error -y -i '_audio_source/female_hurt_grunts_groans_1.ogg' -vn -ac 1 -ar 32000 -c:a libvorbis -q:a 3 game/audio/voice/female_deaths.ogg
+          cat >game/audio/voice/segments.json <<'JSON'
+          {"male":[[0.446,1.542],[3.904,2.271],[6.886,0.556],[8.301,0.956],[10.046,2.193],[14.405,1.768],[17.386,1.311],[20.299,1.687],[23.825,1.943],[27.53,1.024],[29.806,0.604],[31.45,1.136],[33.489,1.396],[35.919,1.473],[38.77,0.74],[40.345,0.765],[42.162,1.448],[44.893,1.143],[47.332,1.609]],"female":[[0.387,0.819],[2.05,0.736],[3.669,0.529],[4.9,1.277],[7.291,0.881],[9.339,1.021],[11.642,0.972]]}
+          JSON
+          test "$(find game/audio/bgm -name '*.mp3' | wc -l)" -eq 5
+          test "$(find game/audio/voice -name '*.ogg' | wc -l)" -eq 2
+      - name: Commit exactly the game audio assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game/audio/bgm game/audio/voice
+          if git diff --cached --quiet; then echo 'Game audio already present'; exit 0; fi
+          git commit -m '[gpt] 검증된 CC0 게임 음원 7개 등록'
+          git push origin HEAD:main
