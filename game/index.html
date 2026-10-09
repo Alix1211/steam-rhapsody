@@ -189,7 +189,7 @@ cv.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();const p=pos
  if(!menu&&onBattleTap(p))return;
  if(!menu&&inb(p,smBtn())){smMode=(smMode+1)%5;steam=[];return}
  if(menu){menuTap(p);return}
- for(const [b2,fn] of [[sndBtn(),()=>{soundOn=!soundOn}],[vibBtn(),()=>{vibOn=!vibOn;if(vibOn)vib(30)}]])if(inb(p,b2)){fn();return}
+ // 사운드·진동 토글은 별도 옵션창(audio_options.js)에서 조작한다.
  const m=modeBtn();
  if(p.x>m.x&&p.x<m.x+m.w&&p.y>m.y&&p.y<m.y+m.h){forced=forced?null:(portrait?'landscape':'portrait');return}
  for(const b of btns){if(Math.hypot(p.x-b.x,p.y-b.y)<b.r){if(b.a=='fire'){fireHeld=true;b.id=e.pointerId}else if(b.a=='bomb')throwBomb();else pick(+b.a[3]);return}}
@@ -237,7 +237,7 @@ function hitCover(c,dmg,x,gy,ch){const was=c.hp>0;c.hp=Math.max(0,c.hp-dmg);c.sh
 function smallPop(x,y,sz){if(parts.length>260)return;rings.push({x,y,max:30*sz+14,life:12,t:0,col:'255,200,120',w:5});for(let k=0;k<7;k++){const a=Math.random()*6.283,sp=2+Math.random()*5;parts.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:14+Math.random()*10,col:k%2?'#ffd27a':'#ff7a3a',s:2+Math.random()*3})}}
 function popFx(x,y,s){addFx('star',x,y,170*s,14);bflash=Math.max(bflash,0.08);shk=Math.max(shk,5);rings.push({x,y,max:80*s,life:16,t:0,col:'255,230,170',w:8});fireballs.push({x,y,max:62*s,life:16,t:0});
  for(let k=0;k<14;k++){const a=Math.random()*6.283,sp=3+Math.random()*9;parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-3,life:20+Math.random()*16,col:['#fff3b0','#ffb35a','#7a7a8a'][k%3],s:2+Math.random()*4})}
- if(smoke.length<80)smoke.push({x,y,vx:0,vy:-0.8,r:14*s,life:40,max:40});sfx('kill')}
+ if(smoke.length<80)smoke.push({x,y,vx:0,vy:-0.8,r:14*s,life:40,max:40});sfx('bomb')}
 function runBlast(q){const x=q.x,y=q.y,R=q.R,mul=q.mul,big=mul>=1,gy=q.gy||y+24;
  bflash=Math.max(bflash,0.22*mul);shk=Math.max(shk,15*mul);slowT=Math.max(slowT,big?36:14);zp=Math.max(zp,0.04*mul);
  rings.push({x,y,max:R*1.15,life:22,t:0,col:'255,235,180',w:10},{x,y,max:R*0.85,life:30,t:0,col:'255,130,40',w:14});
@@ -252,7 +252,7 @@ function runBlast(q){const x=q.x,y=q.y,R=q.R,mul=q.mul,big=mul>=1,gy=q.gy||y+24;
    if(e.hp<=0)killEnemy(e,nx)}}}
 function killEnemy(e,nx){if(e.dead)return;e.dead=true;score++;const k=e.k,s=sc(e),cy=ecy(e)-(e.lift||0);
  streak=(streakT>0?streak:0)+1;streakT=170;if(streak>=5&&streak%5==0)banners.push({t:0,txt:streak+'연속 처치!'});
- sfx('kill');vib(25);
+ if(k.mech||k.drone)sfx('kill');else if(typeof sfxDeath==='function')sfxDeath(e);else sfx('kill');vib(25);
  if(k.mech)blastQ.push({x:e.x,y:cy,R:e.boss?340:250,d:1,src:e,mul:e.boss?2.3:1.35,gy:ey(e)});
  else if(k.drone){popFx(e.x,cy,s);for(const o of enemies)if(!o.dead&&o!==e&&o.k.drone&&!o.chain&&Math.hypot(o.x-e.x,ecy(o)-cy)<200)o.chain=5+Math.floor(Math.random()*8)}
  else{burst(e.x,cy,18,'#b86ad6');ghosts.push({x:e.x,y:cy,s,k,vx:(nx||(Math.random()-0.5))*9,vy:-8-Math.random()*8,rot:0,vr:(Math.random()-0.5)*0.5,life:40})}}
@@ -459,17 +459,17 @@ function drawWorld(){
  for(const b of bombs){const x=b.sx+(b.tx-b.sx)*b.p,y=b.sy+(b.ty-b.sy)*b.p-b.arc*Math.sin(Math.PI*b.p),r=(portrait?20:15)*(1-0.25*b.p);
   g.save();g.setLineDash([10,8]);g.strokeStyle='rgba(255,90,60,'+(0.35+0.4*b.p)+')';g.lineWidth=3;g.beginPath();g.arc(b.tx,b.ty,L.bombR,0,7);g.stroke();g.restore();
   const gi=fxi('gren');if(gi.ok){g.save();g.translate(x,y);g.rotate(b.p*16);const hh=r*3.6,ww=hh*gi.width/gi.height;g.drawImage(gi,-ww/2,-hh/2,ww,hh);g.restore()}else{g.fillStyle='#222';g.beginPath();g.arc(x,y,r,0,7);g.fill();g.strokeStyle='#ff9a3a';g.lineWidth=3;g.stroke()}}
- for(const o of smoke){g.globalAlpha=0.7*o.life/o.max;g.drawImage(smokeSpr,o.x-o.r*1.6,o.y-o.r*1.6,o.r*3.2,o.r*3.2)}g.globalAlpha=1;
+ if(window.GW_EFFECTS_ON!==false)for(const o of smoke){g.globalAlpha=0.7*o.life/o.max;g.drawImage(smokeSpr,o.x-o.r*1.6,o.y-o.r*1.6,o.r*3.2,o.r*3.2)}g.globalAlpha=1;
  g.globalCompositeOperation='lighter';
- for(const f of fireballs){const p=f.t/f.life,r=f.max*(0.25+0.75*(1-(1-p)*(1-p))),gr=g.createRadialGradient(f.x,f.y,0,f.x,f.y,r);
+ if(window.GW_EFFECTS_ON!==false)for(const f of fireballs){const p=f.t/f.life,r=f.max*(0.25+0.75*(1-(1-p)*(1-p))),gr=g.createRadialGradient(f.x,f.y,0,f.x,f.y,r);
   gr.addColorStop(0,'rgba(255,255,230,'+(1-p)+')');gr.addColorStop(0.35,'rgba(255,170,60,'+0.9*(1-p)+')');gr.addColorStop(1,'rgba(255,60,20,0)');
   g.fillStyle=gr;g.beginPath();g.arc(f.x,f.y,r,0,7);g.fill()}
- for(const r of rings){const p=r.t/r.life,rr=r.max*(1-(1-p)*(1-p)*(1-p));g.strokeStyle='rgba('+r.col+','+(1-p)+')';g.lineWidth=r.w*(1-p)+1;
+ if(window.GW_EFFECTS_ON!==false)for(const r of rings){const p=r.t/r.life,rr=r.max*(1-(1-p)*(1-p)*(1-p));g.strokeStyle='rgba('+r.col+','+(1-p)+')';g.lineWidth=r.w*(1-p)+1;
   g.beginPath();g.ellipse(r.x,r.y,rr,rr*0.5,0,0,7);g.stroke();g.beginPath();g.arc(r.x,r.y,rr*0.8,0,7);g.stroke()}
  g.globalCompositeOperation='source-over';
- for(const o of fxs){const im=fxi(o.n);if(!im.ok)continue;const p=o.t/o.life,e=1-(1-p)*(1-p),w=o.w*(0.4+0.6*e),h=w*im.height/im.width,al=p<0.55?1:Math.max(0,1-(p-0.55)/0.45);g.globalAlpha=al;g.drawImage(im,o.x-w/2,(o.n=='mush'?o.y-h:o.y-h/2),w,h)}g.globalAlpha=1;
- g.globalCompositeOperation='lighter';for(const o of fires){const im=fxi('fan');if(!im.ok)continue;const p=o.t/o.life,fl=0.75+0.25*Math.sin(o.t*0.7+o.ph),al=Math.min(1,o.t/10)*Math.min(1,(1-p)*3)*fl*0.75,w=o.w*(0.9+0.1*Math.sin(o.t*0.4+o.ph)),h=w*im.height/im.width;g.globalAlpha=al;g.drawImage(im,o.x-w/2,o.y-h+6,w,h)}g.globalAlpha=1;g.globalCompositeOperation='source-over';
- for(const p of parts){g.globalAlpha=Math.min(1,p.life/10);g.fillStyle=p.col;g.fillRect(p.x,p.y,p.s,p.s)}g.globalAlpha=1;
+ if(window.GW_EFFECTS_ON!==false)for(const o of fxs){const im=fxi(o.n);if(!im.ok)continue;const p=o.t/o.life,e=1-(1-p)*(1-p),w=o.w*(0.4+0.6*e),h=w*im.height/im.width,al=p<0.55?1:Math.max(0,1-(p-0.55)/0.45);g.globalAlpha=al;g.drawImage(im,o.x-w/2,(o.n=='mush'?o.y-h:o.y-h/2),w,h)}g.globalAlpha=1;
+ g.globalCompositeOperation='lighter';if(window.GW_EFFECTS_ON!==false)for(const o of fires){const im=fxi('fan');if(!im.ok)continue;const p=o.t/o.life,fl=0.75+0.25*Math.sin(o.t*0.7+o.ph),al=Math.min(1,o.t/10)*Math.min(1,(1-p)*3)*fl*0.75,w=o.w*(0.9+0.1*Math.sin(o.t*0.4+o.ph)),h=w*im.height/im.width;g.globalAlpha=al;g.drawImage(im,o.x-w/2,o.y-h+6,w,h)}g.globalAlpha=1;g.globalCompositeOperation='source-over';
+ if(window.GW_EFFECTS_ON!==false)for(const p of parts){g.globalAlpha=Math.min(1,p.life/10);g.fillStyle=p.col;g.fillRect(p.x,p.y,p.s,p.s)}g.globalAlpha=1;
  // 필살기 이펙트는 월드와 같은 좌표·확대·조준경 레이어에서 그린다.
  if(window.GW_DRAW_SKILL_WORLD)window.GW_DRAW_SKILL_WORLD();
 }
@@ -546,7 +546,7 @@ function draw(){
  for(const b of banners){const p=b.t/110,pop=1+0.7*Math.max(0,1-b.t/9),al=p<0.7?1:(1-p)/0.3;g.save();g.globalAlpha=Math.max(0,al);g.translate(W/2,H*(portrait?0.24:0.22));g.scale(pop,pop);g.textAlign='center';g.font='bold '+(portrait?54:68)+'px sans-serif';g.lineWidth=8;g.strokeStyle='rgba(0,0,0,.8)';g.lineJoin='round';g.strokeText(b.txt,0,0);g.fillStyle='#ffe27a';g.fillText(b.txt,0,0);g.restore()}
  // 상단바
  g.fillStyle='rgba(0,0,0,.5)';g.fillRect(0,0,W,50);drawFS();drawSM();g.fillStyle='#fff';g.font='bold 22px sans-serif';g.textAlign='left';g.fillText('처치 '+score+'/'+ST.goal,20,33);g.font='bold 26px sans-serif';g.fillStyle='#ffe27a';g.fillText('FPS '+fps+(scope>0.5?' (조준경)':''),150,34);
- for(const [b2,lb,on] of [[sndBtn(),'소리',soundOn],[vibBtn(),'진동',vibOn]]){g.fillStyle=on?'rgba(126,42,69,.25)':'rgba(255,255,255,.12)';g.fillRect(b2.x,b2.y,b2.w,b2.h);g.strokeStyle='rgba(255,255,255,.30)';g.lineWidth=2;g.strokeRect(b2.x,b2.y,b2.w,b2.h);g.fillStyle=on?'#fff':'rgba(255,255,255,.5)';g.font='bold 14px sans-serif';g.textAlign='center';g.fillText(lb,b2.x+b2.w/2,b2.y+22)}
+ // 통합 옵션 버튼은 audio_options.js의 draw 후킹에서 표시한다.
  // 방향 전환 버튼
  const m=modeBtn();
  g.fillStyle='rgba(255,255,255,.18)';g.fillRect(m.x,m.y,m.w,m.h);g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=2;g.strokeRect(m.x,m.y,m.w,m.h);
@@ -618,3 +618,4 @@ let fpsT=performance.now(),fpsN=0,fps=0,acc=0,lastT=performance.now();
 </script>
 <script src="dialogue_bundle.js"></script>
 <script src="meta.js"></script>
+<script src="audio_options.js"></script>
