@@ -526,7 +526,7 @@ function draw(){
   bgx.clearRect(0,0,bc.width,bc.height);bgx.drawImage(b2,0,0,bc.width,bc.height);
   b2x.clearRect(0,0,b2.width,b2.height);b2x.drawImage(bc,0,0,b2.width,b2.height);
   g.drawImage(b2,0,0,W,H);
-  g.fillStyle='rgba(0,0,0,'+(0.3*scope)+')';g.fillRect(0,0,W,H);
+  g.fillStyle='rgba(232,235,240,'+(0.58*scope)+')';g.fillRect(0,0,W,H);
   g.restore();
   // 안쪽 원: 원 주변의 작은 영역만 잘라서 확대 (전체 화면을 키우지 않음)
   const z2=1+heroes[sel].w.zoom*scope;ringR=26+(R-26)*scope;
@@ -614,4 +614,5 @@ let fpsT=performance.now(),fpsN=0,fps=0,acc=0,lastT=performance.now();
  fpsN++;const nw=performance.now();if(nw-fpsT>=500){fps=Math.round(fpsN*1000/(nw-fpsT));fpsN=0;fpsT=nw}
  requestAnimationFrame(loop)})();
 </script>
+<script src="dialogue_bundle.js"></script>
 <script src="meta.js"></script>
