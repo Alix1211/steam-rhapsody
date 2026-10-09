@@ -457,17 +457,15 @@ function drawParty() {
     }
     titlePlate(r.n,x+w*.12,y+h*.74,w*.76,Math.min(38,h*.17),{size:small?17:20,min:13,lines:1});
     if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.68,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
-    txt(CLS[r.c],x+w/2,y+h*.94,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
+    txt(CLS[r.c],x+w/2,y+h*.865,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
   };
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
     drawCard(r, x, y, cw, cardH, on, av, j);
     if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
       const ma=window.GW_PRISON.percentage(r.k),locked=window.GW_PRISON.locked(r.k);
-      const label=(locked?'⛔ ':'☠ ')+ma+'%';
-      g.save();g.fillStyle='rgba(0,0,0,.73)';rr(x+cw*.2,y+Math.max(10,cardH*.14),cw*.6,Math.max(23,cardH*.095),7);g.fill();g.restore();
-      txt(label,x+cw*.5,y+Math.max(28,cardH*.14+20),{b:true,s:Math.min(17,Math.max(12,cw*.078)),a:'center',c:'#fff',sh:true});
-      if(locked)txt('폭주: '+SV.rampage[r.k]+'회 출전 금지',x+cw*.5,y+cardH*.81,{b:true,s:13,a:'center',c:'#ff9cab',sh:true});
+      const label=(locked?'⛔ ':'☠ ')+ma+'%'+(locked?' · 폭주 '+SV.rampage[r.k]+'회':'');
+      txt(label,x+cw*.5,y+cardH*.972,{b:true,s:Math.min(16,Math.max(10,cw*.073)),a:'center',c:locked?'#ffb3b3':'#ffffff',sh:true});
     }
     addHit(x, y, cw, cardH, () => { if(window.GW_PRISON&&window.GW_PRISON.locked(r.k)){toast('폭주로 '+SV.rampage[r.k]+'회 출전 불가');return;} if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
@@ -706,12 +704,13 @@ function drawInv() {
   pool.forEach((r, i) => { const x = 20 + (i % per) * (cs + 6), y = top + Math.floor(i / per) * (cs + 6), on = INV.hero === r.k, eq = SV.eq[r.k];
     g.fillStyle=on?'rgba(148,32,64,.22)':'rgba(0,0,0,.5)';g.fillRect(x,y,cs,cs);
     if(on){g.save();g.shadowColor='rgba(222,85,117,.8)';g.shadowBlur=16;g.fillStyle='rgba(207,70,90,.16)';g.fillRect(x+3,y+3,cs-6,cs-6);g.restore();}
-    if (r.face.ok) drawFaceCrop(r.face, x, y, cs, cs, { ay: 0.08, clip: true });
+    const prisonThumb=!!(window.GW_PRISON&&window.GW_PRISON.is(r.k));
+    if (r.face.ok) drawFaceCrop(r.face, x, y, cs, prisonThumb?cs-19:cs, { ay: 0.08, clip: true });
     if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
       g.fillStyle='rgba(0,0,0,.76)';g.fillRect(x,y+cs-18,cs,18);
-      txt((window.GW_PRISON.locked(r.k)?'⛔':'☠')+window.GW_PRISON.percentage(r.k)+'%',x+cs*.5,y+cs-4,{b:true,s:Math.max(10,Math.min(13,cs*.19)),a:'center',c:'#fff',sh:true});
+      txt((window.GW_PRISON.locked(r.k)?'⛔':'☠')+window.GW_PRISON.percentage(r.k)+'%',x+cs*.5,y+cs-4,{b:true,s:Math.max(10,Math.min(12,cs*.16)),a:'center',c:'#fff',sh:true});
     }
-    if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - 6, cs, 6); } }
+    if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - (prisonThumb?24:6), cs, 5); } }
     addHit(x, y, cs, cs, () => { INV.hero = r.k; });
   });
   const lt = top + rowsN * (cs + 6) + 6, hero = heroByKey(INV.hero), eqG = gearById(SV.eq[INV.hero]);
