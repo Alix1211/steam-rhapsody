@@ -37,6 +37,13 @@ jobs:
           80a9fb09203bb8feb065ba15197609b118cbe167c9a2264670a31ee22c384adb  female_hurt_grunts_groans_1.ogg
           SHAS
           (cd _audio_source && sha256sum -c SHA256SUMS)
+      - name: Install audio converter
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
       - name: Convert audio into exact game filenames
         shell: bash
         run: |
