@@ -284,7 +284,7 @@ function shoot(h,tg,manual,cont){const w=h.w,m=muzzle(h);let tp;if(manual)tp=aim
  if(w.burst&&!cont){h.bq=w.burst-1;h.bt=w.bi;h.bman=manual}
  shk=Math.max(shk,manual?w.shake:w.shake*0.3);
  h.rec=Math.max(h.rec,manual?Math.min(1,0.45+w.shake/10):0.35);
- sfx(w.n==='산탄'?'sg':w.n==='저격'?'sn':'ar',manual?1:0.4);
+ sfx(w.n==='산탄'?'sg':w.n==='저격'?'sn':'ar',manual?1.25:0.5);
  if(manual)vib(w.n==='산탄'?45:w.n==='저격'?70:14);
  if(parts.length<230){parts.push({x:m.x-14,y:m.y+6,vx:-(2+Math.random()*2.5),vy:-(4+Math.random()*2.5),life:26,col:'#e6b85c',s:3});for(let k=0;k<2;k++)parts.push({x:m.x,y:m.y,vx:Math.cos(a0)*1.2+(Math.random()-0.5),vy:-0.6-Math.random()*0.8,life:18,col:'rgba(220,215,205,.55)',s:5})}
  for(let k=0;k<3;k++)parts.push({x:m.x,y:m.y,vx:Math.cos(a0)*(4+Math.random()*4)+(Math.random()-0.5)*3,vy:Math.sin(a0)*(4+Math.random()*4)+(Math.random()-0.5)*3,life:10,col:'#ffd',s:3});}
