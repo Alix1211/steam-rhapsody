@@ -4,7 +4,7 @@
 const F=new Set(['mmedic','mhuman','mwolf','morc']);
 const M=new Set(['fox','goblin','harpy','lamia']);
 const PRISONERS=new Set([...F,...M]);
-const UNLOCK={mmedic:'F1-5',mhuman:'F1-7',mwolf:'F3-4',morc:'F4-5',fox:'M1-5',goblin:'M1-7',harpy:'M3-4',lamia:'M4-5'};
+const UNLOCK={melf:'M5-7',mmedic:'F1-5',mhuman:'F1-7',mwolf:'F3-4',morc:'F4-5',fox:'M1-5',goblin:'M1-7',harpy:'M3-4',lamia:'M4-5'};
 function state(){const sv=window.GW?.SV;if(!sv)return null;sv.corrupt=sv.corrupt||{};sv.rampage=sv.rampage||{};return sv;}
 function corruption(key){const sv=state();return PRISONERS.has(key)&&sv?Math.max(0,Math.min(45,Number(sv.corrupt[key]||0))):0;}
 function percentage(key){return Math.round(corruption(key)*100/45);}
@@ -31,7 +31,7 @@ function hitKey(p){
     if(inb(p,rect))return r.k;
   }
  }else if(gw.scene==='inv'){
-  const pool=ROSTER.F.concat(ROSTER.M).filter(r=>unlocked(r.k)||!PRISONERS.has(r.k)),per=portrait?8:pool.length;
+  const pool=ROSTER.F.concat(ROSTER.M).filter(r=>window.GW?.DEV?.()||!UNLOCK[r.k]||!!window.GW?.SV?.clr?.[UNLOCK[r.k]]),per=portrait?8:pool.length;
   const cs=Math.min(76,(W-40-(per-1)*6)/per);
   for(let i=0;i<pool.length;i++){
     const r=pool[i];if(!unlocked(r.k))continue;
@@ -60,5 +60,5 @@ cv.addEventListener('pointerdown',e=>{
 cv.addEventListener('pointermove',e=>{if(!hold||hold.id!==e.pointerId)return;const d=Math.hypot(e.clientX-hold.x,e.clientY-hold.y);if(d>24){hold.done=true;if(hold.timer)clearTimeout(hold.timer);hold.timer=null}},true);
 cv.addEventListener('pointerup',e=>{if(!hold||hold.id!==e.pointerId)return;e.stopImmediatePropagation();const h=stopHold();if(!h.done){initAudio();menuTap(pos(e))}},true);
 cv.addEventListener('pointercancel',e=>{if(hold&&hold.id===e.pointerId)stopHold()},true);
-const back=sessionStorage.getItem('gw_purify_return');if(back){sessionStorage.removeItem('gw_purify_return');try{const d=JSON.parse(back);if(d.scene==='party'&&d.side&&d.ch&&d.no)GW.openParty(d.side,d.ci,d.ch,d.no);else if(d.scene==='inv')GW.openInv(()=>GW.go('lines'));}catch(e){}}
+let back=null;try{back=sessionStorage.getItem('gw_purify_return');if(back)sessionStorage.removeItem('gw_purify_return')}catch(e){}if(back){try{const d=JSON.parse(back);if(d.scene==='party'&&d.side&&d.ch&&d.no)GW.openParty(d.side,d.ci,d.ch,d.no);else if(d.scene==='inv')GW.openInv(()=>GW.go('lines'));}catch(e){}}
 })();
