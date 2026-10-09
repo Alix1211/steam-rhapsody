@@ -10,7 +10,7 @@ function corruption(key){const sv=state();return PRISONERS.has(key)&&sv?Math.max
 function percentage(key){return Math.round(corruption(key)*100/45);}
 function locked(key){const sv=state();return !!(sv&&sv.rampage[key]>0);}
 function stageStarted(){const sv=state();if(!sv)return;for(const key of PRISONERS)if(sv.rampage[key]>0)sv.rampage[key]--;window.GW.save();}
-function onKill(enemy){const key=enemy._gwKiller;if(!PRISONERS.has(key))return;const sv=state();if(!sv||sv.rampage[key]>0)return;const before=corruption(key);if(before>=45)return;const gain=enemy.k&&(enemy.k.mech||enemy.k.drone)?2:1;sv.corrupt[key]=Math.min(45,Math.round((before+gain)*100)/100);if(sv.corrupt[key]>=45){sv.rampage[key]=3;if(typeof toast==='function')toast('☠ '+(enemy._gwKiller||'포로')+' 폭주! 3회 출전 금지');}window.GW.save();}
+function onKill(enemy){const key=enemy._gwKiller;if(!PRISONERS.has(key))return;const sv=state();if(!sv||sv.rampage[key]>0)return;const before=corruption(key);if(before>=45)return;const gain=enemy.k&&enemy.k.mech?2:1;sv.corrupt[key]=Math.min(45,Math.round((before+gain)*100)/100);if(sv.corrupt[key]>=45){sv.rampage[key]=3;if(typeof toast==='function')toast('☠ '+(enemy._gwKiller||'포로')+' 폭주! 3회 출전 금지');}window.GW.save();}
 window.GW_PRISON={is:key=>PRISONERS.has(key),corruption,percentage,locked,stageStarted,side:key=>F.has(key)?'F':M.has(key)?'M':null};
 const oldKill=killEnemy;
 killEnemy=function(enemy,nx){if(enemy&&!enemy.dead&&enemy.hp<=0)onKill(enemy);return oldKill(enemy,nx);};
