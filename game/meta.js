@@ -769,8 +769,8 @@ lensFx = function (vx, vy, ringR) {
 
 // ================= 병과별 필살기 (임시 전투 버튼) =================
 // 캐릭터별 50초 재사용. 전투 시작 시 초기화; 전투 밸런스 수치(DIFF/ST)는 건드리지 않는다.
-const SKILL_COOLDOWN = 50 * 60, EMP_FRAMES = 11 * 60, SNIPER_FRAMES = 7 * 60;
-const SKILL_NAMES = ['공습 지원','감전 펄스','자동 추적','전체 치료'];
+const SKILL_COOLDOWN = 50 * 60, EMP_FRAMES = 11 * 60;
+const SKILL_NAMES = ['공습 지원','감전 펄스','사신의 마탄','전체 치료'];
 const SKILL_COLORS = ['#efb36b','#8ceeff','#f2a0bd','#9fffd2'];
 // 무기별 필살기: 실제 장착한 무기 이름으로 일관되게 구분한다.
 function battleSkillType(h) {
@@ -783,10 +783,12 @@ function battleSkillType(h) {
     default: return -1;
   }
 }
-let skillReady = [0,0,0], skillBombs = [], skillPulse = 0, sniperUntil = 0, sniperOwner = -1;
+let skillReady = [0,0,0], skillBombs = [], skillPulse = 0;
+let magicChains = [], magicTrails = [], skillCutins = [];
 window.GW_SKILL_SNIPER = false;
 function resetBattleSkills() {
-  skillReady = [0,0,0]; skillBombs = []; skillPulse = 0; sniperUntil = 0; sniperOwner = -1;
+  skillReady = [0,0,0]; skillBombs = []; skillPulse = 0;
+  magicChains = []; magicTrails = []; skillCutins = [];
   window.GW_SKILL_SNIPER = false;
 }
 function skillButtonRect() {
@@ -794,6 +796,70 @@ function skillButtonRect() {
   if (!fire) return null;
   const r = portrait ? 51 : 44, gap = portrait ? 186 : 155;
   return { x:fire.x-r, y:fire.y-gap-r, w:r*2, h:r*2, cx:fire.x, cy:fire.y-gap, r };
+}
+// 공통 스킬 발동 컷인: 캐릭터 자리에서 잔상이 화면 쪽으로 확대되며 사라진다.
+function startSkillCutin(h, type) {
+  skillCutins.push({ x:h.x, y:h.y, hero:h, color:SKILL_COLORS[type], age:0, life:36 });
+  if(skillCutins.length>3)skillCutins.shift(); // 3인 파티의 동시 사용까지만 유지
+  shk=Math.max(shk,4);
+}
+// 사신의 마탄: 한 발이 최대 다섯 대상에 연쇄 이동. 일반 병사 우선, 메카/드론 후순위.
+function nextMagicTarget(q) {
+  const targets=enemies.filter(e=>!e.dead&&e.hp>0&&!q.used.includes(e));
+  targets.sort((a,b)=>{
+    const ah=+(!!(a.k.mech||a.k.drone)),bh=+(!!(b.k.mech||b.k.drone));
+    return ah-bh || Math.hypot(a.x-q.x,ecy(a)-q.y)-Math.hypot(b.x-q.x,ecy(b)-q.y);
+  });
+  return targets[0]||null;
+}
+function fireMagicShot(q) {
+  const e=nextMagicTarget(q);
+  if(!e)return false;
+  const x=e.x,y=ecy(e),heavy=!!(e.k.mech||e.k.drone);
+  magicTrails.push({x1:q.x,y1:q.y,x2:x,y2:y,age:0,life:20});
+  q.x=x;q.y=y;q.used.push(e);q.count++;
+  // 적 엄폐물을 관통하여 본체만 공격. 중장갑은 최대 체력 35%, 일반 병사는 즉사.
+  e.hp-=heavy?e.max*0.35:e.hp;
+  e.flash=10;e.stun=Math.max(e.stun||0,heavy?28:0);
+  burst(x,y,heavy?16:11,'#ff75cf');sfx('sn',1.05);
+  shk=Math.max(shk,heavy?8:5);bflash=Math.max(bflash,0.07);
+  if(e.hp<=0)killEnemy(e,(x-q.hero.x)>=0?0.8:-0.8);
+  return true;
+}
+function drawMagicTrails() {
+  if(!magicTrails.length)return;
+  g.save();g.globalCompositeOperation='lighter';g.lineCap='round';
+  for(const o of magicTrails){
+    const p=Math.min(1,o.age/5),x=o.x1+(o.x2-o.x1)*p,y=o.y1+(o.y2-o.y1)*p;
+    const a=Math.max(0,1-o.age/o.life);
+    g.strokeStyle='rgba(235,53,154,'+(a*0.65)+')';g.lineWidth=17*a+2;
+    g.beginPath();g.moveTo(o.x1,o.y1);g.lineTo(x,y);g.stroke();
+    g.strokeStyle='rgba(255,248,245,'+(a*.95)+')';g.lineWidth=4*a+1;
+    g.beginPath();g.moveTo(o.x1,o.y1);g.lineTo(x,y);g.stroke();
+    g.fillStyle='rgba(255,220,240,'+a+')';g.beginPath();g.arc(x,y,Math.max(1,8*a),0,Math.PI*2);g.fill();
+    if(p===1){g.strokeStyle='rgba(255,110,206,'+(a*.8)+')';g.lineWidth=3*a;
+      g.beginPath();g.arc(o.x2,o.y2,12+(1-a)*46,0,Math.PI*2);g.stroke();}
+  }
+  g.restore();
+}
+function drawSkillCutins() {
+  for(const o of skillCutins){
+    const p=Math.min(1,o.age/o.life),ease=1-(1-p)*(1-p),alpha=Math.pow(1-p,1.25);
+    if(alpha<=0.01)continue;
+    g.save();g.translate(o.x,o.y);g.globalCompositeOperation='lighter';
+    const r=55+380*ease;
+    g.strokeStyle=o.color;g.globalAlpha=0.5*alpha;g.lineWidth=8*(1-p)+1;
+    g.beginPath();g.arc(0,-150,r,0,Math.PI*2);g.stroke();
+    g.beginPath();g.arc(0,-150,r*.68,0,Math.PI*2);g.stroke();
+    const img=o.hero.art&&o.hero.art.stand;
+    if(img&&img.img&&img.img.ok){
+      const k=o.hero.ht/img.h,scale=1+2.3*ease;
+      g.globalAlpha=0.75*alpha;
+      g.shadowColor=o.color;g.shadowBlur=12;
+      g.drawImage(img.img,-img.ax*k*scale,-img.h*k*scale,img.w*k*scale,img.h*k*scale);
+    }
+    g.restore();
+  }
 }
 function useBattleSkill() {
   if (menu || over || paused || MODAL || !curStage) return;
@@ -817,8 +883,10 @@ function useBattleSkill() {
     }
     skillPulse=34;sfx('scope');vib([35,35,85]);banners.push({t:0,txt:'전자기 펄스 · 11초'});
   } else if (skillType===2) {
-    sniperUntil=t+SNIPER_FRAMES;sniperOwner=i;window.GW_SKILL_SNIPER=true;
-    cross.used=SNIPER_FRAMES;sfx('scope');vib(60);banners.push({t:0,txt:'자동 추적 · 7초'});
+    if(!enemies.some(e=>!e.dead&&e.hp>0)){toast('조준할 적이 없습니다');return;}
+    const m=muzzle(h);
+    magicChains.push({hero:h,x:m.x,y:m.y,used:[],count:0,next:t+7});
+    sfx('scope');vib([60,35,90]);banners.push({t:0,txt:'사신의 마탄 · 5연쇄'});
   } else if (skillType===0) {
     // 전역 5개 구간에 분산 투하하되, 해당 구간의 적에게 가능한 한 가까이 낙하시킨다.
     const targets=enemies.filter(e=>!e.dead&&e.hp>0);
@@ -832,6 +900,7 @@ function useBattleSkill() {
     }
     sfx('throw');vib(50);banners.push({t:0,txt:'항공 지원 · 5발'});
   } else return;
+  startSkillCutin(h,skillType);
   skillReady[i]=t+SKILL_COOLDOWN;
 }
 function stepBattleSkills() {
@@ -840,23 +909,15 @@ function stepBattleSkills() {
     runBlast({x:b.x,y:b.y,R:230,mul:1.6,gy:b.y+20,src:null});
   }}
   skillBombs=skillBombs.filter(b=>b.life>0);
-  if(sniperUntil>t){
-    if(sel===sniperOwner&&heroes[sel]&&heroes[sel].hp>0&&battleSkillType(heroes[sel])===2){
-      // 가까운 살아 있는 적을 연속 추적하며 카메라도 따라간다. 자동 발사는 하지 않는다.
-      let nearest=null,dist=Infinity;
-      for(const e of enemies){if(e.dead||e.hp<=0)continue;
-        const d=(e.x-cross.x)**2+((ecy(e)-cross.y)*1.3)**2;
-        if(d<dist){nearest=e;dist=d;}}
-      if(nearest){
-        cross.x+=clamp((nearest.x-cross.x)*.4,-120,120);
-        cross.y+=clamp((ecy(nearest)-cross.y)*.4,-70,70);
-        cross.used=30;
-        camX+=clamp(cross.x-W/2-camX,-80,80)*.26;
-        camX=clamp(camX,0,WW-W);
-      }
-      window.GW_SKILL_SNIPER=true;
-    }else{sniperUntil=0;sniperOwner=-1;window.GW_SKILL_SNIPER=false;}
-  }else{sniperOwner=-1;window.GW_SKILL_SNIPER=false;}
+  for(const q of magicChains)if(t>=q.next&&q.count<5){
+    if(!fireMagicShot(q))q.count=5;
+    q.next=t+7;
+  }
+  magicChains=magicChains.filter(q=>q.count<5);
+  for(const o of magicTrails)o.age++;
+  magicTrails=magicTrails.filter(o=>o.age<o.life);
+  for(const o of skillCutins)o.age++;
+  skillCutins=skillCutins.filter(o=>o.age<o.life);
 }
 function drawBattleSkillWorld(){
   if(menu||over||!curStage)return;
@@ -886,6 +947,7 @@ function drawBattleSkillWorld(){
     }
   }
   g.restore();
+  drawMagicTrails();drawSkillCutins();
 }
 window.GW_DRAW_SKILL_WORLD=drawBattleSkillWorld;
 function drawBattleSkillButton(){
