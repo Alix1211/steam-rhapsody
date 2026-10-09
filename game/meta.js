@@ -11,8 +11,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 // ================= 가안 값 (한 곳에 모음) =================
 const DIFF = { hpMul: 1.6, atkMul: 1.35, heroHp: 1.2, heroDmg: 1.3, cover: 1.25, ecover: 1.3 };   // 장(章)마다 곱해지는 배율
 const STAR_T = [0.5, 0.25];            // 남은 시간 비율: ≥50% ★3, ≥25% ★2, 그 외 클리어 ★1
-const HERO_UNLOCK = { human: 1, dwarf: 1, elf: 1, fox: 1, goblin: 2, harpy: 3, lamia: 4, fmedic: 5,
-                      mhuman: 1, mdwarf: 1, melf: 1, mmedic: 1, mwolf: 2, morc: 3, mlizard: 4, mgoblin: 5 };   // 몇 장에 도달하면 사용 가능한가
+const HERO_UNLOCK = { human: null, dwarf: null, elf: null, fmedic: null,
+                      mmedic: 'F1-5', mhuman: 'F1-7', mwolf: 'F3-4', morc: 'F4-5',
+                      mdwarf: null, mlizard: null, mgoblin: null, melf: 'M5-7',
+                      fox: 'M1-5', goblin: 'M1-7', harpy: 'M3-4', lamia: 'M4-5' }; // 기본 영웅은 즉시, 포로는 해당 스테이지 클리어 후 해금
 const LINES = {
   F: { id: 'F', name: '여존 연방 도미나리아', short: '여존 연방', col: '#b0243a', hi: '#f0c860', chs: ['F1', 'F2', 'F3', 'F4', 'F5'], foe: '남존 제국군' },
   M: { id: 'M', name: '남존 제국 발할리온', short: '남존 제국', col: '#2a3f78', hi: '#7fb2ff', chs: ['M1', 'M2', 'M3', 'M4', 'M5'], foe: '여존 연방군' },
@@ -30,7 +32,7 @@ function params(ch, no) {
     spB: Math.max(60, 86 - no * 2 - c * 2), spMin: Math.max(36, 54 - no - c * 2), eliteP: Math.min(0.45, 0.08 + 0.03 * no + 0.03 * c),
     fMin: Math.max(50, Math.round((100 - c * 4 - no) * (c === 0 ? 1 : 0.95))), fVar: c === 0 ? 70 : 60, mechHp: 4, mechDm: 0.7, droneHp: 0.3, droneDm: 0.5, droneP: 0.55,
     cvHp: Math.round(220 * Math.pow(DIFF.cover, c)), ecv: Math.round(30 * Math.pow(DIFF.ecover, c)), bombCv: Math.round(250 * Math.pow(DIFF.ecover, c)),
-    bombDmg: Math.round(140 * Math.pow(DIFF.heroDmg, c)), hhp: Math.round(110 * Math.pow(DIFF.heroHp, c)), heal: +(6 * Math.pow(DIFF.heroHp, c)).toFixed(1) } };
+    bombDmg: Math.round(140 * Math.pow(DIFF.heroDmg, c)), hhp: Math.round(132 * Math.pow(DIFF.heroHp, c)), heal: +(6 * Math.pow(DIFF.heroHp, c)).toFixed(1) } };
 }
 const mmss = fr => { const s = Math.max(0, Math.ceil(fr / 60)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
@@ -52,7 +54,7 @@ function chOpen(side, ci) { if (DEV()) return true; if (side === 'C') return c11
 function epOpen(side, ci, no) { if (DEV()) return true; if (!chOpen(side, ci)) return false; return no === 1 || cleared(LINES[side].chs[ci], no - 1); }
 function reach(side) { if (side === 'C') return 6; let r = 1; LINES[side].chs.forEach((c, i) => { if (chOpen(side, i)) r = i + 1; }); return r; }
 const heroLine = r => ROSTER.F.includes(r) ? 'F' : 'M';
-const heroAvail = r => DEV() || reach(heroLine(r)) >= HERO_UNLOCK[r.k];
+const heroAvail = r => DEV() || !HERO_UNLOCK[r.k] || !!SV.clr[HERO_UNLOCK[r.k]];
 const poolOf = side => side === 'C' ? ROSTER.F.concat(ROSTER.M) : ROSTER[side];
 function lineStats(side) { let n = 0, s = 0, tot = 0; for (const ch of LINES[side].chs) for (let no = 1; no <= 10; no++) { tot++; const v = starsOf(ch, no); if (v) { n++; s += v; } } return { n, s, tot }; }
 const hasProgress = () => Object.keys(SV.clr).length > 0;
@@ -454,13 +456,13 @@ function drawParty() {
       sprFit('num' + String(idx + 1), x + w - 30, y + 32, 54);
     }
     titlePlate(r.n,x+w*.12,y+h*.74,w*.76,Math.min(38,h*.17),{size:small?17:20,min:13,lines:1});
-    if(!av)txt(HERO_UNLOCK[r.k]+'장 해금',x+w/2,y+h*.68,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
+    if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.68,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
     txt(CLS[r.c],x+w/2,y+h*.94,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
   };
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
     drawCard(r, x, y, cw, cardH, on, av, j);
-    addHit(x, y, cw, cardH, () => { if (!av) { toast(HERO_UNLOCK[r.k] + '장에 도달하면 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
+    addHit(x, y, cw, cardH, () => { if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
   const rd = PS.sel.length === 3;
   button('장비', W - 440, H - 92, 190, 72, () => openInv(() => go('party')), { s: 24 });
