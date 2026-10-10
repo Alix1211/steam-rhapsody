@@ -31,8 +31,8 @@ function guardMul(h){return manualHero(h)?1:0.78}
 function poseOf(h,i){return h.hp<=0?'down':(h.rl>0?'reload':(i==sel&&fireHeld?'stand':'kneel'))}
 const heroes=[];
 // 출격 명단: c=병종(0연사 1산탄 2저격 3힐러)
-const ROSTER={F:[{k:'human',n:'클레어',c:0},{k:'dwarf',n:'그레타',c:1},{k:'elf',n:'실비아',c:2},{k:'fmedic',n:'아네트',c:3},{k:'mmedic',n:'톰',c:3},{k:'mhuman',n:'렌',c:0},{k:'mwolf',n:'카이단',c:0},{k:'morc',n:'그로크',c:1}],
- M:[{k:'mdwarf',n:'이그니스',c:1},{k:'mlizard',n:'베르단',c:2},{k:'mgoblin',n:'코그',c:3},{k:'melf',n:'루시안',c:2},{k:'fox',n:'로제',c:3},{k:'goblin',n:'핀',c:0},{k:'harpy',n:'벨루가',c:1},{k:'lamia',n:'자하라',c:2}]};
+const ROSTER={F:[{k:'human',n:'클레어',c:0},{k:'dwarf',n:'그레타',c:1},{k:'elf',n:'실비아',c:2},{k:'fmedic',n:'아네트',c:3},{k:'mmedic',n:'톰',c:3},{k:'mhuman',n:'렌',c:2},{k:'mwolf',n:'카이단',c:0},{k:'morc',n:'그로크',c:1}],
+ M:[{k:'mdwarf',n:'이그니스',c:1},{k:'mlizard',n:'베르단',c:0},{k:'mgoblin',n:'코그',c:3},{k:'melf',n:'루시안',c:2},{k:'fox',n:'로제',c:3},{k:'goblin',n:'핀',c:0},{k:'harpy',n:'벨루가',c:1},{k:'lamia',n:'자하라',c:2}]};
 const CLS=['연사','산탄','저격','힐러'],CCOL=['#e8c35a','#e86a8a','#6aa8e8','#6fe08a'];
 let menu=true,side='F',picks=[];
 for(const r of ROSTER.F.concat(ROSTER.M))r.face=loadImg('h_'+r.k+'_face.webp');
