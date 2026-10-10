@@ -297,6 +297,7 @@ public final class MainActivity extends Activity {
             int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             if (flags != (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION)) throw new IllegalStateException();
             getContentResolver().takePersistableUriPermission(u, flags);
+            sessionSynced = false; // 새 연결 파일은 아직 읽지 않았으므로 기존 파일의 동기화 완료 상태를 재사용하지 않는다.
             backupPrefs.edit().putString("uri", u.toString()).putLong("backupAt", 0).putLong("baseT", -1)
                 .putBoolean("held", false).putBoolean("linkPending", false)
                 .putBoolean("newFile", req == REQ_BACKUP).remove("error").apply();
