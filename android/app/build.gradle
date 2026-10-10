@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.alix.genderwarfare'
+    compileSdk 37
+    defaultConfig {
+        applicationId 'com.alix.genderwarfare'
+        minSdk 26
+        targetSdk 35
+        // 같은 서명으로 덮어 설치하는 APK의 versionCode는 빌드 번호로 관리한다.
+        versionCode 1
+        versionName '0.1-test'
+    }
+    buildTypes { debug {} }
+    sourceSets.main.assets.srcDir(file('build/generated/webAssets'))
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}
+// 자체 호스팅 게임(정화방 포함)을 한 오리진에 배치. AssetsPathHandler URL=/assets/index.html.
+def syncWebAssets = tasks.register('syncWebAssets', Sync) {
+    from(rootProject.file('../game')) {
+        exclude '**/*.psd', '**/*.zip', '**/*.apk'
+    }
+    into(layout.buildDirectory.dir('generated/webAssets'))
+}
+tasks.configureEach {
+    if(name.startsWith('merge') && name.endsWith('Assets'))dependsOn(syncWebAssets)
+}
