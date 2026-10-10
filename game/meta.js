@@ -9,7 +9,7 @@ const nowMs = () => performance.now();
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // ================= 가안 값 (한 곳에 모음) =================
-const DIFF = { hpMul: 1.6, atkMul: 1.35, heroHp: 1.2, heroDmg: 1.3, cover: 1.25, ecover: 1.3 };   // 장(章)마다 곱해지는 배율
+const DIFF = { hpMul: 1.64, atkMul: 1.39, heroHp: 1.2, heroDmg: 1.3, cover: 1.25, ecover: 1.3 };   // 장(章)마다 곱해지는 배율
 const STAR_T = [0.5, 0.25];            // 남은 시간 비율: ≥50% ★3, ≥25% ★2, 그 외 클리어 ★1
 const HERO_UNLOCK = { human: null, dwarf: null, elf: null, fmedic: null,
                       mmedic: 'F1-5', mhuman: 'F1-7', mwolf: 'F3-4', morc: 'F4-5',
@@ -38,11 +38,54 @@ const mmss = fr => { const s = Math.max(0, Math.ceil(fr / 60)); return Math.floo
 
 // ================= 저장 =================
 const SAVE_KEY = 'gw_save_v1';
-const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, corrupt: {}, rampage: {}, purifyDialogue: {}, last: { side: 'F', ch: {} } });
+const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, heroXP: {}, corrupt: {}, rampage: {}, purifyDialogue: {}, last: { side: 'F', ch: {} } });
 let SV = defSave();
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); if (s) { const o = JSON.parse(s); SV = Object.assign(defSave(), o); SV.opt = Object.assign({ dev: false }, o.opt); } } catch (e) {} }
 function saveNow() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SV)); } catch (e) {} }
 loadSave();
+
+// ================= 영웅 공통 육성 (오펜스에서도 동일 영웅키·총 경험치 참조) =================
+// 레벨 1~99, 공격력·HP 1.5% 복리. 다음 레벨 경험치: 300+60*(현재 레벨-1).
+// Lv99 누적 314,580XP = 기준 경험치 100/분으로 약 52.43시간.
+const LV_CAP=99, LV_GROWTH=1.015, XP_PER_MIN=100;
+const LV_THRESH=[0];
+for(let lv=1;lv<LV_CAP;lv++)LV_THRESH.push(LV_THRESH[lv-1]+300+60*(lv-1));
+const LV_MAX_XP=LV_THRESH[LV_CAP-1];
+const HERO_KEYS=new Set(ROSTER.F.concat(ROSTER.M).map(r=>r.k));
+const totalHeroXP=key=>Math.min(LV_MAX_XP,Math.max(0,Math.floor(Number(SV.heroXP?.[key]||0)||0)));
+function heroLevel(key){
+ const xp=totalHeroXP(key);let lo=0,hi=LV_THRESH.length-1;
+ while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(LV_THRESH[mid]<=xp)lo=mid;else hi=mid-1;}
+ return lo+1;
+}
+const levelMultiplier=key=>Math.pow(LV_GROWTH,heroLevel(key)-1);
+function stageRecommendedLevel(ch,no){return Math.min(LV_CAP,1+Math.round((tier(ch)*10+Math.max(1,no)-1)*1.6));}
+function grantHeroXP(keys,amount){
+ const gain=Math.max(0,Math.floor(Number(amount)||0)),out=[],used=new Set();
+ for(const key of (Array.isArray(keys)?keys:[keys])){
+  if(!HERO_KEYS.has(key)||used.has(key))continue;used.add(key);
+  const before=heroLevel(key),xp=totalHeroXP(key),next=Math.min(LV_MAX_XP,xp+gain);
+  SV.heroXP=SV.heroXP||{};SV.heroXP[key]=next;
+  out.push({key,gained:next-xp,before,after:heroLevel(key)});
+ }
+ if(out.length)saveNow();return out;
+}
+function earnBattleXP(cs,victory,kills){
+ const list=cs.sel.map(r=>r.k),avg=list.reduce((sum,key)=>sum+heroLevel(key),0)/Math.max(1,list.length);
+ const recommended=stageRecommendedLevel(cs.ch,cs.no);
+ // 제한시간(프레임→분)을 XP로 환산. 실시간 경과시간에 비례하지 않아 고의 지연 이득 방지.
+ const base=Math.round((cs.P.st.limit/3600)*XP_PER_MIN);
+ const tierFactor=clamp(1+0.012*(recommended-avg),0.45,1.20);
+ const completion=victory?1:Math.min(0.25,0.25*Math.min(1,Math.max(0,kills)/Math.max(1,cs.P.goal)));
+ const amount=Math.round(base*tierFactor*completion);
+ const awards=grantHeroXP(list,amount);
+ return {amount,awards,recommended};
+}
+function levelCircle(cx,cy,n,r){
+ g.save();g.shadowColor='rgba(0,0,0,.82)';g.shadowBlur=7;g.beginPath();g.arc(cx,cy,r,0,Math.PI*2);g.fillStyle='rgba(19,18,22,.96)';g.fill();
+ g.shadowBlur=0;g.lineWidth=2;g.strokeStyle='#e8d3a1';g.stroke();
+ g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font='800 '+Math.max(10,Math.floor(r*.91))+'px sans-serif';g.fillText(String(n),cx,cy+1);g.restore();
+}
 
 // ================= 진행도 =================
 const epId = (ch, no) => ch + '-' + no;
@@ -462,6 +505,7 @@ function drawParty() {
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
     drawCard(r, x, y, cw, cardH, on, av, j);
+    levelCircle(x+Math.min(27,cw*.105),y+Math.min(28,cardH*.105),heroLevel(r.k),Math.max(15,Math.min(22,cw*.075)));
     if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
       const ma=window.GW_PRISON.percentage(r.k),locked=window.GW_PRISON.locked(r.k);
       const label=(locked?'⛔ ':'☠ ')+ma+'%'+(locked?' · 폭주 '+SV.rampage[r.k]+'회':'');
@@ -534,19 +578,23 @@ function launch(side0, ch, no, sel) {
   const P = params(ch, no), c = tier(ch); Object.assign(ST, P.st);
   picks = sel.map(r => Object.assign({}, r, { gm: gmFor(r, c) })); side = side0 === 'C' ? 'C' : side0;
   curStage = { side: side0, ch, no, sel, P, bannerT: 0 }; paused = false; res = null; timeUp = false; fireHeld = false;
-  if(window.GW_PRISON)window.GW_PRISON.stageStarted();setBattleBg(ch); scene = 'battle'; MODAL = null; startGame(); resetBattleSkills();
+  if(window.GW_PRISON)window.GW_PRISON.stageStarted();setBattleBg(ch); scene = 'battle'; MODAL = null; startGame();
+  // 포로 고유 체력 보너스는 mkHero 적용 후, 레벨 성장분과 곱연산.
+  heroes.forEach((h,i)=>{const mult=levelMultiplier(sel[i]?.k);h.max=Math.round(h.max*mult);h.hp=h.max;});
+  resetBattleSkills();
 }
 function backToStages(adv) { curStage = null; res = null; paused = false; over = false; if (adv && SG.side !== 'C' && SG.ci < 4 && chOpen(SG.side, SG.ci + 1)) { SG.ci++; SV.last.ch[SG.side] = SG.ci; } openStages(SG.side, SG.ci); }
 
 // ---------- 전투 결과 ----------
 function starsFor(frac) { return frac >= STAR_T[0] ? 3 : frac >= STAR_T[1] ? 2 : 1; }
 function onBattleEnd() {
-  const cs = curStage; if (!cs) return;
+  const cs = curStage; if (!cs || cs.xpSettled) return;cs.xpSettled=true;
+  const xp=earnBattleXP(cs,won,score);
   if (won) {
     const remain = Math.max(0, ST.limit - t), frac = remain / ST.limit, sv = starsFor(frac), id = epId(cs.ch, cs.no), before = SV.clr[id] || 0;
-    SV.clr[id] = Math.max(before, sv); res = { won: true, stars: sv, remain, first: !before, t0: nowMs() };
+    SV.clr[id] = Math.max(before, sv); res = { won: true, stars: sv, remain, first: !before, xp, t0: nowMs() };
     const e = epData(cs.ch, cs.no); res.line = e.stars && e.stars[String(sv)] || null; saveNow();
-  } else res = { won: false, why: timeUp ? '시간 초과' : '전멸', t0: nowMs() };
+  } else res = { won: false, why: timeUp ? '시간 초과' : '전멸', xp, t0: nowMs() };
 }
 function drawResult() {
   if (!res) return; const cs = curStage, el = nowMs() - res.t0, w = Math.min(W - 40, 640), h = res.won ? (portrait ? 560 : 500) : 330, x = (W - w) / 2, y = (H - h) / 2;
@@ -557,11 +605,12 @@ function drawResult() {
   if (res.won) {
     for (let i = 0; i < 3; i++) { const on = i < res.stars, sh = el - 450 - i * 380, pop = on ? (sh < 0 ? 0 : sh < 220 ? 0.4 + sh / 220 * 0.9 : 1.3 - Math.min(0.3, (sh - 220) / 600)) : 1; g.save();g.translate(x+w/2+(i-1)*84,y+175);g.scale(on?Math.max(.01,pop):1,on?Math.max(.01,pop):1);ornateStar(0,0,72,on&&sh>=0);g.restore(); }
     txt('처치 ' + score + '/' + ST.goal + ' · 남은 시간 ' + mmss(res.remain), x + w / 2, y + 250, { b: true, s: 22, a: 'center' });
-    if (res.first) txt('첫 클리어!', x + w / 2, y + 282, { b: true, s: 18, a: 'center', c: '#9fe6a8' });
+    {const up=res.xp?.awards?.filter(a=>a.after>a.before)||[];txt((res.first?'첫 클리어! · ':'')+'경험치 +'+(res.xp?.amount||0)+(up.length?' · 레벨 상승 '+up.length+'명':''),x+w/2,y+282,{b:true,s:18,a:'center',c:up.length?'#fff4b5':'#9fe6a8'});}
     if (res.line && el > 450 + 3 * 380) { const lh = wrap(res.line.text, w - 80, 21, false); panel(x + 26, y + 300, w - 52, 28 + lh.length * 30 + 28, { fill: 'rgba(40,24,30,.8)', gem: false, lw: 2 }); drawTextInBox(res.line.who,{x:x+46,y:y+309,w:w-100,h:30},18,{min:12,lines:1,align:'left',color:'#ffe27a'});drawTextInBox(res.line.text,{x:x+46,y:y+343,w:w-100,h:Math.max(18,lh.length*30)},21,{min:12,lines:5,align:'left',bold:false,valign:'top'}); }
     if (el > 450 + 3 * 380) button('계속', x + w / 2 - 110, y + h - 74, 220, 58, () => afterWin(), { red: true, s: 26 });
   } else {
     txt('처치 ' + score + '/' + ST.goal + ' · ' + res.why, x + w / 2, y + 160, { b: true, s: 24, a: 'center' });
+    txt('경험치 +'+(res.xp?.amount||0)+' (출전 3명)',x+w/2,y+207,{b:true,s:17,a:'center',c:'#d9cba7'});
     button('재도전', x + w / 2 - 230, y + h - 84, 210, 58, () => launch(cs.side, cs.ch, cs.no, cs.sel), { red: true, s: 24 });
     button('철수', x + w / 2 + 20, y + h - 84, 210, 58, backToStages, { s: 24 });
   }
@@ -631,7 +680,7 @@ function sumMods(key) {
   if (g0) for (const o of g0.opts) m[OPT_KEY[o.k]] += o.v / 100;
   for (const k in OPT_CAP) m[k] = Math.min(OPT_CAP[k], m[k]); return m;
 }
-function gmFor(r, c) { const m = sumMods(r.k); m.atk = (1 + m.atk) * Math.pow(DIFF.heroDmg, c) - 1; return m; }
+function gmFor(r, c) { const m = sumMods(r.k); m.atk = (1 + m.atk) * Math.pow(DIFF.heroDmg, c) * levelMultiplier(r.k) - 1; return m; }
 const optLine = o => optName(o.k) + ' +' + (Math.round(o.v * 10) / 10) + '%';
 const GI_N = 78;   // ui/gi_01~78.webp (01~36 기존 장비 아이콘, 37~ GPT 개그 시트). 아이템 이름 → 고정 아이콘(같은 이름=같은 그림, 안 맞는 건 개그)
 const giIdx = nm => { const bl = baseList().map(b => b.name), k = bl.indexOf(nm); if (k >= 0) return k % GI_N; let h = 0; for (const ch of nm) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % GI_N; };
@@ -713,6 +762,7 @@ function drawInv() {
       txt((window.GW_PRISON.locked(r.k)?'⛔':'☠')+window.GW_PRISON.percentage(r.k)+'%',x+cs*.5,y+cs-4,{b:true,s:Math.max(10,Math.min(12,cs*.16)),a:'center',c:'#fff',sh:true});
     }
     if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - (prisonThumb?24:6), cs, 5); } }
+    levelCircle(x+Math.max(12,cs*.17),y+Math.max(12,cs*.17),heroLevel(r.k),Math.max(11,Math.min(14,cs*.18)));
     addHit(x, y, cs, cs, () => { INV.hero = r.k; });
   });
   const lt = top + rowsN * (cs + 6) + 6, hero = heroByKey(INV.hero), eqG = gearById(SV.eq[INV.hero]);
@@ -1040,7 +1090,8 @@ addEventListener('keydown', e => {
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
-window.GW = { openParty, get PS() { return PS; }, beginStage, poolOf, LINES, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
+window.GW = { openParty, get PS() { return PS; }, beginStage, poolOf, LINES,
+  leveling:{maxLevel:LV_CAP,growth:LV_GROWTH,level:heroLevel,totalXP:totalHeroXP,thresholds:LV_THRESH,xpToNext:key=>heroLevel(key)>=LV_CAP?0:LV_THRESH[heroLevel(key)]-totalHeroXP(key),multiplier:levelMultiplier,recommended:stageRecommendedLevel,grantXP:grantHeroXP}, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
   get skillCooldowns(){return skillReady.map(v=>Math.max(0,v-t));}, useSkill:useBattleSkill,
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
