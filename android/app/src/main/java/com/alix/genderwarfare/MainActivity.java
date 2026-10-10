@@ -42,8 +42,8 @@ import java.util.concurrent.Future;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-// 골드 퀘스트 사가 앱 틀 (문플로 방식)
-// 켤 때마다 깃허브 페이지의 최신 게임을 불러오고, 인터넷이 안 되면 앱 안에 든 예비 판으로 실행한다.
+// GENDER WARFARE Android 앱 (문플로 SAF 및 골든퀘스트 baseT 표준 이식)
+// 게임 에셋은 APK 안에 포함. 로컬 우선 저장 후 Drive 파일과 동기화한다.
 // 저장은 게임 쪽(localStorage)과 앱 쪽(SharedPreferences "store")에 같이 적어, 두 판이 같은 저장을 쓴다.
 public final class MainActivity extends Activity {
     private static final String LOCAL = "https://appassets.androidplatform.net/assets/index.html";
@@ -327,7 +327,7 @@ public final class MainActivity extends Activity {
         return o;
     }
 
-    // 백업 형식은 기존 gw_* 값의 묶음. v3 내부 필드/시각을 다시 만들거나 변환하지 않는다.
+    // 백업 형식은 기존 gw_* 값의 묶음. 원본 필드/시각을 다시 만들거나 변환하지 않는다.
     // 원본 gw_* 저장 문자열을 통째로 저장. 스탬프는 읽을 때 변환하지 않는다.
     static JSONObject validBackup(String text) throws Exception {
         if (text == null || text.getBytes(StandardCharsets.UTF_8).length > MAX_BACKUP_BYTES)
@@ -359,7 +359,7 @@ public final class MainActivity extends Activity {
     }
     static long saveTime(JSONObject all) {
         try { JSONObject checked = validBackup(all.toString());
-            JSONObject s = new JSONObject(checked.getString("gw_save_v3"));
+            JSONObject s = new JSONObject(checked.getString("gw_save_v1"));
             if (!s.has("t")) return 0;
             if (!(s.get("t") instanceof Number) || !Double.isFinite(s.getDouble("t"))
                 || s.getDouble("t") < 0 || s.getDouble("t") != s.getLong("t")) return -1;
