@@ -455,9 +455,9 @@ function drawParty() {
       g.restore();
       sprFit('num' + String(idx + 1), x + w - 30, y + 32, 54);
     }
-    titlePlate(r.n,x+w*.12,y+h*.74,w*.76,Math.min(38,h*.17),{size:small?17:20,min:13,lines:1});
-    if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.68,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
-    txt(CLS[r.c],x+w/2,y+h*.865,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
+    titlePlate(r.n,x+w*.12,y+h*.682,w*.76,Math.min(31,h*.125),{size:small?16:19,min:12,lines:1});
+    if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.60,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
+    txt(CLS[r.c],x+w/2,y+h*.866,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
   };
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
@@ -465,7 +465,9 @@ function drawParty() {
     if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
       const ma=window.GW_PRISON.percentage(r.k),locked=window.GW_PRISON.locked(r.k);
       const label=(locked?'⛔ ':'☠ ')+ma+'%'+(locked?' · 폭주 '+SV.rampage[r.k]+'회':'');
-      txt(label,x+cw*.5,y+cardH*.972,{b:true,s:Math.min(16,Math.max(10,cw*.073)),a:'center',c:locked?'#ffb3b3':'#ffffff',sh:true});
+      const tagH=Math.min(25,Math.max(18,cardH*.082)),tagY=y+cardH-tagH-6;
+      g.save();rr(x+cw*.16,tagY,cw*.68,tagH,6);g.fillStyle='rgba(0,0,0,.82)';g.fill();g.restore();
+      txt(label,x+cw*.5,tagY+tagH*.74,{b:true,s:Math.min(15,Math.max(11,cw*.065)),a:'center',c:locked?'#ffb3b3':'#fff',sh:true});
     }
     addHit(x, y, cw, cardH, () => { if(window.GW_PRISON&&window.GW_PRISON.locked(r.k)){toast('폭주로 '+SV.rampage[r.k]+'회 출전 불가');return;} if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
