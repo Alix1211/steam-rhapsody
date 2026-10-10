@@ -45,11 +45,12 @@ function saveNow() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SV)); }
 loadSave();
 
 // ================= 영웅 공통 육성 (오펜스에서도 동일 영웅키·총 경험치 참조) =================
-// 레벨 1~99, 공격력·HP 1.5% 복리. 다음 레벨 경험치: 300+60*(현재 레벨-1).
-// Lv99 누적 314,580XP = 기준 경험치 100/분으로 약 52.43시간.
-const LV_CAP=99, LV_GROWTH=1.015, XP_PER_MIN=100;
+// 레벨 1~30, 공격력·HP 5% 복리. 50스테이지×평균 2~3회 도전 기준.
+// 다음 레벨 XP: 255+34*(현재 레벨-1)+floor((현재 레벨-1)^2/2).
+// Lv30 누적 25,049XP, Lv30 공격·HP 1.05^29 ≈ 4.116배.
+const LV_CAP=30, LV_GROWTH=1.05, XP_PER_MIN=100;
 const LV_THRESH=[0];
-for(let lv=1;lv<LV_CAP;lv++)LV_THRESH.push(LV_THRESH[lv-1]+300+60*(lv-1));
+for(let lv=1;lv<LV_CAP;lv++)LV_THRESH.push(LV_THRESH[lv-1]+255+34*(lv-1)+Math.floor((lv-1)**2/2));
 const LV_MAX_XP=LV_THRESH[LV_CAP-1];
 const HERO_KEYS=new Set(ROSTER.F.concat(ROSTER.M).map(r=>r.k));
 const totalHeroXP=key=>Math.min(LV_MAX_XP,Math.max(0,Math.floor(Number(SV.heroXP?.[key]||0)||0)));
@@ -59,7 +60,7 @@ function heroLevel(key){
  return lo+1;
 }
 const levelMultiplier=key=>Math.pow(LV_GROWTH,heroLevel(key)-1);
-function stageRecommendedLevel(ch,no){return Math.min(LV_CAP,1+Math.round((tier(ch)*10+Math.max(1,no)-1)*1.6));}
+function stageRecommendedLevel(ch,no){return Math.min(LV_CAP,1+Math.round((tier(ch)*10+Math.max(1,no)-1)*(LV_CAP-1)/49));}
 function grantHeroXP(keys,amount){
  const gain=Math.max(0,Math.floor(Number(amount)||0)),out=[],used=new Set();
  for(const key of (Array.isArray(keys)?keys:[keys])){
