@@ -91,7 +91,7 @@ function configureMusicVolume(){
  music.volume=cfg.sound?Math.min(1,cfg.bgm*factor):0;
 }
 const audioDraw=draw,audioUpdate=update;
-update=function(){if(optionsOpen)return;audioUpdate();};
+update=function(){if(optionsOpen||window.GW_SAVE_SYNC?.checking)return;audioUpdate();};
 let drawCounter=0;
 draw=function(){
  audioDraw();
