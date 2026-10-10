@@ -227,7 +227,9 @@ public final class MainActivity extends Activity {
         @JavascriptInterface public void webReady() {
             pageReady = true;
             if (awaitingRestoreReload) { awaitingRestoreReload = false; restoringBackup = false; }
-            requestSync(true);
+            // 화면 이동(정화방↔본편)은 앱 복귀가 아니다. 이미 맞춘 파일을 다시 읽어 게임을 중단하지 않는다.
+            if (sessionSynced) js("window.onGwSyncDone&&window.onGwSyncDone()");
+            else requestSync(true);
         }
         @JavascriptInterface public String backupStatus() {
             try { return new JSONObject().put("linked", backupUri() != null)
