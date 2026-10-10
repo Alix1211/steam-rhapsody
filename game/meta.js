@@ -498,21 +498,37 @@ function drawParty() {
       g.restore();
       sprFit('num' + String(idx + 1), x + w - 30, y + 32, 54);
     }
-    titlePlate(r.n,x+w*.12,y+h*.682,w*.76,Math.min(31,h*.125),{size:small?16:19,min:12,lines:1});
+    // 초상화는 노출하고, 이미지 하단의 검은 금장 직사각형 플레이트에 정보를 통합한다.
+    // 사용 에셋: ui/plate_dark_s.webp (사용자가 제공한 3번 시안과 같은 기존 UI 파일).
+    const plateX=x+w*.045,plateY=y+h*.714,plateW=w*.91,plateH=h*.268;
+    stretchUi('plate_dark_s',plateX,plateY,plateW,plateH);
+    const isPrisoner=!!(window.GW_PRISON&&window.GW_PRISON.is(r.k));
+    const hasCorruption=isPrisoner&&window.GW_PRISON.locked(r.k);
+    levelCircle(x+w*.205,y+h*.855,heroLevel(r.k),Math.max(12,Math.min(20,w*.062,h*.069)));
+    // 1행 이름 / 2행 병종·마성, 폰트 크기는 세로·가로 화면에서 자동 축소.
+    const fontName=Math.max(13,Math.min(small?17:21,w*.076,h*.072));
+    const fontInfo=Math.max(10,Math.min(small?12:15,w*.052,h*.054));
+    const center=isPrisoner?x+w*.49:x+w*.55;
+    const infoX=isPrisoner?x+w*.435:x+w*.55;
+    g.save();g.textAlign='center';g.textBaseline='alphabetic';
+    g.font='bold '+fontName+'px '+FONT;
+    g.fillStyle=av?'#fff0d5':'#baaca7';
+    g.shadowColor='rgba(0,0,0,.95)';g.shadowBlur=3;
+    g.fillText(r.n,center,y+h*.817,w*(isPrisoner?.45:.55));
+    g.font='bold '+fontInfo+'px '+FONT;
+    g.fillStyle=av?CCOL[r.c]:'#998688';
+    g.fillText(CLS[r.c],infoX,y+h*.914,w*(isPrisoner?.25:.48));
+    if(isPrisoner){
+      const percent=window.GW_PRISON.percentage(r.k);
+      g.fillStyle=hasCorruption?'#ffb4b4':'#f7e0d4';
+      g.fillText((hasCorruption?'⛔':'☠')+percent+'%',x+w*.725,y+h*.914,w*.235);
+    }
+    g.restore();
     if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.60,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
-    txt(CLS[r.c],x+w/2,y+h*.866,{b:true,s:small?12:14,a:'center',c:av?CCOL[r.c]:'#998688',sh:true});
   };
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
     drawCard(r, x, y, cw, cardH, on, av, j);
-    levelCircle(x+Math.min(27,cw*.105),y+Math.min(28,cardH*.105),heroLevel(r.k),Math.max(15,Math.min(22,cw*.075)));
-    if(window.GW_PRISON&&window.GW_PRISON.is(r.k)){
-      const ma=window.GW_PRISON.percentage(r.k),locked=window.GW_PRISON.locked(r.k);
-      const label=(locked?'⛔ ':'☠ ')+ma+'%'+(locked?' · 폭주 '+SV.rampage[r.k]+'회':'');
-      const tagH=Math.min(25,Math.max(18,cardH*.082)),tagY=y+cardH-tagH-6;
-      g.save();rr(x+cw*.16,tagY,cw*.68,tagH,6);g.fillStyle='rgba(0,0,0,.82)';g.fill();g.restore();
-      txt(label,x+cw*.5,tagY+tagH*.74,{b:true,s:Math.min(15,Math.max(11,cw*.065)),a:'center',c:locked?'#ffb3b3':'#fff',sh:true});
-    }
     addHit(x, y, cw, cardH, () => { if(window.GW_PRISON&&window.GW_PRISON.locked(r.k)){toast('폭주로 '+SV.rampage[r.k]+'회 출전 불가');return;} if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
   const rd = PS.sel.length === 3;
