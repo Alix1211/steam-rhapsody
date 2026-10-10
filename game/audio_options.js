@@ -112,6 +112,7 @@ function uiGeometry(){
  const rows=[y+91,y+151,y+211];
  return{x,y,w,h,rows,sx,sw,sliderYs:[y+314,y+386],
    close:{x:x+w-59,y:y+15,w:43,h:40},
+   drive:{x:x+(w-250)/2,y:y+h-104,w:250,h:30},
    done:{x:x+(w-200)/2,y:y+h-68,w:200,h:46}};
 }
 function boxFill(c,b,col,border){
@@ -142,6 +143,10 @@ function drawOptionWindow(){
   c.beginPath();c.fillStyle='#fff8e3';c.arc(d.sx+d.sw*value,y-2,13,0,7);c.fill();
   c.textAlign='right';c.font='bold 16px sans-serif';c.fillText(Math.round(value*100)+'%',d.x+d.w-26,y+5);
  }
+ if(window.GWBridge&&window.GW_DRIVE){
+   boxFill(c,d.drive,'#353035','#c9a073');c.font='bold 15px sans-serif';c.textAlign='center';c.fillStyle='#ffe1ab';
+   c.fillText('☁ Google Drive 저장',d.drive.x+d.drive.w/2,d.drive.y+21);
+ }
  boxFill(c,d.done,'#6f394a','#ebbc85');
  c.fillStyle='#fff3dc';c.textAlign='center';c.font='bold 21px sans-serif';
  c.fillText('게임으로 돌아가기',d.done.x+d.done.w/2,d.done.y+30);
@@ -152,6 +157,9 @@ function sliderSet(i,p){
  cfg[i===0?'sfx':'bgm']=Math.round(v*100)/100;configure();persist();
 }
 function optionsPointer(p){
+ if(window.GWBridge&&window.GW_DRIVE&&inBox(p,uiGeometry().drive)){
+   optionsOpen=false;sliderDrag=null;window.GW_DRIVE.open();return;
+ }
  if(inBox(p,uiGeometry().close)||inBox(p,uiGeometry().done)){optionsOpen=false;sliderDrag=null;syncMusic();return;}
  const d=uiGeometry(),ks=['effects','vibration','sound'];
  for(let i=0;i<3;i++)if(p.y>d.rows[i]-19&&p.y<d.rows[i]+34){
