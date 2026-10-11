@@ -5,7 +5,7 @@ const F=new Set(['mmedic','mhuman','mwolf','morc']);
 const M=new Set(['fox','goblin','harpy','lamia']);
 const PRISONERS=new Set([...F,...M]);
 const UNLOCK={melf:'M5-7',mmedic:'F1-5',mhuman:'F1-7',mwolf:'F3-4',morc:'F4-5',fox:'M1-5',goblin:'M1-7',harpy:'M3-4',lamia:'M4-5'};
-function state(){const sv=window.GW?.SV;if(!sv)return null;sv.corrupt=sv.corrupt||{};sv.rampage=sv.rampage||{};return sv;}
+function state(){const sv=window.GW?.SV;if(!sv)return null;sv.corrupt=sv.corrupt||{};sv.rampage=sv.rampage||{};sv.dominance=sv.dominance||{};return sv;}
 function corruption(key){const sv=state();return PRISONERS.has(key)&&sv?Math.max(0,Math.min(45,Number(sv.corrupt[key]||0))):0;}
 function percentage(key){return Math.round(corruption(key)*100/45);}
 function locked(key){const sv=state();return !!(sv&&sv.rampage[key]>0);}
@@ -17,8 +17,10 @@ killEnemy=function(enemy,nx){if(enemy&&!enemy.dead&&enemy.hp<=0)onKill(enemy);re
 const oldShoot=shoot;
 shoot=function(hero,target,manual,cont){const old=bullets.length,r=oldShoot(hero,target,manual,cont);const key=ROSTER.F.concat(ROSTER.M).find(x=>x.n===hero.name)?.k||null;for(let i=old;i<bullets.length;i++)bullets[i]._gwKiller=key;return r;};
 const oldMkHero=mkHero;
-mkHero=function(roster,index){const hero=oldMkHero(roster,index);if(PRISONERS.has(roster.k)){hero.max=Math.round(hero.max*1.2);hero.hp=hero.max;hero.m.atk=(1+hero.m.atk)*1.2-1;hero.m.def=1-(1-hero.m.def)/1.2;}return hero;};
-function unlocked(key){return PRISONERS.has(key)&&(window.GW?.DEV?.()||!UNLOCK[key]||!!window.GW?.SV?.clr?.[UNLOCK[key]]);}
+mkHero=function(roster,index){const hero=oldMkHero(roster,index);if(PRISONERS.has(roster.k)){hero.max=Math.round(hero.max*1.2);hero.hp=hero.max;hero.m.atk=(1+hero.m.atk)*1.2-1;hero.m.def=1-(1-hero.m.def)/1.2;}if(!PRISONERS.has(roster.k)){const value=dominance(roster.k);let base=hero.m.atk;Object.defineProperty(hero.m,'atk',{enumerable:true,configurable:true,get:()=>t<value*30?(1+base)*1.2-1:base,set:v=>{base=v}});hero.dominance=value;}return hero;};
+function dominance(key){const sv=state();return !PRISONERS.has(key)&&sv?Math.max(0,Math.min(100,Number(sv.dominance[key])||0)):0;}
+window.GW_DOMINANCE={value:dominance,duration:key=>dominance(key)*.5};
+function unlocked(key){return ROSTER.F.concat(ROSTER.M).some(r=>r.k===key)&&(window.GW?.DEV?.()||!UNLOCK[key]||!!window.GW?.SV?.clr?.[UNLOCK[key]]);}
 function hitKey(p){
  const gw=window.GW;if(!gw)return null;
  if(gw.scene==='party'&&gw.PS){
@@ -44,11 +46,11 @@ function hitKey(p){
 let hold=null;
 function stopHold(){if(hold?.timer)clearTimeout(hold.timer);const old=hold;hold=null;return old;}
 function openRoom(key){
- const gw=window.GW,side=F.has(key)?'F':'M';
+ const gw=window.GW,side=ROSTER.F.some(r=>r.k===key)?'F':'M';
  if(!unlocked(key))return;
  const ps=gw.PS||{};
  try{sessionStorage.setItem('gw_purify_return',JSON.stringify({scene:gw.scene,side:ps.side,ci:ps.ci,ch:ps.ch,no:ps.no}))}catch(e){}
- const url=new URL('purification.html',location.href);url.searchParams.set('game','1');url.searchParams.set('side',side);url.searchParams.set('prisoner',key);
+ const url=new URL('purification.html',location.href);url.searchParams.set('game','1');url.searchParams.set('side',side);url.searchParams.set('prisoner',key);if(!PRISONERS.has(key))url.searchParams.set('training','1');
  location.href=url.href;
 }
 cv.addEventListener('pointerdown',e=>{
