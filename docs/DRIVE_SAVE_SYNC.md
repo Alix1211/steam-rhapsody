@@ -1,3 +1,5 @@
+> 2026-10-11: SAF 저장 기능은 현재 배포 APK에 포함됨(컴파일/단위 검사 성공). 설정 → Drive 저장 · 기기 이어하기에서 첫 기기는 새 JSON을 Google Drive에 만들고, 다른 기기는 동일한 기존 파일을 연결. 메카 공적·징벌방 지배욕 포함. 실제 두 기기 파일 동기화는 파일 연결 후 확인 필요.
+
 # GENDER WARFARE — Google Drive 공유 저장 / Android SAF
 
 **기준:** [골든퀘스트 표준](https://github.com/Alix1211/ARPG/blob/main/docs/standards/drive_save_sync.md), `Alix1211/ARPG`의 `MainActivity.java`, `src/town/save_sync.js`, `src/town/backup.js`, [문플로 Android 저장](https://github.com/Alix1211/moonflo/blob/main/android/app/src/main/java/com/moonsunfarm/game/MainActivity.java).

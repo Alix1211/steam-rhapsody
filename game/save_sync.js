@@ -3,6 +3,7 @@
  * 백업은 gw_* 키의 원본 문자열 묶음이며, 적용할 때 저장 시각과 내용은 변형하지 않는다.
  */
 (()=>{'use strict';
+ if(/\/purification\.html$/.test(location.pathname)&&!document.getElementById('gw-room-audio')){const script=document.createElement('script');script.id='gw-room-audio';script.src=new URL('room_audio.js',location.href).href;document.head.appendChild(script);}
  if(window.GW_SAVE_SYNC)return;
  const K='gw_save_v1',P='gw_',B=window.GWBridge,ls=window.localStorage;
  const native=!!(B&&typeof B.load==='function');
@@ -45,6 +46,7 @@
   shade.appendChild(pane);document.body.appendChild(shade);
   return shade;
  }
+ function touchBundle(){try{const raw=ls.getItem(K);if(!raw)return;const s=JSON.parse(raw);if(s.v!==1)return;s.t=Math.max(Date.now(),(Number(s.t)||0)+1);const text=JSON.stringify(s);rawSet.call(ls,K,text);B.put(K,text);}catch(e){}}
  function done(){
   if(conflict)return;
   checking=false;document.getElementById('gw-drive-checking')?.remove();
@@ -80,7 +82,7 @@
    '백업 파일: '+(linked?'연결됨':'연결 안 됨')+'\n'+
    (st.online===false?'오프라인 · 기기 저장 사용':st.syncing?'동기화 중':st.error?'동기화 대기':'자동 동기화 대기')+
    (st.at?'\n마지막 동기화: '+new Date(st.at).toLocaleString('ko-KR'):'')+
-   '\n\n다른 기기에서는 새 파일을 만들지 말고 반드시 기존 파일을 연결하세요.',
+   '\n\n처음에는 새 저장 파일 만들기 → Google Drive 폴더를 선택해 JSON 파일을 만드세요.\n다른 기기에서는 기존 저장 파일 연결 → 같은 JSON 파일을 선택하세요.\n본편·메카 공적·징벌방 진행을 함께 저장합니다.',
    [['백업 파일 만들기 / 기존 파일 연결',sh=>{sh.remove();B.pickBackup()}],
     ...(linked?[['지금 동기화',sh=>{sh.remove();checking=true;B.syncBackup()}]]:[])]);
  }
@@ -105,12 +107,12 @@
       }
     }catch(e){}
    }
-   rawSet.call(this,k,v);try{B.put(k,String(v))}catch(e){};return;
+   const changed=ls.getItem(k)!==String(v);rawSet.call(this,k,v);try{B.put(k,String(v))}catch(e){};if(k!==K&&changed)touchBundle();return;
   }
   rawSet.call(this,k,v);
  };
  Storage.prototype.removeItem=function(k){
-  if(this===ls&&k.startsWith(P)){if(restoring||checking){dirty=true;return}rawRemove.call(this,k);try{B.del(k)}catch(e){};return}
+  if(this===ls&&k.startsWith(P)){if(restoring||checking){dirty=true;return}const existed=ls.getItem(k)!==null;rawRemove.call(this,k);try{B.del(k)}catch(e){};if(k!==K&&existed)touchBundle();return}
   rawRemove.call(this,k);
  };
  // 복구된 데이터는 reload 전에 원본 시각을 보존한다.
