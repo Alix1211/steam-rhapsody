@@ -48,11 +48,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 // GENDER WARFARE Android 앱 (문플로 SAF 및 골든퀘스트 baseT 표준 이식)
-// 게임 에셋은 APK 안에 포함. 로컬 우선 저장 후 Drive 파일과 동기화한다.
+// 재시작 시 웹 업데이트를 원자적으로 적용, 실패/오프라인은 마지막 버전·APK 사용. 저장 오리진 유지.
 // 저장은 게임 쪽(localStorage)과 앱 쪽(SharedPreferences "store")에 같이 적어, 두 판이 같은 저장을 쓴다.
 public final class MainActivity extends Activity {
     private static final String LOCAL = "https://appassets.androidplatform.net/assets/index.html";
     private WebView game;
+    private WebUpdates webUpdates;
     private final Object hapticLock = new Object();
     private Vibrator vibrator;
 
@@ -149,9 +150,11 @@ public final class MainActivity extends Activity {
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setMediaPlaybackRequiresUserGesture(false);
-        s.setCacheMode(WebSettings.LOAD_DEFAULT);
+        s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webUpdates=new WebUpdates(this);
         final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
-            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this)).build();
+            .addPathHandler("/assets/", path -> webUpdates.serve(path))
+            .addPathHandler("/data/", path -> webUpdates.serve("data/"+path)).build();
         game.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest r) {
                 return loader.shouldInterceptRequest(r.getUrl());
@@ -194,7 +197,8 @@ public final class MainActivity extends Activity {
         setContentView(game);
         requestHighestRefreshRate();
         // 메인 게임/정화방 에셋 전체를 APK에 내장, 오프라인 구동.
-        loadLocal();
+        game.loadData("<html><body style='background:#1c1610;color:#ffe5b0;text-align:center;padding-top:20%;font-family:sans-serif'>게임 업데이트 확인 중…</body></html>","text/html","UTF-8");
+        webUpdates.check(() -> ui.post(() -> { if(!isFinishing()&&!isDestroyed())loadLocal(); }));
     }
 
     /** 게임이 부르는 앱 기능: 저장 보관 */
