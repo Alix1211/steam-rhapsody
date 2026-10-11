@@ -33,7 +33,7 @@ function configure(){
 }
 const originalInitAudio=initAudio;
 initAudio=function(){
- originalInitAudio();configure();preloadVoices();syncMusic();
+ originalInitAudio();if(AC)window.GW_PRESENTATION.unlock(AC);configure();preloadVoices();syncMusic();
 };
 function preloadVoices(){
  if(!AC)return;

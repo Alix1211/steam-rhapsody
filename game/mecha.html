@@ -57,6 +57,7 @@ let ac=null,master=null,music=null,buffers={},audioLoading=null,audioVoices=0,de
 function initAudio(){
  try{if(!ac){const C=window.AudioContext||window.webkitAudioContext;if(C){ac=new C();master=ac.createGain();master.gain.value=settings.sound?.7*(settings.sfx??1):0;const compressor=ac.createDynamicsCompressor();compressor.threshold.value=-15;compressor.ratio.value=5;master.connect(compressor);compressor.connect(ac.destination);}}
  if(ac?.state==='suspended')ac.resume().catch(()=>{});
+ if(ac)window.GW_PRESENTATION.unlock(ac);
  if(!music){music=new Audio();music.loop=true;music.volume=.23;}
  if(ac&&!audioLoading)audioLoading=Promise.all(Object.entries(AUDIO_DATA).filter(([k])=>!k.startsWith('bgm_')).map(async([k,url])=>{try{const bytes=await (await fetch(url)).arrayBuffer();buffers[k]=await ac.decodeAudioData(bytes)}catch(_){}}));
  syncMusic();}catch(_){}

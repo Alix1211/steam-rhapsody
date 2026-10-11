@@ -2,12 +2,18 @@
 (function(root){
 'use strict';
 let ctx=null,finishAt=-Infinity,holdUntil=0,stingerBus=null;
+const STINGER_VOLUME=.60;
+// Adopt the game's context, unlocked by the launch tap, instead of creating one at settlement.
+function unlock(existing){
+ if(existing&&existing.state!=='closed')ctx=existing;
+ try{if(!ctx){const C=root.AudioContext||root.webkitAudioContext;if(C)ctx=new C();}ctx?.resume()?.catch(()=>{});}catch(_){}
+}
 function finish(won,finale=false,settings={}){
  finishAt=performance.now();const duration=won?(finale?4.6:2.5):1.65;holdUntil=finishAt+duration*1000;
  if(settings.sound===false)return;
  try{
-  const C=root.AudioContext||root.webkitAudioContext;if(!C)return;ctx??=new C();ctx.resume()?.catch(()=>{});
-  const bus=ctx.createGain();stingerBus=bus;bus.gain.value=.20*(settings.sfx??1);bus.connect(ctx.destination);
+  if(!ctx)return;ctx.resume()?.catch(()=>{});
+  const bus=ctx.createGain();stingerBus=bus;bus.gain.value=STINGER_VOLUME*(settings.sfx??1);bus.connect(ctx.destination);
   const start=ctx.currentTime+.035;
   const notes=won?[[0,60,.22],[.24,64,.22],[.48,67,.28],[.82,72,.55],[1.46,67,.16],[1.66,72,.75]]:[[0,67,.25],[.27,64,.25],[.54,60,.28],[.87,48,.62]];
   if(finale&&won)notes.push([2.6,72,.22],[2.85,76,.22],[3.1,79,.22],[3.4,84,1.1]);
@@ -33,5 +39,5 @@ function musicPlayer(){
   const q=Math.min(1,(performance.now()-transitionAt)/1000);if(current){const desired=Math.max(0,Math.min(1,volume*duck*q)),fade=Math.min(1,Math.max(0,performance.now()-lastVolumeAt)/350);current.volume+=(desired-current.volume)*fade;lastVolumeAt=performance.now();if(current.paused)current.play().catch(()=>{});}
  },pause(){enabled=false;current?.pause();old?.pause();},get key(){return key;},get current(){return current;}};
 }
-root.GW_PRESENTATION={finish,musicPlayer,setVolume(on,value=1){if(stingerBus)stingerBus.gain.value=on?.20*value:0;},get age(){return performance.now()-finishAt;},get active(){return performance.now()<holdUntil;}};
+root.GW_PRESENTATION={finish,unlock,musicPlayer,setVolume(on,value=1){if(stingerBus)stingerBus.gain.value=on?STINGER_VOLUME*value:0;},get age(){return performance.now()-finishAt;},get active(){return performance.now()<holdUntil;}};
 })(window);
