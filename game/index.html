@@ -10,6 +10,7 @@ canvas{display:block;width:100%;height:100%;object-fit:contain;background:var(--
 </style>
 <canvas id="c" width="1280" height="720"></canvas>
 <script src="csets.js"></script>
+<script src="haptics.js"></script>
 <script>
 const cv=document.getElementById('c');let g=cv.getContext('2d');const mainG=g;
 // 조준경은 메인 캔버스의 기존 화면만 이용하므로 별도 전체화면 렌더 버퍼를 두지 않는다.
@@ -139,7 +140,7 @@ function sfx(k,v){
  case 'throw':tone(0.18,'sine',300,650,0.15);break;
  case 'bomb':if(play('bomb',1.3,1))break;nz(0.9,'lowpass',2500,80,1.4);tone(0.8,'sine',80,20,1.4);nz(0.25,'highpass',800,800,0.7);break;
  }}
-function vib(p){if(vibOn&&navigator.vibrate){try{navigator.vibrate(p)}catch(e){}}}
+function vib(p,priority){if(!vibOn)return false;return window.GW_HAPTICS?.request(p,priority??(Array.isArray(p)?2:Number(p)>=80?1:0))??false;}
 function sndBtn(){return{x:W-218,y:8,w:44,h:34}}
 function vibBtn(){return{x:W-168,y:8,w:44,h:34}}
 let fsMsg=0;
@@ -279,7 +280,7 @@ function drawFlash(x,y,a,R,k,en){g.save();g.globalCompositeOperation='lighter';R
  if(en){for(let j=0;j<4;j++)sp(a+j*1.5708,R*1.5,R*0.17)}else{sp(a,R*2.4,R*0.26);sp(a+1.05,R*0.85,R*0.16);sp(a-1.05,R*0.85,R*0.16)}
  g.restore()}
 function burst(x,y,n,col){if(parts.length>250)return;for(let k=0;k<n;k++)parts.push({x,y,vx:(Math.random()-0.5)*9,vy:-Math.random()*7,life:16+Math.random()*10,col,s:2+Math.random()*3})}
-function aimPt(h){const AR=34/(1+h.w.zoom*0.6);let b=null,bd=AR;for(const e of enemies){const d=Math.hypot(e.x-cross.x,ecy(e)-cross.y);if(d<bd){bd=d;b=e}}return b?{x:b.x,y:ecy(b)}:{x:cross.x,y:cross.y}}   // 수동 사격: 조준점으로 쏜다. 조준점 바로 근처 적만 살짝 보정(저격은 더 좁게)
+function aimPt(h){const itemAim=window.GW_FUN?.aim();if(itemAim)return itemAim;const AR=34/(1+h.w.zoom*0.6);let b=null,bd=AR;for(const e of enemies){const d=Math.hypot(e.x-cross.x,ecy(e)-cross.y);if(d<bd){bd=d;b=e}}return b?{x:b.x,y:ecy(b)}:{x:cross.x,y:cross.y}}   // 수동 사격: 조준점으로 쏜다. 조준점 바로 근처 적만 살짝 보정(저격은 더 좁게)
 function shoot(h,tg,manual,cont){const w=h.w;let tp;if(manual)tp=aimPt(h);else{if(!tg)return;tp={x:tg.x,y:ecy(tg)}}h.faceLeft=tp.x<h.x;const m=muzzle(h),a0=Math.atan2(tp.y-m.y,tp.x-m.x);
  const dm=(manual?1:ST.autoDm*(1+h.m.auto))*(1+h.m.atk),sp=w.spread*(1-Math.min(0.85,h.m.aim));h.mf=5;h.mfa=a0;h.mfs=h.ht*0.055*(w.n==='산탄'?1.45:w.n==='저격'?1.6:1)*(manual?1:0.85);
  for(let k=0;k<w.pellets;k++){const a=a0+(Math.random()-0.5)*2*sp,cr=Math.random()<h.m.crit;
@@ -323,7 +324,7 @@ function update(){
  const sw=heroes[sel].w,sv=fireHeld?sw.sens:1;   // 조준경 상태에서는 무기별 감도
  if(jx||jy){cross.x=Math.max(200,Math.min(WW-200,cross.x+jx*12*sv));cross.y=Math.max(L.cy0,Math.min(L.cy1,cross.y+jy*10*sv));cross.used=180}
  // 조준 끌림: 적이 가까이 오면 무기별 세기로 조준점이 살짝 붙는다
- if(fireHeld&&!jx&&!jy){const tg=crossTarget();if(tg){const dx=tg.x-cross.x,dy=ecy(tg)-cross.y;if(Math.hypot(dx,dy*2)<sw.pull*0.4){cross.x+=Math.max(-8,Math.min(8,dx*sw.mag));cross.y+=Math.max(-3,Math.min(3,dy*sw.mag*0.4));cross.used=180}}}
+ if(fireHeld&&!jx&&!jy&&!window.GW_FUN?.aimingAtItem()){const tg=crossTarget();if(tg){const dx=tg.x-cross.x,dy=ecy(tg)-cross.y;if(Math.hypot(dx,dy*2)<sw.pull*0.4){cross.x+=Math.max(-8,Math.min(8,dx*sw.mag));cross.y+=Math.max(-3,Math.min(3,dy*sw.mag*0.4));cross.used=180}}}
  if(cross.used>0)cross.used--;
  const want=Math.max(0,Math.min(WW-W,cross.x-W/2));camX+=(want-camX)*0.12;
  // 직접 조준 중에는 발사 전에도 조준점이 영웅 왼쪽으로 넘어가면 즉시 반전한다.
@@ -360,6 +361,7 @@ function update(){
   else{hh.hit=1;sfx('hurt');vib(35);hurtF=Math.max(hurtF,0.5+0.4*Math.min(1,b.dm));if(hh.hp>0)hh.hp-=ST.edmg*b.dm*(1-hh.m.def)*guardMul(hh);burst(b.tx,b.ty,6,'#ff7a5a');shk=Math.max(shk,3)}}}
  ebul=ebul.filter(b=>!b.done);for(const e of enemies)if(e.ff>0)e.ff--;
  for(const b of bullets){b.x+=b.vx;b.y+=b.vy;b.life--}
+ if(window.GW_FUN)window.GW_FUN.hitItems();
  for(const b of bullets)for(const e of enemies){if(!b.dead&&!e.dead&&bhit(b,e)){
   if(e.cv&&e.cv.hp>0){b.dead=true;burst(b.x,b.y,5,'#d9b27a');hitCover(e.cv,b.dmg,e.x,ey(e));continue}
   if(b._gwKiller)e._gwKiller=b._gwKiller;e.hp-=b.dmg;e.flash=3;b.dead=true;sfx('hit');
@@ -465,6 +467,7 @@ function drawWorld(){
   g.restore()}
  g.save();g.globalCompositeOperation='lighter';g.lineCap='round';for(const b of ebul){const q=Math.max(0,b.p-0.12),x0=b.sx+(b.tx-b.sx)*q,y0=b.sy+(b.ty-b.sy)*q,x1=b.sx+(b.tx-b.sx)*b.p,y1=b.sy+(b.ty-b.sy)*b.p;g.strokeStyle='rgba(255,70,40,.55)';g.lineWidth=2+7*b.p;g.beginPath();g.moveTo(x0,y0);g.lineTo(x1,y1);g.stroke()}g.restore();
  g.fillStyle='#ff6a3a';for(const b of ebul){const x=b.sx+(b.tx-b.sx)*b.p,y=b.sy+(b.ty-b.sy)*b.p;g.beginPath();g.arc(x,y,3+9*b.p,0,7);g.fill()}
+ if(window.GW_FUN)window.GW_FUN.drawWorld();
  heroes.forEach(h=>{if(h.cv)drawPCover(h)});
  heroes.forEach(drawHero);
  g.lineCap='round';for(const b of bullets){g.strokeStyle=b.wd>=6||b.cr?'#fff':'#ffe27a';g.lineWidth=b.wd;g.beginPath();g.moveTo(b.x-b.vx*0.7,b.y-b.vy*0.7);g.lineTo(b.x,b.y);g.stroke()}
@@ -625,12 +628,20 @@ function drawMenu(){g.fillStyle='#14101a';g.fillRect(0,0,W,H)}
 applyLayout(wantPortrait());
 function step(){update()}
 let fpsT=performance.now(),fpsN=0,fps=0,acc=0,lastT=performance.now();
-(function loop(){const p=wantPortrait();if(p!==portrait)applyLayout(p);const nw0=performance.now();acc+=Math.min(100,nw0-lastT);lastT=nw0;let nn=0;while(acc>=16.667&&nn<4){step();acc-=16.667;nn++}draw();
- fpsN++;const nw=performance.now();if(nw-fpsT>=500){fps=Math.round(fpsN*1000/(nw-fpsT));fpsN=0;fpsT=nw}
- requestAnimationFrame(loop)})();
+let mainRAF=0;
+(function loop(){
+ // Queue the next frame first: a failed render must not permanently stop the menu.
+ mainRAF=requestAnimationFrame(loop);
+ if(!window.GW_RESUME_MAIN)window.GW_RESUME_MAIN=function(){lastT=performance.now();acc=0;fireHeld=false;stick.on=false;stick.dx=stick.dy=0;for(const k in key)key[k]=0;};
+ if(window.GW_MECHA_OPEN){lastT=performance.now();acc=0;return;}
+ try{const p=wantPortrait();if(p!==portrait)applyLayout(p);const nw0=performance.now();acc+=Math.min(100,nw0-lastT);lastT=nw0;let nn=0;while(acc>=16.667&&nn<4){step();acc-=16.667;nn++}draw();fpsN++;const nw=performance.now();if(nw-fpsT>=500){fps=Math.round(fpsN*1000/(nw-fpsT));fpsN=0;fpsT=nw}}
+ catch(e){lastT=performance.now();acc=0;window.GW_LAST_FRAME_ERROR=String(e?.stack||e);console.error('GENDER WARFARE frame',e);}
+})();
 </script>
 <script src="dialogue_bundle.js"></script>
 <script src="save_sync.js"></script>
 <script src="meta.js"></script>
 <script src="audio_options.js"></script>
 <script src="purification_integration.js"></script>
+<script src="comic_items.js"></script>
+<script src="mecha_portal.js"></script>
