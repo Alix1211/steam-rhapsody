@@ -17,7 +17,7 @@ try{const x=JSON.parse(localStorage.getItem(AUDIO_SETTINGS_KEY)||'{}');
  cfg.sfx=Math.max(0,Math.min(1,cfg.sfx));cfg.bgm=Math.max(0,Math.min(1,cfg.bgm));
 }catch(e){}
 let optionsOpen=false,sliderDrag=null;
-window.GW_EFFECTS_ON=cfg.effects;
+window.GW_EFFECTS_ON=cfg.effects;smMode=cfg.effects?4:0;
 soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibration);
 function persist(){
  try{localStorage.setItem(AUDIO_SETTINGS_KEY,JSON.stringify(cfg));}catch(e){}
@@ -25,7 +25,7 @@ function persist(){
 const music=new Audio();music.loop=true;music.preload='none';
 let musicKey='',loadedVoices={},voicePending={},liveVoices=0,lastDeath=0;
 function configure(){
- soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibration);window.GW_EFFECTS_ON=cfg.effects;
+ soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibration);window.GW_EFFECTS_ON=cfg.effects;smMode=cfg.effects?4:0;
  if(AC&&master)master.gain.value=cfg.sound ? 0.85*cfg.sfx : 0;
  configureMusicVolume();
  if(!cfg.sound)music.pause();
@@ -100,12 +100,10 @@ draw=function(){
  drawOptionButton();
  if(optionsOpen)drawOptionWindow();
 };
-function buttonRect(){return{x:W-166,y:8,w:45,h:34};}
+function buttonRect(){return{x:W-54,y:8,w:46,h:40};}
 function drawOptionButton(){
  const c=mainG,b=buttonRect();c.save();
- c.fillStyle='rgba(34,27,39,.94)';c.fillRect(b.x,b.y,b.w,b.h);
- c.strokeStyle='#c9a97f';c.lineWidth=1.4;c.strokeRect(b.x,b.y,b.w,b.h);
- c.font='bold 15px sans-serif';c.textAlign='center';c.fillStyle='#fff1d8';c.fillText('설정',b.x+b.w/2,b.y+23);c.restore();
+ c.globalAlpha=.65;c.font='30px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff1d8';c.fillText('⚙',b.x+b.w/2,b.y+b.h/2);c.restore();
 }
 function uiGeometry(){
  const w=Math.min(W-40,530),h=Math.min(H-40,514),x=(W-w)/2,y=(H-h)/2;
@@ -190,6 +188,6 @@ addEventListener('keydown',function(e){
  if((e.key==='Escape'||e.key==='Esc')&&optionsOpen){e.stopImmediatePropagation();optionsOpen=false;syncMusic();}
 },true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)music.pause();else if(cfg.sound)syncMusic();});
-window.GW_AUDIO_OPTIONS={setVibration,testHaptics,get hapticStatus(){return window.GW_HAPTICS?.status;},get settings(){return Object.assign({},cfg);},get track(){return musicKey;},
+window.GW_AUDIO_OPTIONS={setSettings(values){for(const k of Object.keys(cfg))if(typeof values[k]===typeof cfg[k])cfg[k]=values[k];cfg.sfx=Math.max(0,Math.min(1,cfg.sfx));cfg.bgm=Math.max(0,Math.min(1,cfg.bgm));configure();persist();},setVibration,testHaptics,get hapticStatus(){return window.GW_HAPTICS?.status;},get settings(){return Object.assign({},cfg);},get track(){return musicKey;},
  get voiceCounts(){return {female:SEGMENTS.female.length,male:SEGMENTS.male.length};},open(){optionsOpen=true;},suspendForMecha(value){mechaSuspended=!!value;if(mechaSuspended)music.pause();else syncMusic();},syncMusic};
 })();
