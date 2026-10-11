@@ -21,6 +21,7 @@ dependencies {
 }
 // 자체 호스팅 게임(정화방 포함)을 한 오리진에 배치. AssetsPathHandler URL=/assets/index.html.
 def syncWebAssets = tasks.register('syncWebAssets', Sync) {
+    doFirst { if(!rootProject.file('../game/purification.html').isFile()) throw new GradleException('Missing purification.html') }
     from(rootProject.file('../game')) {
         exclude '**/*.psd', '**/*.zip', '**/*.apk'
     }

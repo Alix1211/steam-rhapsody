@@ -411,7 +411,7 @@ public final class MainActivity extends Activity {
             || !(v.opt("seen") instanceof JSONObject) || !(v.opt("party") instanceof JSONObject)
             || !(v.opt("gear") instanceof JSONArray) || !(v.opt("eq") instanceof JSONObject))
             throw new IllegalArgumentException("schema");
-        for(String k:new String[]{"heroXP","corrupt","rampage","purifyDialogue"})
+        for(String k:new String[]{"heroXP","corrupt","rampage","purifyDialogue","dominance"})
             if(v.has(k)&&!(v.get(k) instanceof JSONObject))throw new IllegalArgumentException("field");
         if(v.has("t")){
             Object stamp=v.get("t");

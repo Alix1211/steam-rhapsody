@@ -15,6 +15,7 @@
   const s=JSON.parse(b[K]);if(!isObject(s)||s.v!==1||!isObject(s.clr)||!isObject(s.seen)||
     !isObject(s.party)||!Array.isArray(s.gear)||!isObject(s.eq)||
     (s.heroXP!==undefined&&!isObject(s.heroXP))||(s.corrupt!==undefined&&!isObject(s.corrupt))||
+    (s.dominance!==undefined&&!isObject(s.dominance))||
     (s.rampage!==undefined&&!isObject(s.rampage))||
     (s.t!==undefined&&(!Number.isSafeInteger(s.t)||s.t<0)))throw Error('GW save');
   return b;

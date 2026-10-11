@@ -37,7 +37,7 @@ const mmss = fr => { const s = Math.max(0, Math.ceil(fr / 60)); return Math.floo
 
 // ================= 저장 =================
 const SAVE_KEY = 'gw_save_v1';
-const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, heroXP: {}, corrupt: {}, rampage: {}, purifyDialogue: {}, last: { side: 'F', ch: {} } });
+const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, heroXP: {}, corrupt: {}, rampage: {}, purifyDialogue: {}, dominance: {}, last: { side: 'F', ch: {} } });
 let SV = defSave();
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); if (s) { const o = JSON.parse(s); SV = Object.assign(defSave(), o); SV.opt = Object.assign({ dev: false }, o.opt); } } catch (e) {} }
 function saveNow() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SV)); } catch (e) {} }
@@ -483,7 +483,7 @@ function openParty(side, ci, ch, no) {
 }
 function drawParty() {
   const { side, ch, no } = PS, pool = poolOf(side), n = pool.length;
-  coverImg(bg, 0.5, 0.5); dim(0.82); header('출격 편성', () => openStages(side, PS.ci), chNo(ch) + '-' + no + ' · ' + epData(ch, no).title);
+  coverImg(bg, 0.5, 0.5); dim(0.82); header('출격 편성', () => openStages(side, PS.ci), chNo(ch) + '-' + no + ' · 초상화 꾹: 정화 / 지배욕 훈련');
   const cols = n > 8 ? (portrait ? 4 : 8) : (portrait ? 2 : 4), rows = Math.ceil(n / cols), top = 92, bot = 118, gx = 14;
   const rawH = Math.min((H - top - bot - (rows - 1) * gx) / rows, 330), cw = (W - 40 - (cols - 1) * gx) / cols, cardH = Math.min(rawH, cw * 1.36), small = cw < 170;
   const drawCard = (r, x, y, w, h, on, av, idx) => {
@@ -524,6 +524,7 @@ function drawParty() {
       g.fillStyle=hasCorruption?'#ffb4b4':'#f7e0d4';
       g.fillText((hasCorruption?'⛔':'☠')+percent+'%',x+w*.725,y+h*.914,w*.235);
     }
+    if(!isPrisoner&&av){g.font='bold '+fontInfo+'px '+FONT;g.fillStyle='#ffe5a3';g.fillText('♛ '+(window.GW_DOMINANCE?.value(r.k)||0)+'%',x+w*.5,y+h*.99,w*.80);}
     g.restore();
     if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.60,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
   };
