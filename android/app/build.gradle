@@ -25,6 +25,7 @@ def syncWebAssets = tasks.register('syncWebAssets', Sync) {
     from(rootProject.file('../game')) {
         exclude '**/*.psd', '**/*.zip', '**/*.apk'
     }
+    from(rootProject.file('../data')) { into 'data' }
     into(layout.buildDirectory.dir('generated/webAssets'))
 }
 tasks.configureEach {

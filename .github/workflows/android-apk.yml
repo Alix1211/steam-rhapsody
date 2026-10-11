@@ -2,7 +2,7 @@ name: GENDER WARFARE APK
 on:
   push:
     branches: [main]
-    paths: ['android/**', 'game/**', 'data/**', 'tools/check_haptics.js', '.github/workflows/android-apk.yml']
+    paths: ['android/**', 'tools/build_web_update.py', '.github/workflows/android-apk.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -23,6 +23,8 @@ jobs:
           path: ~/.gradle/caches
           key: gender-warfare-gradle-${{ hashFiles('android/**/*.gradle', 'android/gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: gender-warfare-gradle-
+      - name: APK 내장 미디어 목록 생성
+        run: python3 tools/build_web_update.py
       - name: 진동과 병과 검사
         run: node tools/check_haptics.js
       - name: APK 컴파일 및 단위 검사
@@ -32,6 +34,6 @@ jobs:
         with:
           tag_name: app-latest
           name: GENDER WARFARE 최신 APK
-          body: 본편과 메카전 통합판입니다. 진동 기능 변경은 새 APK 설치가 필요합니다. 이후 업데이트는 앱 삭제 없이 덮어 설치하세요.
+          body: 본편과 메카전 통합판입니다. 진동 기능 변경은 새 APK 설치가 필요합니다. 게임 수정은 앱 재시작으로 자동 반영됩니다. Android 기능 변경 시에만 APK를 덮어 설치하세요.
           make_latest: true
           files: android/app/build/outputs/apk/debug/gender-warfare.apk

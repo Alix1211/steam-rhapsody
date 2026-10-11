@@ -1,0 +1,21 @@
+name: GENDER WARFARE Web Update
+on:
+  push:
+    branches: [main]
+    paths: ['game/**', 'data/**', 'tools/build_web_update.py', '.github/workflows/web-update.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: {group: gender-warfare-web, cancel-in-progress: true}
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/build_web_update.py
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: web-latest
+          name: GENDER WARFARE 게임 자동 업데이트
+          make_latest: false
+          files: game-web.zip
