@@ -81,7 +81,7 @@ let mechaSuspended=false;
 function syncMusic(){if(mechaSuspended){music.pause();return;}
  const key=chosenBgm();
  if(key!==musicKey){
-  musicKey=key;music.pause();music.src=window.gwAssetURL('audio/bgm/'+BGM_FILES[key]);music.load();
+  musicKey=key;music.pause();music.src=typeof window.gwAssetURL==='function'?window.gwAssetURL('audio/bgm/'+BGM_FILES[key]):new URL('audio/bgm/'+BGM_FILES[key],location.href).href;music.load();
  }
  configureMusicVolume();
  if(cfg.sound && AC&&music.paused && !optionsOpen)music.play().catch(()=>{});
@@ -146,7 +146,7 @@ function drawOptionWindow(){
   c.beginPath();c.fillStyle='#fff8e3';c.arc(d.sx+d.sw*value,y-2,13,0,7);c.fill();
   c.textAlign='right';c.font='bold 16px sans-serif';c.fillText(Math.round(value*100)+'%',d.x+d.w-26,y+5);
  }
- if(window.GWBridge&&window.GW_DRIVE){boxFill(c,d.drive,'#353035','#c9a073');c.font='bold 15px sans-serif';c.textAlign='center';c.fillStyle='#ffe1ab';c.fillText('☁ Google Drive 저장',d.drive.x+d.drive.w/2,d.drive.y+21);}
+ if(window.GWBridge&&window.GW_DRIVE){boxFill(c,d.drive,'#353035','#c9a073');c.font='bold 15px sans-serif';c.textAlign='center';c.fillStyle='#ffe1ab';c.fillText('☁ Drive 저장 · 기기 이어하기',d.drive.x+d.drive.w/2,d.drive.y+21);}
  boxFill(c,d.done,'#6f394a','#ebbc85');
  c.fillStyle='#fff3dc';c.textAlign='center';c.font='bold 21px sans-serif';
  c.fillText('게임으로 돌아가기',d.done.x+d.done.w/2,d.done.y+30);
