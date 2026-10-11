@@ -73,7 +73,7 @@ window.sfxDeath=function(e){
 function chosenBgm(){
  // meta.js의 curStage는 별도 IIFE의 지역 변수라 여기서 직접 참조할 수 없다.
  // 전투 여부는 공개된 GW.scene, 진영은 전투 코어의 side를 기준으로 판단한다.
- const fighting=!menu && !!window.GW && window.GW.scene==='battle'&&(!over||window.GW_PRESENTATION.age<800);
+ const fighting=!!window.GW&&((!menu&&window.GW.scene==='battle')||window.GW_MISSIONS?.run?.dialogue)&&(!over||window.GW_PRESENTATION.age<800);
  const faction=(!menu&&window.GW?.scene==='battle'||window.GW?.SV?.last?.side==='C')?side:
    (window.GW&&window.GW.SV&&window.GW.SV.last?window.GW.SV.last.side:'F');
  if(faction==='C')return 'demon';
@@ -129,6 +129,7 @@ function drawOptionWindow(){
   c.font='bold 17px sans-serif';c.textAlign='center';c.fillStyle='#fff';
   c.fillText(labels[i][1]?'ON':'OFF',b.x+b.w/2,b.y+26);
  }
+ const audioTest={x:d.x+164,y:d.rows[2]-14,w:114,h:39};boxFill(c,audioTest,'#614534','#d6b28d');c.textAlign='center';c.font='bold 14px sans-serif';c.fillStyle='#fff';c.fillText('팡파레 테스트',audioTest.x+audioTest.w/2,audioTest.y+26);
  const test=hapticTestRect();boxFill(c,test,'#463a61','#d6b28d');c.textAlign='center';c.font='bold 15px sans-serif';c.fillStyle='#fff';c.fillText('진동 테스트',test.x+test.w/2,test.y+26);
  const hs=window.GW_HAPTICS?.status;const message=hs?.message||'진동 제어기를 불러오지 못했습니다';c.textAlign='left';c.font='13px sans-serif';c.fillStyle=hs?.code==='accepted'?'#baffd0':'#ffe0a0';let lines=[''];for(const ch of message){const i=lines.length-1;if(c.measureText(lines[i]+ch).width>d.w-58)lines.push(ch);else lines[i]+=ch;}lines.slice(0,2).forEach((line,i)=>c.fillText(line,d.x+29,d.y+254+i*19));
  const vol=[['효과음 볼륨',cfg.sfx],['배경음 볼륨',cfg.bgm]];
@@ -155,6 +156,7 @@ function setVibration(value){cfg.vibration=!!value;configure();persist();return 
 function testHaptics(){setVibration(true);window.GW_HAPTICS?.test();}
 function optionsPointer(p){
  if(window.GWBridge&&window.GW_DRIVE&&inBox(p,uiGeometry().drive)){optionsOpen=false;sliderDrag=null;window.GW_DRIVE.open();return;}
+ const audioTest={x:uiGeometry().x+164,y:uiGeometry().rows[2]-14,w:114,h:39};if(inBox(p,audioTest)){initAudio();window.GW_PRESENTATION.finish(true,false,cfg);return;}
  if(inBox(p,hapticTestRect())){testHaptics();return;}
  if(inBox(p,uiGeometry().close)||inBox(p,uiGeometry().done)){optionsOpen=false;sliderDrag=null;syncMusic();return;}
  const d=uiGeometry(),ks=['effects','vibration','sound'];

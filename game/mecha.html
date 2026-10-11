@@ -161,7 +161,7 @@ function enemyFire(e){if(e.supply)return;const aim=Math.atan2(hero.y-e.y,hero.x-
  if(e.pattern==='radial'){for(let j=0;j<8;j++)pellet(e,j*TAU/8+e.phase,150);e.cd=3.8}
  if(e.pattern==='boss'){const cycle=Math.floor(time/3)%3;if(cycle===0){for(let j=0;j<18;j++)pellet(e,j*TAU/18,165)}else for(let j=-3;j<=3;j++)pellet(e,aim+j*.15,cycle===1?220:155,cycle===1?'rocket':'ice');e.cd=2.5}
 }
-function update(dt){try{if(window.parent!==window&&window.parent.GW_SAVE_SYNC?.checking)return;}catch(_){}if(state!=='playing'||paused)return;time+=dt;updateBattlefield(dt);updateFX(dt);hero.inv=Math.max(0,hero.inv-dt);hero.slow=Math.max(0,hero.slow-dt);hero.laser=Math.max(0,hero.laser-dt);
+function update(dt){try{if(window.parent!==window&&window.parent.GW_SAVE_SYNC?.checking)return;}catch(_){}if(state!=='playing'||paused||window.GW_FLIGHT_MISSIONS?.blocked)return;time+=dt;try{window.parent.GW_DOMINANCE?.consume(roster.filter(r=>r.hp>0).map(r=>r.id),dt);}catch(_){}updateBattlefield(dt);updateFX(dt);hero.inv=Math.max(0,hero.inv-dt);hero.slow=Math.max(0,hero.slow-dt);hero.laser=Math.max(0,hero.laser-dt);
  roster.forEach((r,i)=>{r.cd=Math.max(0,r.cd-dt);if(i!==active&&r.hp>0)r.hp=Math.min(r.max,r.hp+dt*.45)});
  let dx=(keys.ArrowRight||keys.KeyD?1:0)-(keys.ArrowLeft||keys.KeyA?1:0),dy=(keys.ArrowDown||keys.KeyS?1:0)-(keys.ArrowUp||keys.KeyW?1:0);if(stick.active){dx=stick.dx;dy=stick.dy}const m=Math.max(1,Math.hypot(dx,dy)),speed=hero.slow>0?150:285;hero.x=clamp(hero.x+dx/m*speed*dt,95,Math.max(95,W-95));hero.y=clamp(hero.y+dy/m*speed*dt,88,540);
  swapBoost=Math.max(0,swapBoost-dt);swapBoostCooldown=Math.max(0,swapBoostCooldown-dt);swapGuardCooldown=Math.max(0,swapGuardCooldown-dt);streakTimer=Math.max(0,streakTimer-dt);if(streakTimer===0)streak=0;const r=roster[active];r.timer-=dt;if(r.timer<=0){if(r.kind==='medic'){r.burst=3;r.burstTimer=0}else fire();r.timer=r.interval}if(r.kind==='medic'&&r.burst>0){r.burstTimer-=dt;if(r.burstTimer<=0){fire();r.burst--;r.burstTimer=.09}}
@@ -176,7 +176,8 @@ function update(dt){try{if(window.parent!==window&&window.parent.GW_SAVE_SYNC?.c
  for(const b of hostile){b.x+=b.vx*dt;b.y+=b.vy*dt;b.t-=dt;if(Math.hypot(b.x-hero.x,b.y-hero.y)<b.r+11){b.t=0;hurt(b.damage,b.slow)}}
  for(const f of fx){f.t-=dt;if(f.type==='bomb'&&!f.done&&f.max-f.t>f.delay){f.y+=900*dt;if(f.y>=f.target){f.done=true;sample('bomb',.62,rand(.85,1));punch(9,.10,'#ffd49c');vibrate(65,1);burst(f.x,f.target,'#ffb766',145);for(const e of enemies)if(Math.hypot(e.x-f.x,e.y-f.target)<210){e.lastHit=f.owner;e.hp-=240*(f.growthFactor||1)};hostile=hostile.filter(b=>Math.hypot(b.x-f.x,b.y-f.target)>160)}}}updateGroundAttack(dt);notes.forEach(n=>n.t-=dt);
  enemies=enemies.filter(e=>!e.dead);bullets=bullets.filter(b=>b.t>0&&b.x>-100&&b.x<W+100&&b.y>-80&&b.y<H+80);hostile=hostile.filter(b=>b.t>0&&b.x>-50&&b.x<W+100&&b.y>-50&&b.y<580);fx=fx.filter(f=>f.t>0).slice(-180);bullets=bullets.slice(-220);hostile=hostile.slice(-220);notes=notes.filter(n=>n.t>0);
- if(bossKilled&&bossMilestone()&&time>=plan.duration&&enemies.length===0&&flung.length===0&&!fx.some(f=>f.type==='burst'&&f.size>=150&&f.t>.05)){state='won';release();settleVictory();syncMusic()}
+ window.GW_FLIGHT_MISSIONS?.tick(dt);
+ if(bossKilled&&(!window.GW_FLIGHT_MISSIONS||window.GW_FLIGHT_MISSIONS.permitsWin())&&bossMilestone()&&time>=plan.duration&&enemies.length===0&&flung.length===0&&!fx.some(f=>f.type==='burst'&&f.size>=150&&f.t>.05)){state='won';release();settleVictory();syncMusic()}
 }
 function background(){box(0,0,W,H,'#6eadcf');const im=imgs.bg_far;if(im?.naturalWidth){const ww=H*im.width/im.height,off=time*11%ww;for(let x=-off;x<W;x+=ww)g.drawImage(im,x,0,ww,H)}const floor=imgs.bg_ground;if(floor?.naturalWidth){const hh=170,ww=hh*floor.width/floor.height,off=time*240%ww;for(let x=-off;x<W;x+=ww)g.drawImage(floor,x,480,ww,hh)}}
 function draw(){g.setTransform(cv.width/W,0,0,cv.height/H,0,0);g.save();if(settings.flash&&state==='playing'&&!paused&&shakePower>0)g.translate(Math.sin(time*109)*shakePower,Math.cos(time*137)*shakePower*.6);background();if(settings.flash&&lightning){for(let j=0;j<lightning.points.length-1;j++){const a=lightning.points[j],b=lightning.points[j+1];line(a[0],a[1],b[0],b[1],'#92caff99',12);line(a[0],a[1],b[0],b[1],'#fff',3);}}
@@ -417,7 +418,7 @@ function currentPlan(){return PLAN_PAIRS[selectedMission-1][variant];}
 function bossMilestone(){return plan.boss.length>0&&waveBossIndex>=plan.boss.length;}
 const launch11=launchSortie;
 launchSortie=function(){plan=currentPlan();waveBossIndex=0;launch11();};
-const reset11=reset;reset=function(){resultStarted=-Infinity;resultStill=null;plan=currentPlan();waveBossIndex=0;reset11();for(const r of roster){const base=classTemplates[r.kind],n=growth(r.id);r.growthFactor=1+n;r.max=Math.round(base.max*r.growthFactor*10)/10;r.hp=r.max;r._dominanceBase=base.damage*r.growthFactor;let value=0;try{value=window.parent.GW_DOMINANCE?.value(r.id)||0;}catch(_){}r.dominanceDuration=value*.5;Object.defineProperty(r,'damage',{configurable:true,enumerable:true,get:()=>r._dominanceBase*(time<r.dominanceDuration?1.2:1),set:v=>{r._dominanceBase=v}});r.growth=n;}};
+const reset11=reset;reset=function(){resultStarted=-Infinity;resultStill=null;plan=currentPlan();waveBossIndex=0;reset11();for(const r of roster){const base=classTemplates[r.kind],n=growth(r.id);r.growthFactor=1+n;r.max=Math.round(base.max*r.growthFactor*10)/10;r.hp=r.max;r._dominanceBase=base.damage*r.growthFactor;let value=0;try{value=window.parent.GW_DOMINANCE?.value(r.id)||0;}catch(_){}r.dominanceDuration=value*.5;Object.defineProperty(r,'damage',{configurable:true,enumerable:true,get:()=>r._dominanceBase*((window.parent.GW_DOMINANCE?.value(r.id)||0)>0?1.2:1),set:v=>{r._dominanceBase=v}});r.growth=n;}};
 const create11=createEnemy;createEnemy=function(boss=false){create11(boss);const e=enemies[enemies.length-1],d=DIFFICULTIES[difficulty];if(!boss){let ix=null;if(plan.type==='swarm')ix=2;if(plan.type==='air'||plan.type==='drone'||plan.type==='fast')ix=2+Math.floor(rand(0,4));if(plan.type==='ground')ix=Math.floor(rand(0,2));if(ix!==null){e.ground=ix<2;e.armor=ix===1;e.key='enemy_'+(faction==='M'?'F':'M')+'_'+(e.ground?'ground'+ix:'air'+(ix-2));e.size=e.ground?145:120;e.y=e.ground?510:rand(100,490);e.hp=e.max=e.armor?330:e.ground?75:48;}if(plan.type==='ice')e.pattern='ice';if(plan.type==='rocket')e.pattern='rocket';if(plan.type==='swarm'){e.pattern='rapid';e.hp=e.max=34;e.cd=rand(2,4);}if(plan.type==='elite'){e.hp*=3;e.max=e.hp;e.armor=true;}if(plan.type==='fast')e.speed*=1.6;}else{e.bossNo=waveBossIndex;e.y=200+(waveBossIndex%2)*190;e.phase=waveBossIndex*2;if((plan.type==='mother'||plan.type==='motherAll')&&waveBossIndex===plan.boss.length-1){e.mother=true;e.size=H*.93;e.hp=e.max=6500;e.parts=[1,1,1];e.droneTimer=2;note('적 모선 · 포대와 격납고를 파괴하세요');}else if(plan.boss.length>1){e.hp=e.max=1900;e.size=340;}}
  e.hp*=d.hp;e.max=e.hp;e.cd*=d.fire;};
 function advanceWaves(dt){spawn-=dt;const d=DIFFICULTIES[difficulty];if(time<plan.duration&&spawn<=0&&enemies.length<30){for(let j=0;j<plan.count&&enemies.length<30;j++){createEnemy();const e=enemies[enemies.length-1];e.x+=j*85;e.y=e.ground?510:clamp(hero.y+rand(-155,155),100,490);}spawn=rand(1.05,1.4)/(difficulty===2?1.15:1);if(plan.type==='boss')spawn=4;}
@@ -453,7 +454,7 @@ const reset15=reset;reset=function(){reset15();roster.forEach(r=>r.ringTimer=1);
 const update15=update;update=function(dt){if(state==='playing'&&!paused&&roster[active].kind==='medic'){const r=roster[active];r.ringTimer=(r.ringTimer??1)-dt;if(r.ringTimer<=0){fireMedicRing();r.ringTimer+=1;}}update15(dt);};
 const drawExtra15=drawExtraFX;drawExtraFX=function(){drawExtra15();for(const b of bullets)if(b.ring){circle(b.x,b.y,6,'#155b35');circle(b.x,b.y,4,'#61ff91');circle(b.x-1,b.y-1,1.3,'#e2ffe7');}};
 window.GW_MECHA_ENTER=function(f){portalSleeping=false;try{const s=window.parent.GW_AUDIO_OPTIONS?.settings;if(s){settings.vibration=s.vibration;settings.sound=s.sound;settings.flash=s.effects;settings.sfx=s.sfx;settings.bgm=s.bgm;}}catch(_){}hapticController()?.setEnabled(settings.vibration);keys={};release();cutin=null;chooseFaction(f);};
-window.GW_MECHA_LEAVE=function(){portalSleeping=true;flightOptionsOpen=false;keys={};release();cutin=null;state='map';paused=false;flightMusicFader.pause();window.GW_PRESENTATION.setVolume(false);persistCampaign();};
+window.GW_MECHA_LEAVE=function(){try{window.parent.GW_DOMINANCE?.flush();}catch(_){}portalSleeping=true;flightOptionsOpen=false;keys={};release();cutin=null;state='map';paused=false;flightMusicFader.pause();window.GW_PRESENTATION.setVolume(false);persistCampaign();};
 
 // Personal military merit: five insignia / five equipment slots.
 const PROMOTION_THRESHOLDS=[300,1000,2500,20000];
@@ -526,7 +527,7 @@ const drawSortie=draw;draw=function(){drawSortie();if(state==='map'||state==='de
 // Hold the last battlefield, then dissolve into results over 400ms.
 let resultStarted=-Infinity,resultStill=null;
 const updateResult=update;update=function(dt){const before=state;updateResult(dt);if(before==='playing'&&(state==='won'||state==='lost')){
- resultStarted=performance.now();resultStill=document.createElement('canvas');resultStill.width=cv.width;resultStill.height=cv.height;resultStill.getContext('2d').drawImage(cv,0,0);
+ try{window.parent.GW_DOMINANCE?.flush();}catch(_){}resultStarted=performance.now();resultStill=document.createElement('canvas');resultStill.width=cv.width;resultStill.height=cv.height;resultStill.getContext('2d').drawImage(cv,0,0);
  window.GW_PRESENTATION.finish(state==='won',false,{sound:settings.sound,sfx:settings.sfx??1});syncMusic();
  }};
 const drawResultFade=draw;draw=function(){drawResultFade();syncMusic();if((state==='won'||state==='lost')&&resultStill){const age=performance.now()-resultStarted;
@@ -550,4 +551,5 @@ cv.addEventListener('pointerdown',e=>{if(!flightOptionsOpen)return;e.preventDefa
 for(const type of ['pointermove','pointerup','pointercancel'])cv.addEventListener(type,e=>{if(flightOptionsOpen){e.preventDefault();e.stopImmediatePropagation();}},true);
 addEventListener('keydown',e=>{if(!flightOptionsOpen)return;e.preventDefault();e.stopImmediatePropagation();if(e.key==='Escape')closeFlightOptions();},true);
 
-</script></body></html>
+</script><script src="flight_missions.js"></script>
+</body></html>

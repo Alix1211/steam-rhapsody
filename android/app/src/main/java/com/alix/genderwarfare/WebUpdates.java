@@ -73,7 +73,7 @@ final class WebUpdates {
     },"GW-web-update").start();}
     WebResourceResponse serve(String requested){
         String path=safePath(requested);if(path==null)return null;
-        String mime=path.endsWith(".html")?"text/html":path.endsWith(".js")?"application/javascript":path.endsWith(".json")?"application/json":path.endsWith(".webp")?"image/webp":path.endsWith(".png")?"image/png":path.endsWith(".jpg")?"image/jpeg":path.endsWith(".mp3")?"audio/mpeg":path.endsWith(".ogg")?"audio/ogg":"application/octet-stream";
+        String mime=path.endsWith(".html")?"text/html":path.endsWith(".js")?"application/javascript":path.endsWith(".json")?"application/json":path.endsWith(".webp")?"image/webp":path.endsWith(".png")?"image/png":path.endsWith(".jpg")?"image/jpeg":path.endsWith(".wav")?"audio/wav":path.endsWith(".mp3")?"audio/mpeg":path.endsWith(".ogg")?"audio/ogg":"application/octet-stream";
         try{
             File dir=active;if(dir!=null){File f=new File(dir,path);if(f.isFile())return new WebResourceResponse(mime,"UTF-8",new FileInputStream(f));
                 String hash=manifest.optJSONObject("media")==null?"":manifest.getJSONObject("media").optString(path);

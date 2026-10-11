@@ -256,7 +256,7 @@ function runBlast(q){const x=q.x,y=q.y,R=q.R,mul=q.mul,big=mul>=1,gy=q.gy||y+24;
   if(e.cv&&e.cv.hp>0&&Math.hypot(e.cv.x-x,(L.ey0+e.cv.d*L.ed-30-y)*1.4)<R)hitCover(e.cv,ST.bombCv*0.8*mul,e.cv.x,L.ey0+e.cv.d*L.ed,q.ex);
   if(d<R){if(q.ownerKey)e._gwKiller=q.ownerKey;const f=1-0.5*d/R,nx=dx/(d+1),cva=e.cv&&e.cv.hp>0;e.hp-=ST.bombDmg*0.6*f*mul*(cva?0.5:1)*(q.ex?0.5:1);e.flash=8;e.kx=nx*14*f;e.vl=12*f;e.lift=1;e.stun=Math.max(e.stun||0,30);
    if(e.hp<=0)killEnemy(e,nx)}}}
-function killEnemy(e,nx){if(e.dead)return;e.dead=true;score++;const k=e.k,s=sc(e),cy=ecy(e)-(e.lift||0);
+function killEnemy(e,nx){if(e.dead)return;e.dead=true;window.GW_MISSIONS?.targetKilled(e);score++;const k=e.k,s=sc(e),cy=ecy(e)-(e.lift||0);
  streak=(streakT>0?streak:0)+1;streakT=170;if(streak>=5&&streak%5==0)banners.push({t:0,txt:streak+'연속 처치!'});
  if(k.mech||k.drone)sfx('kill');else if(typeof sfxDeath==='function')sfxDeath(e);else sfx('kill');vib(25);
  if(k.mech)blastQ.push({x:e.x,y:cy,R:e.boss?340:250,d:1,src:e,mul:e.boss?2.3:1.35,gy:ey(e)});
@@ -373,8 +373,9 @@ function update(){
   else if(i==sel&&fireHeld){if(h.cd<=0){shoot(h,null,true);h.cd=h.w.cd}}
   else if(h.cd<=0){const tg=autoFor(h);if(tg){shoot(h,tg,false);h.cd=h.w.acd}}
  });
- spawnT--;if(spawnT<=0&&enemies.length<ST.maxAlive&&ST.spawned<ST.goal){spawn();spawnT=ST.spB-(ST.spB-ST.spMin)*Math.min(1,ST.spawned/ST.goal)}
+ spawnT--;if(spawnT<=0&&enemies.length<ST.maxAlive&&(ST.spawned<ST.goal||window.GW_MISSIONS?.endless())){spawn();spawnT=ST.spB-(ST.spB-ST.spMin)*Math.min(1,ST.spawned/ST.goal);spawnT*=window.GW_MISSIONS?.pressure||1;}
  for(const e of enemies){
+  if(e.k.target)continue;
   if(e.kx){e.x=Math.max(100,Math.min(WW-100,e.x+e.kx));e.kx*=0.9;if(Math.abs(e.kx)<0.3)e.kx=0}
   if(e.lift>0||e.vl>0){e.lift=(e.lift||0)+e.vl;e.vl-=1.6;if(e.lift<=0){e.lift=0;e.vl=0}}
   if(e.chain>0&&--e.chain<=0){killEnemy(e);continue}
@@ -387,7 +388,7 @@ function update(){
   if(e.fireCd<=0&&e.tele==0){e.tele=24}
   if(e.tele>0){e.tele--;if(e.tele==0){
     let h=null,bd=1e9;for(const x of heroes){if(x.hp>0){const d=Math.abs(x.x-e.x);if(d<bd){bd=d;h=x}}}
-    if(h&&e.k.demon){demonAttack(e,h);}else if(h){sfx('enemy');e.ff=6;e.ffr=Math.random()*1.6;const m=heroDraw(h),mz=emz(e,e.k.fire||e.k.img);ebul.push({sx:mz.x,sy:mz.y,tx:h.x,ty:m.top+h.ht*0.45,p:0,h,dm:e.k.drone?ST.droneDm:(e.k.mech?ST.mechDm:1)});if(e.k.drone)smallPop(e.x,ecy(e),0.5)}
+    if(window.GW_MISSIONS?.redirect(e)){}else if(h&&e.k.demon){demonAttack(e,h);}else if(h){sfx('enemy');e.ff=6;e.ffr=Math.random()*1.6;const m=heroDraw(h),mz=emz(e,e.k.fire||e.k.img);ebul.push({sx:mz.x,sy:mz.y,tx:h.x,ty:m.top+h.ht*0.45,p:0,h,dm:e.k.drone?ST.droneDm:(e.k.mech?ST.mechDm:1)});if(e.k.drone)smallPop(e.x,ecy(e),0.5)}
     e.fireCd=(ST.fMin+Math.random()*ST.fVar)*(e.boss?0.55:1)*(e.k.mech?1.35:e.k.drone?1.1:1)}}
  }
  for(const b of ebul){b.p+=1/(b.travel||85);if(b.p>=1&&!b.done){b.done=true;const hh=b.h;if(b.kind==='whip'){demonWhipImpact(b);}
@@ -423,7 +424,7 @@ function update(){
  for(const e of enemies)if(e.flash>0)e.flash--;
  enemies=enemies.filter(e=>!e.dead);
  if(heroes.every(h=>h.hp<=0)){over=true;sfx('over');vib([100,60,200])}
- else if(score>=ST.goal){over=true;won=true;sfx('kill');vib([60,40,60,40,200])}
+ else if(score>=ST.goal&&(!window.GW_MISSIONS||window.GW_MISSIONS.permitsCoreWin())){over=true;won=true;sfx('kill');vib([60,40,60,40,200])}
 }
 
 // ===== 그리기 =====
@@ -467,7 +468,7 @@ function drawPCover(h){const c=h.cv,dead=c.hp<=0,im=cimg(dead?wreckOf(c):c.type)
 function wreckOf(c){if(WRKS&&c.type.startsWith('oc_'))return c.wk||(c.wk=WRKS[Math.floor(Math.random()*WRKS.length)]);return (c.type=='crate_stack'||c.type=='barrels')?'wreck_stack':'wreck_crate'}
 function drawWorld(){
  const tw=1280*H/720;
- for(let i=Math.floor(camX/tw);i<=Math.floor((camX+W)/tw);i++){
+ if(!window.GW_MISSIONS?.background(g,camX,W,H))for(let i=Math.floor(camX/tw);i<=Math.floor((camX+W)/tw);i++){
   const x=i*tw;
   if(!bgB.ok){g.fillStyle='#3a3a4a';g.fillRect(x,0,tw,H);continue}
   g.save();g.filter='saturate(.58) brightness(.83) contrast(.88)';
@@ -671,6 +672,8 @@ let mainRAF=0;
 </script>
 <script src="dialogue_bundle.js"></script>
 <script src="save_sync.js"></script>
+<script src="mission_data.js"></script>
+<script src="combat_missions.js"></script>
 <script src="meta.js"></script>
 <script src="presentation.js"></script>
 <script src="audio_options.js"></script>

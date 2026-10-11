@@ -466,7 +466,7 @@ function drawBrief(){
   captionPlate(chNo(m.ch)+'-'+m.no+(P.boss?' BOSS':''),x+w/2-101,y+11,202,53,{size:24,min:16,red:P.boss});
   captionPlate(e.title,x+73,y+69,w-146,56,{size:24,min:14,lines:2});
   starRow(x+w/2,y+145,17,starsOf(m.ch,m.no),8);
-  const rows=[['목표','적 '+P.goal+'명 처치'+(P.boss?' (보스 포함)':'')],['제한 시간',mmss(P.st.limit)],['별 3개','남은 시간 '+Math.round(STAR_T[0]*100)+'% 이상'],['별 2개','남은 시간 '+Math.round(STAR_T[1]*100)+'% 이상'],['별 1개','클리어'],['적',LINES[m.side].foe]];
+  const rows=[['목표',window.GW_MISSIONS?.config(m.ch,m.no).label||'적 '+P.goal+'명 처치'],['제한 시간',mmss(P.st.limit)],['별 3개','남은 시간 '+Math.round(STAR_T[0]*100)+'% 이상'],['별 2개','남은 시간 '+Math.round(STAR_T[1]*100)+'% 이상'],['별 1개','클리어'],['적',LINES[m.side].foe]];
   const insideX=x+57,insideW=w-114,rowsY=y+184,rowH=Math.min(39,(h-280)/6+10);
   rows.forEach(([label,value],i)=>{
     const ry=rowsY+i*rowH,labW=insideW*.32,valX=insideX+labW+10,valW=insideW-labW-10;
@@ -484,7 +484,7 @@ function replayStory(ch, no) { const e = epData(ch, no); setBattleBg(ch); const 
 // ---------- 출격(파티) ----------
 function openParty(side, ci, ch, no) {
   const pool = poolOf(side), saved = SV.party[side] || []; let sel = saved.map(k => pool.find(r => r.k === k)).filter(r => r && heroAvail(r) && !(window.GW_PRISON&&window.GW_PRISON.locked(r.k))).slice(0, 3);
-  PS = { side, ci, ch, no, sel }; go('party');
+  const cfg=window.GW_MISSIONS?.config(ch,no);if(cfg?.required?.length){sel=cfg.required.map(k=>pool.find(r=>r.k===k)).filter(Boolean).concat(sel.filter(r=>!cfg.required.includes(r.k))).slice(0,3);}PS = { side, ci, ch, no, sel }; go('party');
 }
 function drawParty() {
   const { side, ch, no } = PS, pool = poolOf(side), n = pool.length;
@@ -529,14 +529,14 @@ function drawParty() {
       g.fillStyle=hasCorruption?'#ffb4b4':'#f7e0d4';
       g.fillText((hasCorruption?'⛔':'☠')+percent+'%',x+w*.725,y+h*.914,w*.235);
     }
-    if(!isPrisoner&&av){g.font='bold '+fontInfo+'px '+FONT;g.fillStyle='#ffe5a3';g.fillText('♛ '+(window.GW_DOMINANCE?.value(r.k)||0)+'%',x+w*.5,y+h*.99,w*.80);}
+    if(!isPrisoner&&av){g.font='bold '+fontInfo+'px '+FONT;g.fillStyle='#ffe5a3';g.fillText('♛ '+Math.ceil(window.GW_DOMINANCE?.value(r.k)||0)+'%',x+w*.5,y+h*.99,w*.80);}
     g.restore();
     if(!av)txt(HERO_UNLOCK[r.k]+' 클리어 해금',x+w/2,y+h*.60,{b:true,s:13,a:'center',c:'#f1d6c6',sh:true});
   };
   pool.forEach((r, i) => {
     const x = 20 + (i % cols) * (cw + gx), slotY = top + Math.floor(i / cols) * (rawH + gx), y = slotY + Math.max(0, (rawH - cardH) / 2), j = PS.sel.indexOf(r), on = j >= 0, av = heroAvail(r);
     drawCard(r, x, y, cw, cardH, on, av, j);
-    addHit(x, y, cw, cardH, () => { if(window.GW_PRISON&&window.GW_PRISON.locked(r.k)){toast('폭주로 '+SV.rampage[r.k]+'회 출전 불가');return;} if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
+    addHit(x, y, cw, cardH, () => { if(window.GW_PRISON&&window.GW_PRISON.locked(r.k)&&!window.GW_MISSIONS?.config(ch,no).required.includes(r.k)){toast('폭주로 '+SV.rampage[r.k]+'회 출전 불가');return;} if (!av) { toast(HERO_UNLOCK[r.k] + ' 클리어 후 사용할 수 있습니다'); return; } if(on&&window.GW_MISSIONS?.config(ch,no).required.includes(r.k)){toast('이번 사건의 지정 대원입니다');return;}if (on) PS.sel.splice(j, 1); else if (PS.sel.length < 3) PS.sel.push(r); else toast('3명까지 고를 수 있습니다'); });
   });
   const rd = PS.sel.length === 3;
   button('장비', W - 440, H - 92, 190, 72, () => openInv(() => go('party')), { s: 24 });
@@ -547,6 +547,8 @@ function drawParty() {
 const NAMEMAP = {}; for (const r of ROSTER.F.concat(ROSTER.M)) NAMEMAP[r.n] = r;
 function heroOf(who) { if (!who) return null; if (NAMEMAP[who]) return NAMEMAP[who]; const p = who.split(/[·,]/)[0].trim(); return NAMEMAP[p] || null; }
 function playDialogue(lines, onEnd) { if (!lines || !lines.length) { onEnd(); return; } DL = { lines, i: 0, t0: nowMs(), onEnd }; go('dialogue'); }
+window.GW_MISSION_DIALOGUE=(lines,done)=>playDialogue(lines,()=>{scene='battle';menu=false;paused=false;done();});
+function playRoyalReport(cs,done){const old=DLBG;DLBG=loadImg('assets/promotion_royal_room_'+cs.side+'.webp');const royal=cs.side==='F'?'여황제':'황제';const commander=cs.side==='F'?'클레어':'베르단';const next=cs.no===10&&cs.ch.endsWith('5')?'분홍 균열을 조사하라. 양국의 협력이 필요하다.':'다음 전선의 준비를 시작하라. 보급과 정비도 잊지 마라.';playDialogue([{who:royal,text:epData(cs.ch,cs.no).title+' 작전의 승리를 치하한다. 부대 전원 수고했다.'},{who:commander,text:'작전 결과를 보고드립니다. 다음 지시를 기다리겠습니다.'},{who:royal,text:next}],()=>{DLBG=old;done();});}
 const DL_MS = 24;
 function dlShown() { const l = DL.lines[DL.i]; return Math.min(l.text.length, Math.floor((nowMs() - DL.t0) / DL_MS)); }
 function dlAdvance() {
@@ -554,10 +556,12 @@ function dlAdvance() {
   DL.i++; if (DL.i >= DL.lines.length) { const f = DL.onEnd; DL = null; f(); } else DL.t0 = nowMs();
 }
 function dlSkip() { if (!DL) return; const f = DL.onEnd; DL = null; f(); }
+const royalPortraits={};function loadRoyal(f){return royalPortraits[f]||(royalPortraits[f]=loadImg('assets/promotion_royal_'+f+'.webp'));}
 function drawDialogue() {
   if (!DL) return; const l = DL.lines[DL.i], narr = l.kind === 'stage' || !l.who, hero = heroOf(l.who);
   g.fillStyle = '#0d0a10'; g.fillRect(0, 0, W, H); coverImg(DLBG || bg, 0.5, 0.5); dim(0.5);
   const bh = portrait ? 330 : 210, bx = portrait ? 20 : 40, bw = W - bx * 2, by = H - bh - (portrait ? 30 : 22);
+  if(['황제','여황제'].includes(l.who)){const im=loadRoyal(l.who==='여황제'?'F':'M');if(im.ok)g.drawImage(im,W*.12,H*.10,W*.35,H*.57);}
   if (hero && hero.face.ok) {
     const right = heroLine(hero) === 'M', ph = portrait ? H * 0.46 : H * 0.7, k = ph / hero.face.naturalHeight, pw = hero.face.naturalWidth * k;
     g.save(); g.globalAlpha = 0.97; g.drawImage(hero.face, right ? W - pw - (portrait ? 10 : 70) : (portrait ? 10 : 70), by - ph + 40, pw, ph); g.restore();
@@ -583,9 +587,10 @@ function drawDialogue() {
 // C11 uses the dedicated demon roster registered by index.html.
 function beginStage() {
   const { side, ch, no, sel } = PS, e = epData(ch, no), id = epId(ch, no);
+  const c=window.GW_MISSIONS?.config(ch,no);if(c){if(c.required.some(k=>!sel.some(r=>r.k===k))){toast('이 임무의 지정 대원을 포함해 주세요');return;}if(c.forbidden&&sel.some(r=>r.k===c.forbidden)){toast('이번 사건의 대상은 출전할 수 없습니다');return;}if(c.mixed&&!['F','M'].every(f=>sel.some(r=>ROSTER[f].some(q=>q.k===r.k)))){toast('양국에서 최소 한 명씩 편성해 주세요');return;}}
   const go2 = () => launch(side, ch, no, sel);
   setBattleBg(ch);
-  if (!SV.seen[id + 'b']) { SV.seen[id + 'b'] = 1; saveNow(); playDialogue(e.before, go2); } else go2();
+  if (!SV.seen[id + 'b']) { SV.seen[id + 'b'] = 1; saveNow(); playDialogue(window.GW_MISSIONS?window.GW_MISSIONS.split(e,c).before:e.before, go2); } else go2();
 }
 // 장별 전투 배경 (빨간 깃발=여성국, 검정 깃발=남성국, 공장·마계는 구분 없음). M5는 낮 시가지 재사용(가안)
 const BGMAP = { F1: 'bg2.jpg', F2: 'bg_F2.jpg', F3: 'bg_F3.jpg', F4: 'bg_F4.jpg', F5: 'bg_F5.jpg', M1: 'bg_M1.jpg', M2: 'bg_M2.jpg', M3: 'bg_M3.jpg', M4: 'bg_M4.jpg', M5: 'bg_M1.jpg', C11: 'bg_C.jpg' };
@@ -604,7 +609,7 @@ function launch(side0, ch, no, sel) {
   if(window.GW_PRISON)window.GW_PRISON.stageStarted();setBattleBg(ch); scene = 'battle'; MODAL = null; startGame();
   // 포로 고유 체력 보너스는 mkHero 적용 후, 레벨 성장분과 곱연산.
   heroes.forEach((h,i)=>{const mult=levelMultiplier(sel[i]?.k);h.max=Math.round(h.max*mult);h.hp=h.max;});
-  resetBattleSkills();
+  resetBattleSkills();window.GW_MISSIONS?.begin(curStage);
 }
 function backToStages(adv) { curStage = null; res = null; paused = false; over = false; if (adv && SG.side !== 'C' && SG.ci < 4 && chOpen(SG.side, SG.ci + 1)) { SG.ci++; SV.last.ch[SG.side] = SG.ci; } openStages(SG.side, SG.ci); }
 
@@ -612,12 +617,12 @@ function backToStages(adv) { curStage = null; res = null; paused = false; over =
 function starsFor(frac) { return frac >= STAR_T[0] ? 3 : frac >= STAR_T[1] ? 2 : 1; }
 function onBattleEnd() {
   const cs = curStage; if (!cs || cs.xpSettled) return;cs.xpSettled=true;
-  const xp=earnBattleXP(cs,won,score);
+  window.GW_MISSIONS?.finish();const xp=earnBattleXP(cs,won,score);
   if (won) {
-    const remain = Math.max(0, ST.limit - t), frac = remain / ST.limit, sv = starsFor(frac), id = epId(cs.ch, cs.no), before = SV.clr[id] || 0;
+    const remain = Math.max(0, ST.limit - t), frac = remain / ST.limit, sv = window.GW_MISSIONS?.stars()??starsFor(frac), id = epId(cs.ch, cs.no), before = SV.clr[id] || 0;
     SV.clr[id] = Math.max(before, sv); if(['F','M'].includes(cs.side))SV.sortieTickets[cs.side]=ticketCount(cs.side)+1; res = { won: true, stars: sv, remain, first: !before, xp, t0: nowMs() };
     const e = epData(cs.ch, cs.no); res.line = e.stars && e.stars[String(sv)] || null; saveNow();
-  } else res = { won: false, why: timeUp ? '시간 초과' : '전멸', xp, t0: nowMs() };
+  } else res = { won: false, why: window.GW_MISSIONS?.failure||(timeUp ? '시간 초과' : '전멸'), xp, t0: nowMs() };
   res.t0+=800;window.GW_PRESENTATION?.finish(won,cs.ch==='C11'&&cs.no===10,window.GW_AUDIO_OPTIONS?.settings);window.GW_AUDIO_OPTIONS?.syncMusic();
 }
 function drawResult() {
@@ -640,7 +645,7 @@ function drawResult() {
   }
 }
 function afterWin() {
-  const cs = curStage, e = epData(cs.ch, cs.no), id = epId(cs.ch, cs.no), stars = res ? res.stars : 1, fin = () => { startRewards(cs, stars, () => backToStages(cs.no === 10)); };
+  const cs = curStage, e = epData(cs.ch, cs.no), id = epId(cs.ch, cs.no), stars = res ? res.stars : 1, fin = () => { const reward=()=>startRewards(cs, stars, () => backToStages(cs.no === 10));if(cs.no===10&&cs.side!=='C'&&!SV.seen[cs.ch+'royal']){SV.seen[cs.ch+'royal']=1;saveNow();playRoyalReport(cs,reward);}else reward(); };
   curStage = Object.assign({}, cs); over = false; menu = true;
   if (!SV.seen[id + 'a']) { SV.seen[id + 'a'] = 1; saveNow(); playDialogue(e.after, fin); } else fin();
 }
@@ -1115,13 +1120,14 @@ onOverTap = function (p) { menuTap(p); };
 onBattleTap = function (p) { if (paused || MODAL) { menuTap(p); return true; } for (let i = HIT.length - 1; i >= 0; i--) if (inb(p, HIT[i])) { HIT[i].fn(); return true; } return false; };
 const _update = update, _draw = draw;
 update = function () {
-  if (menu || paused) return; const was = over; _update();
+  if (menu || paused||(window.GW_MISSIONS&&!window.GW_MISSIONS.beforeStep())) return; const was = over; _update();
+  if(!over)window.GW_MISSIONS?.tick();
   if(!over && curStage)stepBattleSkills();
   if (!over && ST.limit && t >= ST.limit) { over = true; won = false; timeUp = true; sfx('over'); vib([100, 60, 200]); }
   if (over && !was) onBattleEnd();
 };
 draw = function () {
-  HIT.length = 0; _draw(); if (!menu && !over) { drawBattleSkillPulse(); drawHud(); drawBattleSkillButton(); if (MODAL) drawModal(); drawToast(); }
+  HIT.length = 0; _draw(); if (!menu && !over) { drawBattleSkillPulse(); drawHud();window.GW_MISSIONS?.draw(); drawBattleSkillButton(); if (MODAL) drawModal(); drawToast(); }
 };
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
@@ -1131,7 +1137,7 @@ addEventListener('keydown', e => {
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
 window.GW = { ticketCount, spendTicket, slotCap, syncMechaMerit, meritRank, equipmentSlots:meritRank, equippedIds, rankName, mechaAvailable(key){return ROSTER.F.concat(ROSTER.M).some(r=>r.k===key)&&(!HERO_UNLOCK[key]||!!SV.clr[HERO_UNLOCK[key]]);}, openParty, get PS() { return PS; }, beginStage, poolOf, LINES,
-  leveling:{maxLevel:LV_CAP,growth:LV_GROWTH,level:heroLevel,totalXP:totalHeroXP,thresholds:LV_THRESH,xpToNext:key=>heroLevel(key)>=LV_CAP?0:LV_THRESH[heroLevel(key)]-totalHeroXP(key),multiplier:levelMultiplier,recommended:stageRecommendedLevel,grantXP:grantHeroXP}, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
+  leveling:{maxLevel:LV_CAP,growth:LV_GROWTH,level:heroLevel,totalXP:totalHeroXP,thresholds:LV_THRESH,xpToNext:key=>heroLevel(key)>=LV_CAP?0:LV_THRESH[heroLevel(key)]-totalHeroXP(key),multiplier:levelMultiplier,recommended:stageRecommendedLevel,grantXP:grantHeroXP}, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, skipDialogue:dlSkip, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
   get skillCooldowns(){return skillReady.map(v=>Math.max(0,v-t));}, reduceSkillCooldowns(frames,index){const n=Math.max(0,Math.min(360,Number(frames)||0));skillReady=skillReady.map((v,i)=>index==null||i===index?Math.max(t,v-n):v);}, useSkill:useBattleSkill,
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();

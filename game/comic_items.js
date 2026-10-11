@@ -31,7 +31,7 @@ const oldStart=startGame;startGame=function(){reset();return oldStart();};
 const oldKill=killEnemy;killEnemy=function(e,nx){if(!e||e.dead)return;const result=oldKill(e,nx);if(!over&&score<ST.goal&&t>=nextDrop&&dropCount<6&&(score===3||Math.random()<.3)){spawnDrop(e);dropCount++;nextDrop=t+300;}return result;};
 const oldShoot=shoot;shoot=function(h,target,manual,cont){const count=bullets.length,result=oldShoot(h,target,manual,cont);if(power>0)for(let i=count;i<bullets.length;i++)bullets[i].dmg*=1.5;return result;};
 const oldLayout=applyLayout;applyLayout=function(p){const oldWidth=WW,lo=L.cy0,hi=L.cy1,result=oldLayout(p);for(const d of drops){d.x*=WW/oldWidth;d.y=L.cy0+(d.y-lo)*(L.cy1-L.cy0)/(hi-lo||1);}for(const a of allies)a.e.x*=WW/oldWidth;shots=[];return result;};
-const oldUpdate=update;update=function(){advance();return oldUpdate();};
+const oldUpdate=update;update=function(){if(window.GW?.scene==='battle'&&!window.GW.paused&&!menu&&!over&&!window.GW_MISSIONS?.run?.resuming)advance();return oldUpdate();};
 const oldDraw=draw;draw=function(){oldDraw();drawHUD();};
 window.GW_FUN={hitItems,drawWorld:drawWorldItems,aim,aimingAtItem:aiming,skillActivated(i){if(credit>0){window.GW.reduceSkillCooldowns(credit,i);credit=0;}},get state(){return{drops,allies,shots,power,credit,dropCount};}};
 })();

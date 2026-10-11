@@ -17,9 +17,14 @@ killEnemy=function(enemy,nx){if(enemy&&!enemy.dead&&enemy.hp<=0)onKill(enemy);re
 const oldShoot=shoot;
 shoot=function(hero,target,manual,cont){const old=bullets.length,r=oldShoot(hero,target,manual,cont);const key=ROSTER.F.concat(ROSTER.M).find(x=>x.n===hero.name)?.k||null;for(let i=old;i<bullets.length;i++)bullets[i]._gwKiller=key;return r;};
 const oldMkHero=mkHero;
-mkHero=function(roster,index){const hero=oldMkHero(roster,index);if(PRISONERS.has(roster.k)){hero.max=Math.round(hero.max*1.2);hero.hp=hero.max;hero.m.atk=(1+hero.m.atk)*1.2-1;hero.m.def=1-(1-hero.m.def)/1.2;}if(!PRISONERS.has(roster.k)){const value=dominance(roster.k);let base=hero.m.atk;Object.defineProperty(hero.m,'atk',{enumerable:true,configurable:true,get:()=>t<value*30?(1+base)*1.2-1:base,set:v=>{base=v}});hero.dominance=value;}return hero;};
+mkHero=function(roster,index){const hero=oldMkHero(roster,index);if(PRISONERS.has(roster.k)){hero.max=Math.round(hero.max*1.2);hero.hp=hero.max;hero.m.atk=(1+hero.m.atk)*1.2-1;hero.m.def=1-(1-hero.m.def)/1.2;}if(!PRISONERS.has(roster.k)){let base=hero.m.atk;Object.defineProperty(hero.m,'atk',{enumerable:true,configurable:true,get:()=>dominance(roster.k)>0?(1+base)*1.2-1:base,set:v=>{base=v}});hero.dominanceKey=roster.k;}return hero;};
 function dominance(key){const sv=state();return !PRISONERS.has(key)&&sv?Math.max(0,Math.min(100,Number(sv.dominance[key])||0)):0;}
-window.GW_DOMINANCE={value:dominance,duration:key=>dominance(key)*.5};
+let dirty=false,saveClock=0;
+function flush(){if(dirty){window.GW?.save();dirty=false;}saveClock=0;}
+function consume(keys,seconds){const sv=state();if(!sv||seconds<=0)return;for(const key of new Set(keys)){const n=dominance(key);if(n>0){sv.dominance[key]=Math.max(0,Math.round((n-seconds*2)*10000)/10000);dirty=true;}}saveClock+=seconds;if(saveClock>=1)flush();}
+window.GW_DOMINANCE={value:dominance,duration:key=>dominance(key)*.5,consume,flush};
+const dominanceUpdate=update;update=function(){const was=t;dominanceUpdate();if(t>was&&window.GW?.scene==='battle'){consume(heroes.filter(h=>h.hp>0).map(h=>h.dominanceKey).filter(Boolean),(t-was)/60);if(over)flush();}};
+addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();});
 function unlocked(key){return ROSTER.F.concat(ROSTER.M).some(r=>r.k===key)&&(window.GW?.DEV?.()||!UNLOCK[key]||!!window.GW?.SV?.clr?.[UNLOCK[key]]);}
 function hitKey(p){
  const gw=window.GW;if(!gw)return null;
