@@ -8,7 +8,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "game/ui/logo.webp"
+SOURCE = ROOT / "assets_src/launcher_logo.png"
 OUT = ROOT / "android/app/src/main/res"
 ART = ROOT / "assets_src/GENDER_WARFARE_android_icon_512.png"
 

@@ -37,11 +37,16 @@ const mmss = fr => { const s = Math.max(0, Math.ceil(fr / 60)); return Math.floo
 
 // ================= 저장 =================
 const SAVE_KEY = 'gw_save_v1';
-const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, nid: 1, heroXP: {}, corrupt: {}, rampage: {}, purifyDialogue: {}, dominance: {}, last: { side: 'F', ch: {} } });
+const defSave = () => ({ v: 1, clr: {}, seen: {}, party: {}, opt: { dev: false }, gear: [], eq: {}, parts: 0, sortieTickets: {F:0,M:0}, nid: 1, heroXP: {}, corrupt: {}, rampage: {}, purifyDialogue: {}, dominance: {}, last: { side: 'F', ch: {} } });
 let SV = defSave();
 function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); if (s) { const o = JSON.parse(s); SV = Object.assign(defSave(), o); SV.opt = Object.assign({ dev: false }, o.opt); } } catch (e) {} }
 function saveNow() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SV)); } catch (e) {} }
 loadSave();
+// Tickets are separate from lifetime personal merit. Existing saves start at zero.
+SV.sortieTickets={F:0,M:0,...SV.sortieTickets};
+function ticketCount(f){return Math.max(0,Math.floor(Number(SV.sortieTickets[f])||0));}
+function spendTicket(f){if(!['F','M'].includes(f)||ticketCount(f)<1)return false;SV.sortieTickets[f]=ticketCount(f)-1;saveNow();return true;}
+function slotCap(f){if(cleared(f+'5',10))return 5;if(cleared(f+'3',10))return 4;if(cleared(f+'2',10))return 3;if(cleared(f+'1',10))return 2;return 1;}
 
 // ================= 영웅 공통 육성 (오펜스에서도 동일 영웅키·총 경험치 참조) =================
 // 레벨 1~30, 공격력·HP 5% 복리. 50스테이지×평균 2~3회 도전 기준.
@@ -575,7 +580,7 @@ function drawDialogue() {
 }
 
 // ---------- 전투 시작 ----------
-SETS.C = () => { const a = SETS.F(), b = SETS.M(); return { K: a.K.concat(b.K), M: a.M.concat(b.M) }; };
+// C11 uses the dedicated demon roster registered by index.html.
 function beginStage() {
   const { side, ch, no, sel } = PS, e = epData(ch, no), id = epId(ch, no);
   const go2 = () => launch(side, ch, no, sel);
@@ -610,12 +615,13 @@ function onBattleEnd() {
   const xp=earnBattleXP(cs,won,score);
   if (won) {
     const remain = Math.max(0, ST.limit - t), frac = remain / ST.limit, sv = starsFor(frac), id = epId(cs.ch, cs.no), before = SV.clr[id] || 0;
-    SV.clr[id] = Math.max(before, sv); res = { won: true, stars: sv, remain, first: !before, xp, t0: nowMs() };
+    SV.clr[id] = Math.max(before, sv); if(['F','M'].includes(cs.side))SV.sortieTickets[cs.side]=ticketCount(cs.side)+1; res = { won: true, stars: sv, remain, first: !before, xp, t0: nowMs() };
     const e = epData(cs.ch, cs.no); res.line = e.stars && e.stars[String(sv)] || null; saveNow();
   } else res = { won: false, why: timeUp ? '시간 초과' : '전멸', xp, t0: nowMs() };
+  res.t0+=800;window.GW_PRESENTATION?.finish(won,cs.ch==='C11'&&cs.no===10,window.GW_AUDIO_OPTIONS?.settings);window.GW_AUDIO_OPTIONS?.syncMusic();
 }
 function drawResult() {
-  if (!res) return; const cs = curStage, el = nowMs() - res.t0, w = Math.min(W - 40, 640), h = res.won ? (portrait ? 560 : 500) : 330, x = (W - w) / 2, y = (H - h) / 2;
+  if (!res || nowMs()<res.t0) return; const cs = curStage, el = nowMs() - res.t0, w = Math.min(W - 40, 640), h = res.won ? (portrait ? 560 : 500) : 330, x = (W - w) / 2, y = (H - h) / 2;
   g.fillStyle = 'rgba(0,0,0,' + clamp(el / 300, 0, 0.72) + ')'; g.fillRect(0, 0, W, H); if (el < 200) return;
   panel(x, y, w, h, { fill: 'rgba(14,10,18,.95)', e1: res.won ? '#ffd24a' : '#a86a6a' });
   txt(res.won ? 'STAGE CLEAR' : '임무 실패', x + w / 2, y + 66, { b: true, s: 46, a: 'center', c: res.won ? '#ffe27a' : '#ff9a8a', sh: true });
@@ -623,7 +629,7 @@ function drawResult() {
   if (res.won) {
     for (let i = 0; i < 3; i++) { const on = i < res.stars, sh = el - 450 - i * 380, pop = on ? (sh < 0 ? 0 : sh < 220 ? 0.4 + sh / 220 * 0.9 : 1.3 - Math.min(0.3, (sh - 220) / 600)) : 1; g.save();g.translate(x+w/2+(i-1)*84,y+175);g.scale(on?Math.max(.01,pop):1,on?Math.max(.01,pop):1);ornateStar(0,0,72,on&&sh>=0);g.restore(); }
     txt('처치 ' + score + '/' + ST.goal + ' · 남은 시간 ' + mmss(res.remain), x + w / 2, y + 250, { b: true, s: 22, a: 'center' });
-    {const up=res.xp?.awards?.filter(a=>a.after>a.before)||[];txt((res.first?'첫 클리어! · ':'')+'경험치 +'+(res.xp?.amount||0)+(up.length?' · 레벨 상승 '+up.length+'명':''),x+w/2,y+282,{b:true,s:18,a:'center',c:up.length?'#fff4b5':'#9fe6a8'});}
+    {const up=res.xp?.awards?.filter(a=>a.after>a.before)||[];txt((res.first?'첫 클리어! · ':'')+'경험치 +'+(res.xp?.amount||0)+(up.length?' · 레벨 상승 '+up.length+'명':'')+(['F','M'].includes(cs.side)?' · 출격권 +1':''),x+w/2,y+282,{b:true,s:18,a:'center',c:up.length?'#fff4b5':'#9fe6a8'});}
     if (res.line && el > 450 + 3 * 380) { const lh = wrap(res.line.text, w - 80, 21, false); panel(x + 26, y + 300, w - 52, 28 + lh.length * 30 + 28, { fill: 'rgba(40,24,30,.8)', gem: false, lw: 2 }); drawTextInBox(res.line.who,{x:x+46,y:y+309,w:w-100,h:30},18,{min:12,lines:1,align:'left',color:'#ffe27a'});drawTextInBox(res.line.text,{x:x+46,y:y+343,w:w-100,h:Math.max(18,lh.length*30)},21,{min:12,lines:5,align:'left',bold:false,valign:'top'}); }
     if (el > 450 + 3 * 380) button('계속', x + w / 2 - 110, y + h - 74, 220, 58, () => afterWin(), { red: true, s: 26 });
   } else {
@@ -695,7 +701,7 @@ const MERIT_THRESHOLDS=[300,1000,2500,20000];
 let mechaMerit={};
 try{mechaMerit=JSON.parse(localStorage.getItem('gw_mecha_campaign_v1')||'{}').meritThirds||{};}catch(_){}
 function syncMechaMerit(data){mechaMerit=data&&typeof data==='object'?{...data}:{};}
-function meritRank(key){const points=Math.max(0,(Number(mechaMerit[key])||0)/3);return 1+MERIT_THRESHOLDS.filter(n=>points>=n).length;}
+function meritRank(key){const points=Math.max(0,(Number(mechaMerit[key])||0)/3);const f=ROSTER.F.some(r=>r.k===key)?'F':'M';return Math.min(slotCap(f),1+MERIT_THRESHOLDS.filter(n=>points>=n).length);}
 function rankName(key,name){return '|'.repeat(meritRank(key))+' '+name;}
 function equippedIds(key){return [SV.eq[key]??null,...(Array.isArray(SV.eqExtra?.[key])?SV.eqExtra[key]:[])].slice(0,meritRank(key));}
 function equippedAt(key,slot){return equippedIds(key)[slot]??null;}
@@ -819,7 +825,7 @@ function drawInv() {
   titlePlate(rankName(hero.k,hero.n)+' · '+CLS[hero.c],px+22,py+45,pw-44,42,{size:20,min:12,lines:1});
   const sw=(pw-32)/5;for(let i=0;i<5;i++){const xx=px+16+i*sw,unlocked=i<slots,on=i===INV.slot,id=equippedAt(INV.hero,i),item=gearById(id);g.fillStyle=on?'rgba(175,63,92,.40)':'rgba(255,255,255,.05)';g.fillRect(xx,py+77,sw-5,55);if(item)gearIcon(item,xx+(sw-5)/2,py+101,35);else txt(unlocked?String(i+1):'×',xx+(sw-5)/2,py+109,{s:21,a:'center',c:unlocked?'#ffe3a4':'#827e86'});if(unlocked)addHit(xx,py+77,sw-5,55,()=>{INV.slot=i;});}
   const points=Math.max(0,(Number(mechaMerit[hero.k])||0)/3),next=MERIT_THRESHOLDS[slots-1];
-  safeText('장비칸 '+slots+'/5 · 공적 '+points.toFixed(1)+(next?' · 다음 '+next:' · 황실 근무왕'),px+18,py+136,pw-36,27,{size:13,min:10,lines:1,color:'#cbb890'});
+  safeText('장비칸 '+slots+'/5 · 공적 '+points.toFixed(1)+(slots===slotCap(heroLine(hero))&&slots<5?' · '+({1:1,2:2,3:3,4:5}[slots])+'장 완료 필요':next?' · 다음 '+next:' · 황실 근무왕'),px+18,py+136,pw-36,27,{size:13,min:10,lines:1,color:'#cbb890'});
   const current=gearById(equippedAt(INV.hero,INV.slot));
   if(current){drawTextInBox(current.base,{x:px+18,y:py+169,w:pw-116,h:30},18,{min:12,lines:1,align:'left',color:RARC[current.rar-1]});button('해제',px+pw-90,py+167,70,36,()=>equip(current.id,null),{s:15});safeText(current.opts.map(optLine).join(' · '),px+18,py+202,pw-36,42,{size:13,min:10,lines:2,bold:false,color:'#cfe8ff'});}else titlePlate((INV.slot+1)+'번 장비칸 비어 있음',px+22,py+175,pw-44,43,{size:16,min:12});
   titlePlate('장비 효과 합계',px+22,py+250,pw-44,33,{size:15,min:12});const sl=statLines(INV.hero);(sl.length?sl:['—']).forEach((s,i)=>drawTextInBox(s,{x:px+18+(i%2)*(pw-36)/2,y:py+288+Math.floor(i/2)*19,w:(pw-36)/2-4,h:19},14,{min:10,lines:1,align:'left',color:'#e8f0ff'}));
@@ -1124,7 +1130,7 @@ addEventListener('keydown', e => {
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
-window.GW = { syncMechaMerit, meritRank, equipmentSlots:meritRank, equippedIds, rankName, mechaAvailable(key){return ROSTER.F.concat(ROSTER.M).some(r=>r.k===key)&&(!HERO_UNLOCK[key]||!!SV.clr[HERO_UNLOCK[key]]);}, openParty, get PS() { return PS; }, beginStage, poolOf, LINES,
+window.GW = { ticketCount, spendTicket, slotCap, syncMechaMerit, meritRank, equipmentSlots:meritRank, equippedIds, rankName, mechaAvailable(key){return ROSTER.F.concat(ROSTER.M).some(r=>r.k===key)&&(!HERO_UNLOCK[key]||!!SV.clr[HERO_UNLOCK[key]]);}, openParty, get PS() { return PS; }, beginStage, poolOf, LINES,
   leveling:{maxLevel:LV_CAP,growth:LV_GROWTH,level:heroLevel,totalXP:totalHeroXP,thresholds:LV_THRESH,xpToNext:key=>heroLevel(key)>=LV_CAP?0:LV_THRESH[heroLevel(key)]-totalHeroXP(key),multiplier:levelMultiplier,recommended:stageRecommendedLevel,grantXP:grantHeroXP}, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
   get skillCooldowns(){return skillReady.map(v=>Math.max(0,v-t));}, reduceSkillCooldowns(frames,index){const n=Math.max(0,Math.min(360,Number(frames)||0));skillReady=skillReady.map((v,i)=>index==null||i===index?Math.max(t,v-n):v);}, useSkill:useBattleSkill,
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };

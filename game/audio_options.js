@@ -22,14 +22,14 @@ soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibratio
 function persist(){
  try{localStorage.setItem(AUDIO_SETTINGS_KEY,JSON.stringify(cfg));}catch(e){}
 }
-const music=new Audio();music.loop=true;music.preload='none';
+let music=new Audio();music.loop=true;music.preload='none';const musicFader=window.GW_PRESENTATION.musicPlayer();
 let musicKey='',loadedVoices={},voicePending={},liveVoices=0,lastDeath=0;
 function configure(){
  soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibration);window.GW_EFFECTS_ON=cfg.effects;smMode=cfg.effects?4:0;
  if(AC&&master)master.gain.value=cfg.sound ? 0.85*cfg.sfx : 0;
  configureMusicVolume();
- if(!cfg.sound)music.pause();
- else if(musicKey&&music.paused)music.play().catch(()=>{});
+ if(!cfg.sound)musicFader.pause();
+ else syncMusic();
 }
 const originalInitAudio=initAudio;
 initAudio=function(){
@@ -48,6 +48,8 @@ function preloadVoices(){
 function deathSex(e){
  // F 전선 적(kn/mech)은 남성, M 전선 적(wk/wm)은 여성. 마계 혼성도 적 스프라이트로 구분.
  const img=String(e&&e.k&&e.k.img||'');
+ if(img.startsWith('demon_succubus')||img.startsWith('demon_queen'))return 'female';
+ if(img.startsWith('demon_incubus'))return 'male';
  if(img.startsWith('wk_')||img.startsWith('wm_'))return 'female';
  if(img.startsWith('kn_')||img.startsWith('mech_'))return 'male';
  return side==='M'?'female':'male';
@@ -71,32 +73,26 @@ window.sfxDeath=function(e){
 function chosenBgm(){
  // meta.js의 curStage는 별도 IIFE의 지역 변수라 여기서 직접 참조할 수 없다.
  // 전투 여부는 공개된 GW.scene, 진영은 전투 코어의 side를 기준으로 판단한다.
- const fighting=!menu && !!window.GW && window.GW.scene==='battle';
- const faction=fighting?side:
+ const fighting=!menu && !!window.GW && window.GW.scene==='battle'&&(!over||window.GW_PRESENTATION.age<800);
+ const faction=(!menu&&window.GW?.scene==='battle'||window.GW?.SV?.last?.side==='C')?side:
    (window.GW&&window.GW.SV&&window.GW.SV.last?window.GW.SV.last.side:'F');
  if(faction==='C')return 'demon';
  return (faction==='M'?'male_':'female_')+(fighting?'battle':'theme');
 }
 let mechaSuspended=false;
-function syncMusic(){if(mechaSuspended){music.pause();return;}
- const key=chosenBgm();
- if(key!==musicKey){
-  musicKey=key;music.pause();music.src=typeof window.gwAssetURL==='function'?window.gwAssetURL('audio/bgm/'+BGM_FILES[key]):new URL('audio/bgm/'+BGM_FILES[key],location.href).href;music.load();
- }
- configureMusicVolume();
- if(cfg.sound && AC&&music.paused && !optionsOpen)music.play().catch(()=>{});
+function syncMusic(){window.GW_PRESENTATION.setVolume(cfg.sound&&!mechaSuspended&&!document.hidden,cfg.sfx);if(mechaSuspended||document.hidden){musicFader.pause();return;}
+ const key=chosenBgm();musicKey=key;
+ const src=typeof window.gwAssetURL==='function'?window.gwAssetURL('audio/bgm/'+BGM_FILES[key]):new URL('audio/bgm/'+BGM_FILES[key],location.href).href;
+ musicFader.set(key,src,cfg.bgm*(key==='female_battle'?1.35:1),cfg.sound&&!!AC);
+ music=musicFader.current||music;
 }
-function configureMusicVolume(){
- // 여성국 전투곡(Breves dies hominis)만 +35%. 기본 BGM 슬라이더 설정값은 유지.
- const factor=musicKey==='female_battle'?1.35:1;
- music.volume=cfg.sound?Math.min(1,cfg.bgm*factor):0;
-}
+function configureMusicVolume(){syncMusic();}
 const audioDraw=draw,audioUpdate=update;
 update=function(){if(optionsOpen||window.GW_SAVE_SYNC?.checking)return;audioUpdate();};
 let drawCounter=0;
 draw=function(){
  audioDraw();
- if((++drawCounter%40)===0)syncMusic();
+ syncMusic();
  drawOptionButton();
  if(optionsOpen)drawOptionWindow();
 };
@@ -187,7 +183,7 @@ for(const event of ['pointerup','pointercancel'])cv.addEventListener(event,funct
 addEventListener('keydown',function(e){
  if((e.key==='Escape'||e.key==='Esc')&&optionsOpen){e.stopImmediatePropagation();optionsOpen=false;syncMusic();}
 },true);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)music.pause();else if(cfg.sound)syncMusic();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)musicFader.pause();else if(cfg.sound)syncMusic();});
 window.GW_AUDIO_OPTIONS={setSettings(values){for(const k of Object.keys(cfg))if(typeof values[k]===typeof cfg[k])cfg[k]=values[k];cfg.sfx=Math.max(0,Math.min(1,cfg.sfx));cfg.bgm=Math.max(0,Math.min(1,cfg.bgm));configure();persist();},setVibration,testHaptics,get hapticStatus(){return window.GW_HAPTICS?.status;},get settings(){return Object.assign({},cfg);},get track(){return musicKey;},
- get voiceCounts(){return {female:SEGMENTS.female.length,male:SEGMENTS.male.length};},open(){optionsOpen=true;},suspendForMecha(value){mechaSuspended=!!value;if(mechaSuspended)music.pause();else syncMusic();},syncMusic};
+ get voiceCounts(){return {female:SEGMENTS.female.length,male:SEGMENTS.male.length};},open(){optionsOpen=true;},suspendForMecha(value){mechaSuspended=!!value;syncMusic();},syncMusic};
 })();
