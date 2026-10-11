@@ -1,4 +1,3 @@
-
 /* meta.js — 캠페인 · 장면 · 저장 · 대사 · 별 판정   [Claude 전담 — GPT는 수정 금지, 요청은 inbox/for_claude.md]
    전투 엔진은 index.html. 이 파일은 index.html 뒤에 로드되어 빈 껍데기 함수(drawMenu, menuTap, onOverTap, onBattleTap, drawOver)를 덮어쓰고
    update/draw를 감싼다. 숫자 값(난이도·시간·별 기준)은 모두 가안이며 아래 DIFF / STAR_T / HERO_UNLOCK 에 모여 있다. */
@@ -410,6 +409,7 @@ function drawLines() {
       g.drawImage(im,x+(cw-dw)/2,y+(ch-dh)/2,dw,dh);g.restore();}
     else{titlePlate(LINES[side].name,x,y,cw,ch,{size:28,red:side==='F'});}
     addHit(x,y,cw,ch,()=>openStages(side));
+    button('⚙ 메카 출격',x+cw-146,y+ch-50,142,46,()=>window.GW_OPEN_MECHA(side),{s:17,red:side==='F'});
   });
   // 기능을 없애지 않으면서 문장 2개의 시각적 우선순위를 유지하는 보조 메뉴.
   button('장비',W-178,H-67,140,52,()=>openInv(()=>go('lines')),{s:20});
@@ -515,7 +515,7 @@ function drawParty() {
     g.font='bold '+fontName+'px '+FONT;
     g.fillStyle=av?'#fff0d5':'#baaca7';
     g.shadowColor='rgba(0,0,0,.95)';g.shadowBlur=3;
-    g.fillText(r.n,center,y+h*.817,w*(isPrisoner?.45:.55));
+    g.fillText(rankName(r.k,r.n),center,y+h*.817,w*(isPrisoner?.45:.55));
     g.font='bold '+fontInfo+'px '+FONT;
     g.fillStyle=av?CCOL[r.c]:'#998688';
     g.fillText(CLS[r.c],infoX,y+h*.914,w*(isPrisoner?.25:.48));
@@ -689,12 +689,23 @@ function rollGear(tierN, boss) {
   const ids = optDefs().map(o => o.id).sort(() => Math.random() - 0.5).slice(0, rar), base = baseList()[Math.floor(Math.random() * baseList().length)], lv = tierN + 1;
   return { id: SV.nid++, base: base.name, flavor: base.flavor || '', rar, lv, opts: rollVals(ids.map(k => ({ k })), lv) };
 }
+
+const MERIT_THRESHOLDS=[300,1000,2500,20000];
+let mechaMerit={};
+try{mechaMerit=JSON.parse(localStorage.getItem('gw_mecha_campaign_v1')||'{}').meritThirds||{};}catch(_){}
+function syncMechaMerit(data){mechaMerit=data&&typeof data==='object'?{...data}:{};}
+function meritRank(key){const points=Math.max(0,(Number(mechaMerit[key])||0)/3);return 1+MERIT_THRESHOLDS.filter(n=>points>=n).length;}
+function rankName(key,name){return '|'.repeat(meritRank(key))+' '+name;}
+function equippedIds(key){return [SV.eq[key]??null,...(Array.isArray(SV.eqExtra?.[key])?SV.eqExtra[key]:[])].slice(0,meritRank(key));}
+function equippedAt(key,slot){return equippedIds(key)[slot]??null;}
+function writeEquipmentSlot(key,slot,gid){if(slot===0){if(gid==null)delete SV.eq[key];else SV.eq[key]=gid;}else{SV.eqExtra??={};SV.eqExtra[key]=Array.isArray(SV.eqExtra[key])?SV.eqExtra[key]:[];SV.eqExtra[key][slot-1]=gid??null;}}
+
 const gearById = id => SV.gear.find(x => x.id === id);
-const gearOwner = gid => { for (const k in SV.eq) if (SV.eq[k] === gid) return k; return null; };
+const gearOwner = gid => { for(const k of new Set([...Object.keys(SV.eq),...Object.keys(SV.eqExtra||{})])) if(equippedIds(k).includes(gid))return k;return null; };
 const heroByKey = k => ROSTER.F.concat(ROSTER.M).find(r => r.k === k);
 function sumMods(key) {
-  const m = { atk: 0, aim: 0, eva: 0, def: 0, auto: 0, rel: 0, mag: 0, crit: 0, heal: 0, cov: 0 }, g0 = gearById(SV.eq[key]);
-  if (g0) for (const o of g0.opts) m[OPT_KEY[o.k]] += o.v / 100;
+  const m = { atk: 0, aim: 0, eva: 0, def: 0, auto: 0, rel: 0, mag: 0, crit: 0, heal: 0, cov: 0 };
+  for(const gid of equippedIds(key)){const g0=gearById(gid);if(g0)for(const o of g0.opts)if(OPT_KEY[o.k])m[OPT_KEY[o.k]]+=o.v/100;}
   for (const k in OPT_CAP) m[k] = Math.min(OPT_CAP[k], m[k]); return m;
 }
 function gmFor(r, c) { const m = sumMods(r.k); m.atk = (1 + m.atk) * Math.pow(DIFF.heroDmg, c) * levelMultiplier(r.k) - 1; return m; }
@@ -703,7 +714,7 @@ const GI_N = 78;   // ui/gi_01~78.webp (01~36 기존 장비 아이콘, 37~ GPT �
 const giIdx = nm => { const bl = baseList().map(b => b.name), k = bl.indexOf(nm); if (k >= 0) return k % GI_N; let h = 0; for (const ch of nm) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h % GI_N; };
 const gearIconKey = g0 => 'gi_' + String(giIdx(g0.base) + 1).padStart(2, '0');
 function gearIcon(g0, cx, cy, sz) { g.save(); g.fillStyle = RARC[g0.rar - 1]; g.globalAlpha = 0.28; g.beginPath(); g.arc(cx, cy, sz * 0.52, 0, 7); g.fill(); g.globalAlpha = 1; g.restore(); sprFit(gearIconKey(g0), cx, cy, sz * 1.12); }
-function equip(gid, key) { for (const k in SV.eq) if (SV.eq[k] === gid) delete SV.eq[k]; if (key) SV.eq[key] = gid; saveNow(); }
+function equip(gid,key,slot=0){if(!gearById(gid))return false;if(key&&(!heroByKey(key)||!Number.isInteger(slot)||slot<0||slot>=meritRank(key)))return false;for(const k of new Set([...Object.keys(SV.eq),...Object.keys(SV.eqExtra||{})])){if(SV.eq[k]===gid)delete SV.eq[k];if(Array.isArray(SV.eqExtra?.[k]))SV.eqExtra[k]=SV.eqExtra[k].map(id=>id===gid?null:id);}if(key)writeEquipmentSlot(key,slot,gid);saveNow();return true;}
 function dismantle(gid) { const g0 = gearById(gid); if (!g0) return 0; equip(gid, null); SV.gear = SV.gear.filter(x => x.id !== gid); const p = PARTS_GET[g0.rar - 1]; SV.parts += p; saveNow(); return p; }
 const rerollCost = g0 => 3 * g0.rar;
 function reroll(gid) { const g0 = gearById(gid); if (!g0) return; const c = rerollCost(g0); if (SV.parts < c) { toast('부품이 부족합니다 (' + c + ' 필요)'); return; } SV.parts -= c; g0.opts = rollVals(g0.opts, g0.lv); saveNow(); toast('옵션 수치를 다시 굴렸습니다'); }
@@ -760,16 +771,16 @@ function drawCards() {
 }
 
 // ---------- 인벤토리 ----------
-let INV = { hero: null, page: 0, sel: null, back: null };
+let INV = { hero: null, page: 0, sel: null, slot:0, back: null };
 function openInv(back) {
-  const pool = ROSTER.F.concat(ROSTER.M).filter(heroAvail); INV = { hero: (INV.hero && pool.find(r => r.k === INV.hero)) ? INV.hero : (pool[0] ? pool[0].k : null), page: 0, sel: null, back: back || (() => go('lines')) }; go('inv');
+  const pool = ROSTER.F.concat(ROSTER.M).filter(heroAvail); INV = { hero: (INV.hero && pool.find(r => r.k === INV.hero)) ? INV.hero : (pool[0] ? pool[0].k : null), page: 0, sel: null, slot:0, back: back || (() => go('lines')) }; go('inv');
 }
 const sortedGear = () => SV.gear.slice().sort((a, b) => b.rar - a.rar || b.lv - a.lv || b.id - a.id);
 function statLines(key) { const m = sumMods(key), out = []; for (const o of optDefs()) { const v = m[OPT_KEY[o.id]]; if (v > 0) out.push(o.name + ' +' + Math.round(v * 1000) / 10 + '%'); } return out; }
 function drawInv() {
   coverImg(bg, 0.5, 0.5); dim(0.8); header('장비', INV.back); txt('부품 ' + SV.parts, W - 70, 40, { b: true, s: 20, a: 'right', c: '#ffe27a', sh: true });
   const pool = ROSTER.F.concat(ROSTER.M).filter(heroAvail), per = portrait ? 8 : pool.length, rowsN = Math.ceil(pool.length / per), cs = Math.min(76, (W - 40 - (per - 1) * 6) / per), top = 74;
-  pool.forEach((r, i) => { const x = 20 + (i % per) * (cs + 6), y = top + Math.floor(i / per) * (cs + 6), on = INV.hero === r.k, eq = SV.eq[r.k];
+  pool.forEach((r, i) => { const x = 20 + (i % per) * (cs + 6), y = top + Math.floor(i / per) * (cs + 6), on = INV.hero === r.k, eq = equippedIds(r.k).find(id=>id!=null);
     g.fillStyle=on?'rgba(148,32,64,.22)':'rgba(0,0,0,.5)';g.fillRect(x,y,cs,cs);
     if(on){g.save();g.shadowColor='rgba(222,85,117,.8)';g.shadowBlur=16;g.fillStyle='rgba(207,70,90,.16)';g.fillRect(x+3,y+3,cs-6,cs-6);g.restore();}
     const prisonThumb=!!(window.GW_PRISON&&window.GW_PRISON.is(r.k));
@@ -780,9 +791,9 @@ function drawInv() {
     }
     if (eq) { const g0 = gearById(eq); if (g0) { g.fillStyle = RARC[g0.rar - 1]; g.fillRect(x, y + cs - (prisonThumb?24:6), cs, 5); } }
     levelCircle(x+Math.max(12,cs*.17),y+Math.max(12,cs*.17),heroLevel(r.k),Math.max(11,Math.min(14,cs*.18)));
-    addHit(x, y, cs, cs, () => { INV.hero = r.k; });
+    addHit(x, y, cs, cs, () => { INV.hero = r.k; INV.slot=0; });
   });
-  const lt = top + rowsN * (cs + 6) + 6, hero = heroByKey(INV.hero), eqG = gearById(SV.eq[INV.hero]);
+  const lt = top + rowsN * (cs + 6) + 6, hero = heroByKey(INV.hero), eqG = gearById(equippedAt(INV.hero,INV.slot));
   const listW = portrait ? W - 40 : W - 40 - 360, listH = portrait ? 6 * 74 + 100 : H - lt - 14;
   // 가방 목록
   const gs = sortedGear(), rowH = 74, perPage = Math.max(1, Math.floor((listH - 145) / rowH)), pages = Math.max(1, Math.ceil(gs.length / perPage)); INV.page = clamp(INV.page, 0, pages - 1);
@@ -795,7 +806,7 @@ function drawInv() {
     drawTextInBox(g0.base,{x:x+76,y:y+3,w:Math.max(80,w-245),h:39},20,{min:12,lines:2,align:'left',color:RARC[g0.rar-1]});
     txt(RARN[g0.rar-1]+' · Lv.'+g0.lv,x+w-78,y+27,{s:15,a:'right',c:'#cbb890'});
     drawTextInBox(g0.opts.map(optLine).join('  '),{x:x+76,y:y+42,w:Math.max(80,w-(own?255:100)),h:22},portrait?15:17,{min:11,lines:1,align:'left',bold:false,color:'#cfe8ff'});
-    if (own) { const h2 = heroByKey(own); txt('착용: ' + (h2 ? h2.n : own), x + w - 78, y + 54, { b: true, s: 15, a: 'right', c: '#9fe6a8' }); }
+    if (own) { const h2 = heroByKey(own); txt('착용: ' + (h2 ? rankName(h2.k,h2.n) : own), x + w - 78, y + 54, { b: true, s: 15, a: 'right', c: '#9fe6a8' }); }
     addHit(x, y, w, rowH - 6, () => { INV.sel = on ? null : g0.id; });
   });
   if (pages > 1) { button('◀', 20 + listW / 2 - 110, lt + listH - 58, 70, 38, () => { INV.page = Math.max(0, INV.page - 1); }, { s: 18 }); txt((INV.page + 1) + ' / ' + pages, 20 + listW / 2, lt + listH - 32, { b: true, s: 18, a: 'center' }); button('▶', 20 + listW / 2 + 40, lt + listH - 58, 70, 38, () => { INV.page = Math.min(pages - 1, INV.page + 1); }, { s: 18 }); }
@@ -803,15 +814,19 @@ function drawInv() {
   // 영웅 / 상세 패널
   const px = portrait ? 20 : 20 + listW + 12, pw = portrait ? W - 40 : 348, py = portrait ? lt + listH + 10 : lt, ph = portrait ? H - py - 10 : listH;
   panel(px, py, pw, ph, { gem: false }); if (!hero) return;
-  titlePlate(hero.n+' · '+CLS[hero.c],px+38,py+55,pw-64,44,{size:22,lines:1});
-  let yy=py+119; if (eqG) { gearIcon(eqG, px + 34, yy + 22, 46); drawTextInBox(eqG.base,{x:px+78,y:yy-3,w:Math.max(80,pw-167),h:27},18,{min:12,lines:1,align:'left',color:RARC[eqG.rar - 1]}); drawTextInBox(eqG.opts.map(optLine).join(' '),{x:px+78,y:yy+27,w:Math.max(80,pw-167),h:24},13,{min:10,lines:1,align:'left',bold:false,color:'#cfe8ff'}); button('해제', px + pw - 86, yy, 70, 38, () => { equip(eqG.id, null); }, { s: 16 }); } else titlePlate('착용 장비 없음',px+55,yy+4,pw-98,46,{size:17,min:13});
-  yy += 76; const sl = statLines(INV.hero); titlePlate('장비 효과 합계',px+55,yy-14,pw-98,38,{size:16,min:13}); (sl.length ? sl : ['—']).forEach((s, i) => txt(s, px + 55 + (portrait ? (i % 3) * ((pw - 98) / 3) : 0), yy + 49 + (portrait ? Math.floor(i / 3) * 22 : i * 22), { s: 16, c: '#e8f0ff' }));
-  const sg = gearById(INV.sel); if (sg) {
-    const by = py + ph - 156; g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(px + 12, by - 8, pw - 24, 1); drawTextInBox(sg.base,{x:px+28,y:by-6,w:pw-44,h:28},18,{min:12,lines:1,align:'left',color:RARC[sg.rar-1]}); if(sg.flavor)drawTextInBox(sg.flavor,{x:px+28,y:by+24,w:pw-44,h:40},14,{min:10,lines:2,align:'left',valign:'top',bold:false,color:'#bbb'});
-    const bw = (pw - 44) / 3; button('장착', px + 12, by + 70, bw, 50, () => { equip(sg.id, INV.hero); toast(hero.n + '에게 장착'); }, { red: true, s: 18 });
-    button('분해', px + 22 + bw, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '분해할까요?', msg: sg.base + ' → 부품 +' + PARTS_GET[sg.rar - 1], yes: () => { const p = dismantle(sg.id); INV.sel = null; toast('부품 +' + p); } }; }, { s: 18 });
-    button('재설정', px + 32 + bw * 2, by + 70, bw, 50, () => { MODAL = { kind: 'confirm', title: '옵션 재설정', msg: '부품 ' + rerollCost(sg) + '개를 써서 수치를 다시 굴립니다.', yes: () => reroll(sg.id) }; }, { s: 16 });
-  } else titlePlate('목록에서 장비를 선택하세요',px+30,py+ph-90,pw-48,45,{size:16,min:12});
+  const slots=meritRank(INV.hero);INV.slot=clamp(INV.slot||0,0,slots-1);
+  titlePlate(rankName(hero.k,hero.n)+' · '+CLS[hero.c],px+22,py+45,pw-44,42,{size:20,min:12,lines:1});
+  const sw=(pw-32)/5;for(let i=0;i<5;i++){const xx=px+16+i*sw,unlocked=i<slots,on=i===INV.slot,id=equippedAt(INV.hero,i),item=gearById(id);g.fillStyle=on?'rgba(175,63,92,.40)':'rgba(255,255,255,.05)';g.fillRect(xx,py+77,sw-5,55);if(item)gearIcon(item,xx+(sw-5)/2,py+101,35);else txt(unlocked?String(i+1):'×',xx+(sw-5)/2,py+109,{s:21,a:'center',c:unlocked?'#ffe3a4':'#827e86'});if(unlocked)addHit(xx,py+77,sw-5,55,()=>{INV.slot=i;});}
+  const points=Math.max(0,(Number(mechaMerit[hero.k])||0)/3),next=MERIT_THRESHOLDS[slots-1];
+  safeText('장비칸 '+slots+'/5 · 공적 '+points.toFixed(1)+(next?' · 다음 '+next:' · 황실 근무왕'),px+18,py+136,pw-36,27,{size:13,min:10,lines:1,color:'#cbb890'});
+  const current=gearById(equippedAt(INV.hero,INV.slot));
+  if(current){drawTextInBox(current.base,{x:px+18,y:py+169,w:pw-116,h:30},18,{min:12,lines:1,align:'left',color:RARC[current.rar-1]});button('해제',px+pw-90,py+167,70,36,()=>equip(current.id,null),{s:15});safeText(current.opts.map(optLine).join(' · '),px+18,py+202,pw-36,42,{size:13,min:10,lines:2,bold:false,color:'#cfe8ff'});}else titlePlate((INV.slot+1)+'번 장비칸 비어 있음',px+22,py+175,pw-44,43,{size:16,min:12});
+  titlePlate('장비 효과 합계',px+22,py+250,pw-44,33,{size:15,min:12});const sl=statLines(INV.hero);(sl.length?sl:['—']).forEach((s,i)=>drawTextInBox(s,{x:px+18+(i%2)*(pw-36)/2,y:py+288+Math.floor(i/2)*19,w:(pw-36)/2-4,h:19},14,{min:10,lines:1,align:'left',color:'#e8f0ff'}));
+  const sg=gearById(INV.sel);if(sg){const by=py+ph-156;g.fillStyle='rgba(255,255,255,.1)';g.fillRect(px+12,by-8,pw-24,1);drawTextInBox(sg.base,{x:px+20,y:by-6,w:pw-40,h:28},18,{min:12,lines:1,align:'left',color:RARC[sg.rar-1]});if(sg.flavor)drawTextInBox(sg.flavor,{x:px+20,y:by+24,w:pw-40,h:40},14,{min:10,lines:2,align:'left',valign:'top',bold:false,color:'#bbb'});
+    const bw=(pw-44)/3;button((INV.slot+1)+'번 장착',px+12,by+70,bw,50,()=>{if(equip(sg.id,INV.hero,INV.slot))toast(rankName(hero.k,hero.n)+'에게 장착');},{red:true,s:16});
+    button('분해',px+22+bw,by+70,bw,50,()=>{MODAL={kind:'confirm',title:'분해할까요?',msg:sg.base+' → 부품 +'+PARTS_GET[sg.rar-1],yes:()=>{const pp=dismantle(sg.id);INV.sel=null;toast('부품 +'+pp);}};},{s:18});
+    button('재설정',px+32+bw*2,by+70,bw,50,()=>{MODAL={kind:'confirm',title:'옵션 재설정',msg:'부품 '+rerollCost(sg)+'개를 써서 수치를 다시 굴립니다.',yes:()=>reroll(sg.id)};},{s:16});
+  }else titlePlate('목록에서 장비를 선택하세요',px+22,py+ph-90,pw-44,45,{size:16,min:12});
 }
 
 
@@ -981,6 +996,7 @@ function useBattleSkill() {
   } else return;
   startSkillCutin(h,skillType);
   skillReady[i]=t+SKILL_COOLDOWN;
+  if(window.GW_FUN)window.GW_FUN.skillActivated(i);
 }
 function stepBattleSkills() {
   if(skillPulse>0)skillPulse--;
@@ -1107,9 +1123,8 @@ addEventListener('keydown', e => {
   if (!menu && !over && (k === 'p' || k === 'escape')) { paused = !paused; fireHeld = false; }
 });
 document.addEventListener('visibilitychange', () => { if (document.hidden && !menu && !over && curStage) { paused = true; fireHeld = false; } });
-window.GW = { openParty, get PS() { return PS; }, beginStage, poolOf, LINES,
+window.GW = { syncMechaMerit, meritRank, equipmentSlots:meritRank, equippedIds, rankName, mechaAvailable(key){return ROSTER.F.concat(ROSTER.M).some(r=>r.k===key)&&(!HERO_UNLOCK[key]||!!SV.clr[HERO_UNLOCK[key]]);}, openParty, get PS() { return PS; }, beginStage, poolOf, LINES,
   leveling:{maxLevel:LV_CAP,growth:LV_GROWTH,level:heroLevel,totalXP:totalHeroXP,thresholds:LV_THRESH,xpToNext:key=>heroLevel(key)>=LV_CAP?0:LV_THRESH[heroLevel(key)]-totalHeroXP(key),multiplier:levelMultiplier,recommended:stageRecommendedLevel,grantXP:grantHeroXP}, get SV() { return SV; }, save: saveNow, go, openLines, openStages, params, DIFF, STAR_T, DATA, epData, get scene() { return scene; }, get res() { return res; }, get paused() { return paused; }, rollGear, openInv, equip, sumMods, get RW() { return RW; },
-  get skillCooldowns(){return skillReady.map(v=>Math.max(0,v-t));}, useSkill:useBattleSkill,
+  get skillCooldowns(){return skillReady.map(v=>Math.max(0,v-t));}, reduceSkillCooldowns(frames,index){const n=Math.max(0,Math.min(360,Number(frames)||0));skillReady=skillReady.map((v,i)=>index==null||i===index?Math.max(t,v-n):v);}, useSkill:useBattleSkill,
   win(n) { won = true; over = true; t = Math.round(ST.limit * (n === 3 ? 0.3 : n === 2 ? 0.6 : 0.9)); onBattleEnd(); }, DEV };
 })();
-

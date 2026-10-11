@@ -1,0 +1,37 @@
+name: GENDER WARFARE APK
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', 'game/**', 'data/**', 'tools/check_haptics.js', '.github/workflows/android-apk.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: {group: gender-warfare-apk, cancel-in-progress: true}
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '21'}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: gender-warfare-test-signing-v1
+      - uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: gender-warfare-gradle-${{ hashFiles('android/**/*.gradle', 'android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gender-warfare-gradle-
+      - name: 진동과 병과 검사
+        run: node tools/check_haptics.js
+      - name: APK 컴파일 및 단위 검사
+        run: cd android && chmod +x gradlew && ./gradlew testDebugUnitTest assembleDebug --no-daemon
+      - name: APK 게시
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-latest
+          name: GENDER WARFARE 최신 APK
+          body: 본편과 메카전 통합판입니다. 진동 기능 변경은 새 APK 설치가 필요합니다. 이후 업데이트는 앱 삭제 없이 덮어 설치하세요.
+          make_latest: true
+          files: android/app/build/outputs/apk/debug/gender-warfare.apk

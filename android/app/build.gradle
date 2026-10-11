@@ -8,8 +8,8 @@ android {
         minSdk 26
         targetSdk 35
         // 같은 서명으로 덮어 설치하는 APK의 versionCode는 빌드 번호로 관리한다.
-        versionCode 1
-        versionName '0.1-test'
+        versionCode ((int) (System.currentTimeMillis() / 60000L - 29000000L))
+        versionName '0.9-haptics'
     }
     buildTypes { debug {} }
     sourceSets.main.assets.srcDir(file('build/generated/webAssets'))
@@ -28,4 +28,12 @@ def syncWebAssets = tasks.register('syncWebAssets', Sync) {
 }
 tasks.configureEach {
     if(name.startsWith('merge') && name.endsWith('Assets'))dependsOn(syncWebAssets)
+}
+
+// Stable test signing key is restored by Actions; application ID remains unchanged.
+tasks.configureEach { task ->
+    if (task.name == 'assembleDebug') task.doLast {
+        def dir = layout.buildDirectory.dir('outputs/apk/debug').get().asFile
+        java.nio.file.Files.copy(new File(dir, 'app-debug.apk').toPath(), new File(dir, 'gender-warfare.apk').toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+    }
 }

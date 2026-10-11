@@ -18,14 +18,14 @@ try{const x=JSON.parse(localStorage.getItem(AUDIO_SETTINGS_KEY)||'{}');
 }catch(e){}
 let optionsOpen=false,sliderDrag=null;
 window.GW_EFFECTS_ON=cfg.effects;
-soundOn=cfg.sound;vibOn=cfg.vibration;
+soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibration);
 function persist(){
  try{localStorage.setItem(AUDIO_SETTINGS_KEY,JSON.stringify(cfg));}catch(e){}
 }
 const music=new Audio();music.loop=true;music.preload='none';
 let musicKey='',loadedVoices={},voicePending={},liveVoices=0,lastDeath=0;
 function configure(){
- soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_EFFECTS_ON=cfg.effects;
+ soundOn=cfg.sound;vibOn=cfg.vibration;window.GW_HAPTICS?.setEnabled(cfg.vibration);window.GW_EFFECTS_ON=cfg.effects;
  if(AC&&master)master.gain.value=cfg.sound ? 0.85*cfg.sfx : 0;
  configureMusicVolume();
  if(!cfg.sound)music.pause();
@@ -77,10 +77,11 @@ function chosenBgm(){
  if(faction==='C')return 'demon';
  return (faction==='M'?'male_':'female_')+(fighting?'battle':'theme');
 }
-function syncMusic(){
+let mechaSuspended=false;
+function syncMusic(){if(mechaSuspended){music.pause();return;}
  const key=chosenBgm();
  if(key!==musicKey){
-  musicKey=key;music.pause();music.src='audio/bgm/'+BGM_FILES[key];music.load();
+  musicKey=key;music.pause();music.src=window.gwAssetURL('audio/bgm/'+BGM_FILES[key]);music.load();
  }
  configureMusicVolume();
  if(cfg.sound && AC&&music.paused && !optionsOpen)music.play().catch(()=>{});
@@ -134,6 +135,8 @@ function drawOptionWindow(){
   c.font='bold 17px sans-serif';c.textAlign='center';c.fillStyle='#fff';
   c.fillText(labels[i][1]?'ON':'OFF',b.x+b.w/2,b.y+26);
  }
+ const test=hapticTestRect();boxFill(c,test,'#463a61','#d6b28d');c.textAlign='center';c.font='bold 15px sans-serif';c.fillStyle='#fff';c.fillText('진동 테스트',test.x+test.w/2,test.y+26);
+ const hs=window.GW_HAPTICS?.status;const message=hs?.message||'진동 제어기를 불러오지 못했습니다';c.textAlign='left';c.font='13px sans-serif';c.fillStyle=hs?.code==='accepted'?'#baffd0':'#ffe0a0';let lines=[''];for(const ch of message){const i=lines.length-1;if(c.measureText(lines[i]+ch).width>d.w-58)lines.push(ch);else lines[i]+=ch;}lines.slice(0,2).forEach((line,i)=>c.fillText(line,d.x+29,d.y+254+i*19));
  const vol=[['효과음 볼륨',cfg.sfx],['배경음 볼륨',cfg.bgm]];
  for(let i=0;i<2;i++){
   const y=d.sliderYs[i],value=vol[i][1];
@@ -143,10 +146,7 @@ function drawOptionWindow(){
   c.beginPath();c.fillStyle='#fff8e3';c.arc(d.sx+d.sw*value,y-2,13,0,7);c.fill();
   c.textAlign='right';c.font='bold 16px sans-serif';c.fillText(Math.round(value*100)+'%',d.x+d.w-26,y+5);
  }
- if(window.GWBridge&&window.GW_DRIVE){
-   boxFill(c,d.drive,'#353035','#c9a073');c.font='bold 15px sans-serif';c.textAlign='center';c.fillStyle='#ffe1ab';
-   c.fillText('☁ Google Drive 저장',d.drive.x+d.drive.w/2,d.drive.y+21);
- }
+ if(window.GWBridge&&window.GW_DRIVE){boxFill(c,d.drive,'#353035','#c9a073');c.font='bold 15px sans-serif';c.textAlign='center';c.fillStyle='#ffe1ab';c.fillText('☁ Google Drive 저장',d.drive.x+d.drive.w/2,d.drive.y+21);}
  boxFill(c,d.done,'#6f394a','#ebbc85');
  c.fillStyle='#fff3dc';c.textAlign='center';c.font='bold 21px sans-serif';
  c.fillText('게임으로 돌아가기',d.done.x+d.done.w/2,d.done.y+30);
@@ -156,14 +156,16 @@ function sliderSet(i,p){
  const d=uiGeometry(),v=Math.max(0,Math.min(1,(p.x-d.sx)/d.sw));
  cfg[i===0?'sfx':'bgm']=Math.round(v*100)/100;configure();persist();
 }
+function hapticTestRect(){const d=uiGeometry();return {x:d.x+116,y:d.rows[1]-14,w:114,h:39};}
+function setVibration(value){cfg.vibration=!!value;configure();persist();return cfg.vibration;}
+function testHaptics(){setVibration(true);window.GW_HAPTICS?.test();}
 function optionsPointer(p){
- if(window.GWBridge&&window.GW_DRIVE&&inBox(p,uiGeometry().drive)){
-   optionsOpen=false;sliderDrag=null;window.GW_DRIVE.open();return;
- }
+ if(window.GWBridge&&window.GW_DRIVE&&inBox(p,uiGeometry().drive)){optionsOpen=false;sliderDrag=null;window.GW_DRIVE.open();return;}
+ if(inBox(p,hapticTestRect())){testHaptics();return;}
  if(inBox(p,uiGeometry().close)||inBox(p,uiGeometry().done)){optionsOpen=false;sliderDrag=null;syncMusic();return;}
  const d=uiGeometry(),ks=['effects','vibration','sound'];
  for(let i=0;i<3;i++)if(p.y>d.rows[i]-19&&p.y<d.rows[i]+34){
-   cfg[ks[i]]=!cfg[ks[i]];configure();persist();if(cfg.sound)syncMusic();return;
+   cfg[ks[i]]=!cfg[ks[i]];configure();persist();if(ks[i]==='vibration'&&cfg.vibration)window.GW_HAPTICS?.test();if(cfg.sound)syncMusic();return;
  }
  for(let i=0;i<2;i++)if(p.y>d.sliderYs[i]-29&&p.y<d.sliderYs[i]+29){
    sliderDrag=i;sliderSet(i,p);return;
@@ -188,6 +190,6 @@ addEventListener('keydown',function(e){
  if((e.key==='Escape'||e.key==='Esc')&&optionsOpen){e.stopImmediatePropagation();optionsOpen=false;syncMusic();}
 },true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)music.pause();else if(cfg.sound)syncMusic();});
-window.GW_AUDIO_OPTIONS={get settings(){return Object.assign({},cfg);},get track(){return musicKey;},
- get voiceCounts(){return {female:SEGMENTS.female.length,male:SEGMENTS.male.length};},open(){optionsOpen=true;},syncMusic};
+window.GW_AUDIO_OPTIONS={setVibration,testHaptics,get hapticStatus(){return window.GW_HAPTICS?.status;},get settings(){return Object.assign({},cfg);},get track(){return musicKey;},
+ get voiceCounts(){return {female:SEGMENTS.female.length,male:SEGMENTS.male.length};},open(){optionsOpen=true;},suspendForMecha(value){mechaSuspended=!!value;if(mechaSuspended)music.pause();else syncMusic();},syncMusic};
 })();

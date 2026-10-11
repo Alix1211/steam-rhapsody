@@ -11,6 +11,11 @@ import android.net.Uri;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.media.AudioAttributes;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -48,6 +53,35 @@ import org.json.JSONObject;
 public final class MainActivity extends Activity {
     private static final String LOCAL = "https://appassets.androidplatform.net/assets/index.html";
     private WebView game;
+    private final Object hapticLock = new Object();
+    private Vibrator vibrator;
+
+    private Vibrator getVibrator() {
+        if (vibrator == null) {
+            if (Build.VERSION.SDK_INT >= 31) {
+                VibratorManager manager = (VibratorManager)getSystemService(VIBRATOR_MANAGER_SERVICE);
+                if (manager != null) vibrator = manager.getDefaultVibrator();
+            } else vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+        }
+        return vibrator;
+    }
+    private void stopVibration() {
+        try { Vibrator v = getVibrator(); if (v != null) v.cancel(); }
+        catch (Exception ignored) { }
+    }
+    // 웹 패턴은 진동/쉼 순서. 진폭 미지원 모터의 Android 패턴에는 앞에 쉼 0ms를 붙인다.
+    static long[] hapticTimings(String text) {
+        if (text == null || text.length() > 1000) throw new IllegalArgumentException("bad-pattern");
+        String[] parts = text.split(",", -1);
+        if (parts.length > 99) throw new IllegalArgumentException("bad-pattern");
+        long[] timings = new long[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            timings[i] = Long.parseLong(parts[i].trim());
+            if (timings[i] < 0 || timings[i] > 10000) throw new IllegalArgumentException("bad-duration");
+        }
+        return timings;
+    }
+
     private SharedPreferences store;
     // 연결 정보는 게임 저장과 분리: 백업 파일에 기기별 Uri를 넣지 않는다.
     private SharedPreferences backupPrefs;
@@ -165,6 +199,37 @@ public final class MainActivity extends Activity {
 
     /** 게임이 부르는 앱 기능: 저장 보관 */
     private final class Bridge {
+        @JavascriptInterface public String vibrate(String text) {
+            synchronized (hapticLock) {
+                try {
+                    long[] timings = hapticTimings(text);
+                    boolean hasOn = false, hasDuration = false;
+                    int[] amplitudes = new int[timings.length];
+                    for (int i = 0; i < timings.length; i++) {
+                        amplitudes[i] = i % 2 == 0 ? 255 : 0;
+                        if (timings[i] > 0) { hasDuration = true; if (i % 2 == 0) hasOn = true; }
+                    }
+                    if (!hasDuration) { stopVibration(); return "ok"; }
+                    if (!hasOn) return "bad-pattern";
+                    if (!foreground) return "inactive";
+                    Vibrator v = getVibrator();
+                    if (v == null || !v.hasVibrator()) return "no-vibrator";
+                    VibrationEffect effect;
+                    if (v.hasAmplitudeControl()) effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
+                    else {
+                        long[] offFirst = new long[timings.length + 1];
+                        System.arraycopy(timings, 0, offFirst, 1, timings.length);
+                        effect = VibrationEffect.createWaveform(offFirst, -1);
+                    }
+                    v.cancel();
+                    // 문플로 APK와 동일한 호출 방식으로 POCO에서 비교. 백그라운드에서는 위에서 차단.
+                    v.vibrate(effect, new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+                    return "ok"; // 요청 수락이며 실제 모터 동작의 보증은 아님.
+                } catch (Exception e) { return "error:" + e.getClass().getSimpleName(); }
+            }
+        }
+
         @JavascriptInterface public String load() {
             try { JSONObject o = new JSONObject(); for (Map.Entry<String, ?> e : store.getAll().entrySet()) o.put(e.getKey(), String.valueOf(e.getValue())); return o.toString(); }
             catch (Exception e) { return "{}"; }
@@ -539,11 +604,12 @@ public final class MainActivity extends Activity {
         if (game != null) { game.resumeTimers(); game.onResume(); }
     }
     @Override protected void onPause() {
-        foreground = false;
+        synchronized (hapticLock) { foreground = false; stopVibration(); }
         if (game != null) { game.evaluateJavascript("try{if(window.GW&&GW.save)GW.save()}catch(e){}", r -> queueBackup(true)); game.onPause(); game.pauseTimers(); }
         super.onPause();
     }
     @Override protected void onDestroy() {
+        synchronized (hapticLock) { foreground = false; stopVibration(); }
         if (connectivity != null && networkCallback != null) connectivity.unregisterNetworkCallback(networkCallback);
         pageReady = false;
         backupIO.shutdown();documentIO.shutdown();

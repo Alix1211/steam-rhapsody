@@ -1,0 +1,2770 @@
+[
+  {
+    "faction": "F",
+    "id": "human",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "클레어! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "사랑도 탄창처럼 넉넉히 주시죠. 장비칸부터요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "human",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "폐하의 사랑은 연사입니까? 저는 재장전 시간이 필요합니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "human",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "네 개면 충분합니다. 다섯 번째는 폐하의 사인으로 막아 두죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "human",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "홍차가 식을 때까지 출격했더니 이만 점이 됐습니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "클레어",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "dwarf",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "그레타! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "폐하, 사랑은 규격이 어떻게 됩니까? 장착 브래킷부터 깎겠습니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "dwarf",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "채찍 손잡이도 정비해 드리죠. 공임은 장비칸입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "dwarf",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "네 개 달았습니다. 폐하의 사랑은 과적입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "dwarf",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "황실 의자보다 제 메카 좌석이 더 닳았습니다. 수리비 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "그레타",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "elf",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "실비아! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "사랑도 정확한 곳에 명중해야 합니다. 장비칸을 조준하시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "elf",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "폐하의 취향은 분석했습니다. 보상표는 아직 비어 있군요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "elf",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "애정 네 개를 동시에 관리하는 건 사격보다 어렵습니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "elf",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "이만 점입니다. 이제 폐하께서 제 휴가 일정을 조준하시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "실비아",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "fmedic",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "아네트! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "사랑은 처방전 없이 받겠습니다. 장비칸은 서류로 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "fmedic",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "황실 애정은 하루 세 번입니까? 식후 장착을 권합니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "fmedic",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "폐하, 애정 과다입니다. 장비칸 네 개로 분산해 드리죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "fmedic",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "제가 이만 점을 모았으니 폐하도 건강검진 한 번 받으시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "아네트",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mmedic",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "톰! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "폐하의 사랑이라면 사양하지 않죠. 장비칸도 같이 처방해 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mmedic",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "맥박은 정상입니다. 보상 담당자의 손이 느리군요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mmedic",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "사랑 네 개면 충분합니다. 다섯 개부터는 진료비 받습니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mmedic",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "이만 점을 모았더니 제가 환자보다 오래 대기했군요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "톰",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mhuman",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "렌! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "폐하의 사랑도 표적 지정이 됩니까? 저는 장비칸을 지정하겠습니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mhuman",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "레이저는 충전됐습니다. 보상도 충전해 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mhuman",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "네 칸 확보했습니다. 이제 사랑이 들어올 사각지대가 없네요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mhuman",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "이만 점입니다. 오늘의 표적은 황실 휴가 결재란입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "렌",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mwolf",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "카이단! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "쓰다듬기는 좋다. 장비칸까지 주면 꼬리도 흔들어 주지.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mwolf",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "폐하, 사랑에 털이 붙어도 반품은 안 된다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mwolf",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "장비 네 개에 폐하까지 올라타면 메카가 운다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "mwolf",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "이만 점 모으는 동안 털갈이를 두 번 했다. 빗부터 줘라.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "카이단",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "morc",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "그로크! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그리고 황실 특별 애정 관리도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "폐하의 사랑도 받아내겠다. 단, 장비칸은 튼튼하게 만들어라.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "morc",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "황실 채찍은 작다. 보상만큼은 크게 줘라.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "morc",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "네 개 다 달았다. 사랑은 들 수 있다. 서류는 못 들겠다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "F",
+    "id": "morc",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "여제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "이만 점이다. 이제 폐하를 업고 휴가를 가면 되는가?",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "여제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "그로크",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mdwarf",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이그니스! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "황실 애정은 합금인가? 장비칸에 달아도 녹슬지 않겠지.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mdwarf",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "폐하의 채찍은 광이 좋군. 내 보상도 그만큼 닦아 줘라.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mdwarf",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "네 개 장착 완료다. 사랑까지 달면 서스펜션을 바꿔야 한다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mdwarf",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "이만 점이다. 황실 의자도 이제 내 정비 대상인가?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "이그니스",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mlizard",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "베르단! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "사랑은 천천히 받아도 된다. 장비칸은 지금 열어라.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mlizard",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "폐하, 꼬리까지 애정 범위다. 요금은 추가하지 마라.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mlizard",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "네 칸이다. 황실 사랑은 꼬리에 감아 두겠다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mlizard",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "이만 점이다. 이제 내 일광욕 시간도 국가 예산으로 잡아라.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "베르단",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mgoblin",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "코그! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "사랑은 폭발합니까? 안전핀하고 장비칸부터 주세요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mgoblin",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "황실 애정 회로를 연결했습니다. 보상 전압이 부족합니다!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mgoblin",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "네 개나 달았어요! 이제 폭발해도 원인을 못 찾겠네요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "mgoblin",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "이만 점! 제 메카가 황실보다 먼저 문화재가 되겠어요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "코그",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "melf",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "루시안! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "폐하의 사랑은 아름답군요. 장비칸이 붙으면 더 아름답겠습니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "melf",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "사랑은 받겠습니다. 장비 목록은 제가 정리하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "melf",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "네 칸이면 황실 취향도 맞출 수 있겠군요. 영수증은 폐하께.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "melf",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "이만 점입니다. 제 근무표를 보니 황실이 부업이군요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "루시안",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "fox",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "로제! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "폐하의 사랑은 환영입니다. 장비칸은 별도로 청구할게요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "fox",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "맥박이 빨라지셨네요. 보상부터 지급하시면 안정됩니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "fox",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "애정 네 개요? 좋아요. 관리는 황실 보험으로 해주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "fox",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "이만 점 모았습니다. 이제 제 휴가도 왕명으로 내려주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "로제",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "goblin",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "핀! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "사랑에 도화선이 있나요? 장비칸은 불붙기 전에 주세요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "goblin",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "황실 애정은 소리가 크네요. 제 폭탄하고 합주할까요?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "goblin",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "네 개 다 달았어요. 폐하, 폭발하면 제 탓만 하지 마세요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "goblin",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "이만 점! 폭탄보다 출근 도장이 더 많이 터졌어요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "핀",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "harpy",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "벨루가! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "사랑은 공중 배송으로 주세요. 장비칸은 착륙 전에요!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "harpy",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "폐하의 취향은 빠르네요. 보상 담당자는 왜 느려요?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "harpy",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "네 개나 달았더니 날개보다 영수증이 더 펄럭이네요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "harpy",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "이만 점 날았어요. 이제 황실 지붕에 둥지 하나 주시죠!",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "벨루가",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "lamia",
+    "rank": 2,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "자하라! 공적 삼백. 장비칸을 하나 더 열어 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "좋습니다. 황실 보상은 빠를수록 좋죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그리고 황실 직속 사랑 서비스도 내려 주마. 짐이 직접 예약했다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "폐하의 사랑은 감아 두겠습니다. 장비칸도 같이 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "사랑 대신 장비칸만 받겠다는 건가?",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "대신이 아니라 먼저입니다. 지급 순서를 지켜 주시죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "능숙하구나. 보상 담당자를 그대 밑에 배치해야겠어.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "lamia",
+    "rank": 3,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "천 공적! 세 번째 장비칸이다. 짐의 사랑도 추가 장착해라.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "황실 애정에도 장착 제한이 있었습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "짐의 사랑은 제한이 없다. 회계 담당자가 가끔 운다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "사랑이 길군요. 제 꼬리만큼 길면 보상도 늘려야죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 황실 애정 무제한 이용권도 주겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "유효기간과 정비 시간은 적어 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "장비보다 계약을 잘 다루는군. 마음에 든다.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "lamia",
+    "rank": 4,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "이천오백! 네 번째 장비칸이다. 그대는 황실 사랑의 우수 고객이다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "단골 혜택으로 휴가도 붙습니까?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "휴가 중에도 짐의 사랑은 배송된다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "네 개면 좋네요. 남는 사랑은 황실 금고에 감아 둘까요?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "네 칸이나 열었는데 아직도 요구가 있나?",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "황실의 사랑에도 보관함이 필요하죠.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "좋다. 다음 승급은 이만 점이다. 그때도 올 수 있으면 와라.",
+        "royal": true
+      }
+    ]
+  },
+  {
+    "faction": "M",
+    "id": "lamia",
+    "rank": 5,
+    "lines": [
+      {
+        "speaker": "황제",
+        "text": "……이만 점? 보상표에 장난으로 적어 둔 숫자인데?",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "표에 있었으니 모았습니다. 다섯 번째 장비칸 주세요.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "그만 출격하고 좀 쉬어라. 짐보다 근무 시간이 길구나.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "이만 점입니다. 이제 황실 근무표를 제가 조여 드릴까요?",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "알겠다. 다섯 칸이다. 황실의 사랑도 평생 지급하겠다.",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "좋습니다. 지급 창구는 오늘부터 제 휴양지입니다.",
+        "royal": false
+      },
+      {
+        "speaker": "황제",
+        "text": "……이쯤 되면 황실이 포로 아니냐?",
+        "royal": true
+      },
+      {
+        "speaker": "자하라",
+        "text": "폐하께서 직접 예약하셨잖습니까. 취소 수수료는 사랑으로 받죠.",
+        "royal": false
+      }
+    ]
+  }
+]
