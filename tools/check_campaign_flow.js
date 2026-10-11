@@ -29,14 +29,21 @@ console.log('PASS actual main and flight VM: ticket wins/replays/dedup/save/cons
 // Defeat consumes the launched ticket, awards no merit, and freezes into results.
 gw.SV.sortieTickets.F=2;vm.runInContext("practice=false;state='deploy';launchSortie();hero.inv=0;roster.forEach(r=>r.hp=0);roster[active].hp=1;hostile=[{x:hero.x,y:hero.y,vx:0,vy:0,r:5,t:2,damage:1000}];update(.016);draw();",flight);
 assert.equal(vm.runInContext('state',flight),'lost');assert.equal(gw.ticketCount('F'),1);assert.equal(vm.runInContext('JSON.stringify(campaign.meritThirds)',flight),earned);assert.equal(vm.runInContext('resultStarted',flight),now);
-const synth=makeBox();vm.runInContext(read('game/presentation.js'),synth);
+const synth=makeBox(),scheduled=new Map();let timerId=0;
+synth.setTimeout=(fn,delay)=>{const id=++timerId;scheduled.set(id,{fn,delay});return id;};synth.clearTimeout=id=>scheduled.delete(id);
+const fireScheduled=()=>{for(const {fn} of scheduled.values())fn();scheduled.clear();};
+vm.runInContext(read('game/presentation.js'),synth);
 const resultAudio=synth.audioInstances;
-for(const key of ['victory','defeat','finale']){const wav=fs.readFileSync('game/audio/results/'+key+'.wav');assert.equal(wav.toString('ascii',0,4),'RIFF');assert.equal(wav.toString('ascii',8,12),'WAVE');let peak=0;for(let i=44;i+1<wav.length;i+=2)peak=Math.max(peak,Math.abs(wav.readInt16LE(i)));assert(peak>25000,'audible normalized WAV: '+key);}
-synth.GW_PRESENTATION.finish(true,false,{sound:false});assert(resultAudio.every(a=>a.paused));
-synth.GW_PRESENTATION.finish(true,false,{sound:true,sfx:.4});assert.equal(resultAudio[0].paused,false);assert.equal(resultAudio[0].volume,.38);
-synth.GW_PRESENTATION.setVolume(false);assert.equal(resultAudio[0].volume,0);
-synth.GW_PRESENTATION.finish(false,false,{sound:true});assert.equal(resultAudio[0].paused,true);assert.equal(resultAudio[1].paused,false);
-synth.GW_PRESENTATION.finish(true,true,{sound:true});assert.equal(resultAudio[1].paused,true);assert.equal(resultAudio[2].paused,false);assert.equal(resultAudio[2].volume,.95);
+for(const faction of ['F','M'])for(let stars=1;stars<=3;stars++){
+ const file='audio/results/victory_'+faction+'_'+stars+'.wav',wav=fs.readFileSync('game/'+file);assert.equal(wav.toString('ascii',0,4),'RIFF');assert.equal(wav.toString('ascii',8,12),'WAVE');
+ synth.GW_PRESENTATION.finish(true,false,{sound:true,sfx:.4,faction,resultStars:stars,resultDelay:1.25});
+ assert(resultAudio.every(a=>a.paused),'wait for first star');assert.equal([...scheduled.values()][0].delay,1250);fireScheduled();
+ const active=resultAudio.find(a=>!a.paused);assert.equal(active.src,file);assert.equal(active.volume,.38);
+ synth.GW_PRESENTATION.setVolume(false);assert.equal(active.volume,0);
+}
+synth.GW_PRESENTATION.finish(true,false,{sound:false});assert(resultAudio.every(a=>a.paused));assert.equal(scheduled.size,0);
+synth.GW_PRESENTATION.finish(false,false,{sound:true});fireScheduled();assert.equal(resultAudio[1].paused,false);
+synth.GW_PRESENTATION.finish(true,true,{sound:true,faction:'M',resultStars:3});fireScheduled();assert.equal(resultAudio[1].paused,true);assert.equal(resultAudio.find(a=>!a.paused).src,'audio/results/victory_M_3.wav');
 const player=synth.GW_PRESENTATION.musicPlayer();player.set('battle','a.mp3',.24,true);const a=player.current;now+=1500;player.set('battle','a.mp3',.24,true);player.set('theme','b.mp3',.24,true);assert(!a.paused,'old music continues during the fade');now+=500;player.set('theme','b.mp3',.24,true);assert(player.current.volume>0&&player.current.volume<.24);player.pause();assert(a.paused&&player.current.paused);
 console.log('PASS defeat ticket/no merit/result hold; real WAV victory/loss/finale wiring; continuous music crossfade');
 

@@ -623,7 +623,7 @@ function onBattleEnd() {
     SV.clr[id] = Math.max(before, sv); if(['F','M'].includes(cs.side))SV.sortieTickets[cs.side]=ticketCount(cs.side)+1; res = { won: true, stars: sv, remain, first: !before, xp, t0: nowMs() };
     const e = epData(cs.ch, cs.no); res.line = e.stars && e.stars[String(sv)] || null; saveNow();
   } else res = { won: false, why: window.GW_MISSIONS?.failure||(timeUp ? '시간 초과' : '전멸'), xp, t0: nowMs() };
-  res.t0+=800;window.GW_PRESENTATION?.finish(won,cs.ch==='C11'&&cs.no===10,window.GW_AUDIO_OPTIONS?.settings);window.GW_AUDIO_OPTIONS?.syncMusic();
+  res.t0+=800;window.GW_PRESENTATION?.finish(won,cs.ch==='C11'&&cs.no===10,{...window.GW_AUDIO_OPTIONS?.settings,resultStars:res.stars||1,faction:cs.side,resultDelay:1.25});window.GW_AUDIO_OPTIONS?.syncMusic();
 }
 function drawResult() {
   if (!res || nowMs()<res.t0) return; const cs = curStage, el = nowMs() - res.t0, w = Math.min(W - 40, 640), h = res.won ? (portrait ? 560 : 500) : 330, x = (W - w) / 2, y = (H - h) / 2;
@@ -632,11 +632,11 @@ function drawResult() {
   txt(res.won ? 'STAGE CLEAR' : '임무 실패', x + w / 2, y + 66, { b: true, s: 46, a: 'center', c: res.won ? '#ffe27a' : '#ff9a8a', sh: true });
   drawTextInBox(chNo(cs.ch)+'-'+cs.no+' · '+epData(cs.ch,cs.no).title,{x:x+44,y:y+76,w:w-88,h:46},20,{min:12,lines:2,color:'#cbb890',bold:false});
   if (res.won) {
-    for (let i = 0; i < 3; i++) { const on = i < res.stars, sh = el - 450 - i * 380, pop = on ? (sh < 0 ? 0 : sh < 220 ? 0.4 + sh / 220 * 0.9 : 1.3 - Math.min(0.3, (sh - 220) / 600)) : 1; g.save();g.translate(x+w/2+(i-1)*84,y+175);g.scale(on?Math.max(.01,pop):1,on?Math.max(.01,pop):1);ornateStar(0,0,72,on&&sh>=0);g.restore(); }
+    for (let i = 0; i < 3; i++) { const on = i < res.stars, sh = el - 450 - i * 450, pop = on ? (sh < 0 ? 0 : sh < 220 ? 0.4 + sh / 220 * 0.9 : 1.3 - Math.min(0.3, (sh - 220) / 600)) : 1; g.save();g.translate(x+w/2+(i-1)*84,y+175);g.scale(on?Math.max(.01,pop):1,on?Math.max(.01,pop):1);ornateStar(0,0,72,on&&sh>=0);g.restore(); }
     txt('처치 ' + score + '/' + ST.goal + ' · 남은 시간 ' + mmss(res.remain), x + w / 2, y + 250, { b: true, s: 22, a: 'center' });
     {const up=res.xp?.awards?.filter(a=>a.after>a.before)||[];txt((res.first?'첫 클리어! · ':'')+'경험치 +'+(res.xp?.amount||0)+(up.length?' · 레벨 상승 '+up.length+'명':'')+(['F','M'].includes(cs.side)?' · 출격권 +1':''),x+w/2,y+282,{b:true,s:18,a:'center',c:up.length?'#fff4b5':'#9fe6a8'});}
-    if (res.line && el > 450 + 3 * 380) { const lh = wrap(res.line.text, w - 80, 21, false); panel(x + 26, y + 300, w - 52, 28 + lh.length * 30 + 28, { fill: 'rgba(40,24,30,.8)', gem: false, lw: 2 }); drawTextInBox(res.line.who,{x:x+46,y:y+309,w:w-100,h:30},18,{min:12,lines:1,align:'left',color:'#ffe27a'});drawTextInBox(res.line.text,{x:x+46,y:y+343,w:w-100,h:Math.max(18,lh.length*30)},21,{min:12,lines:5,align:'left',bold:false,valign:'top'}); }
-    if (el > 450 + 3 * 380) button('계속', x + w / 2 - 110, y + h - 74, 220, 58, () => afterWin(), { red: true, s: 26 });
+    if (res.line && el > 450 + 3 * 450) { const lh = wrap(res.line.text, w - 80, 21, false); panel(x + 26, y + 300, w - 52, 28 + lh.length * 30 + 28, { fill: 'rgba(40,24,30,.8)', gem: false, lw: 2 }); drawTextInBox(res.line.who,{x:x+46,y:y+309,w:w-100,h:30},18,{min:12,lines:1,align:'left',color:'#ffe27a'});drawTextInBox(res.line.text,{x:x+46,y:y+343,w:w-100,h:Math.max(18,lh.length*30)},21,{min:12,lines:5,align:'left',bold:false,valign:'top'}); }
+    if (el > 450 + 3 * 450) button('계속', x + w / 2 - 110, y + h - 74, 220, 58, () => afterWin(), { red: true, s: 26 });
   } else {
     txt('처치 ' + score + '/' + ST.goal + ' · ' + res.why, x + w / 2, y + 160, { b: true, s: 24, a: 'center' });
     txt('경험치 +'+(res.xp?.amount||0)+' (출전 3명)',x+w/2,y+207,{b:true,s:17,a:'center',c:'#d9cba7'});
@@ -653,7 +653,7 @@ function afterWin() {
 // ---------- 전투 HUD / 일시정지 ----------
 function drawHud() {
   const cs = curStage; if (!cs || over || menu) return;
-  const rem = Math.max(0, ST.limit - t), frac = rem / ST.limit, bw = 190, bx = W - bw - 62, by = 58;
+  const rem = window.GW_MISSIONS?.remainingFrames??Math.max(0, ST.limit - t), frac = rem / ST.limit, bw = 190, bx = W - bw - 62, by = 58;
   stretchUi('goth_plate_dark',bx-8,by-2,bw+16,39);
   txt(mmss(rem),bx+34,by+25,{b:true,s:20,a:'center',c:'#f6e8dd',sh:true});
   const ns=starsFor(frac);for(let i=0;i<3;i++)ornateStar(bx+104+i*25,by+16,22,i<ns);

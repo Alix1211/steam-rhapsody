@@ -433,7 +433,10 @@ function drawHero(h,i){
  if(i==sel&&h.hp>0){const hy=L.ringY+4*k,rx=L.ringR*1.02,ry=L.ringR*0.34;
   g.save();const gr=g.createRadialGradient(h.x,hy,6,h.x,hy,rx);gr.addColorStop(0,'rgba(255,120,150,.24)');gr.addColorStop(0.5,'rgba(255,88,126,.14)');gr.addColorStop(1,'rgba(255,88,126,0)');
   g.fillStyle=gr;g.beginPath();g.ellipse(h.x,hy,rx,ry,0,0,7);g.fill();g.restore()}
- g.save();if(h.hp<=0)g.globalAlpha=h.art?.92:.25;
+ g.save();
+ // 조준 중 아트와 총구만 축소·하강. 실제 좌표와 피격/조준은 유지한다.
+ const scopeArt=1-.28*scope;g.translate(h.x,h.y+60*scope);g.scale(scopeArt,scopeArt);g.translate(-h.x,-h.y);
+ if(h.hp<=0)g.globalAlpha=h.art?.92:.25;
  // 살아있는 느낌: 호흡(위아래) + 좌우 출렁 + 미세 기울임 + 사격 반동 + 피격 움찔
  const alive=h.hp>0,ph=i*2.1;
  const bob=alive?Math.sin(t/32+ph)*9:0,swx=alive?Math.sin(t/70+ph)*9:0,rot=alive?Math.sin(t/85+ph)*0.03:0;
@@ -584,8 +587,8 @@ function draw(){
      (ex-sx)*z2,(ey2-sy)*z2);
    g.restore();
   }
-  // 블러 대신 조준경 바깥만 검정 45%로 가볍게 가린다.
-  g.save();g.fillStyle='rgba(0,0,0,'+(0.45*scope)+')';
+  // 블러 대신 조준경 바깥만 검정 62%로 시야를 집중시킨다. 주변 적의 실루엣은 유지.
+  g.save();g.fillStyle='rgba(0,0,0,'+(0.62*scope)+')';
   g.beginPath();g.rect(0,0,W,H);g.arc(vx,vy,ringR,0,Math.PI*2,true);
   g.fill('evenodd');g.restore();
   lensFx(vx,vy,ringR);drawReticle(vx,vy,ringR);

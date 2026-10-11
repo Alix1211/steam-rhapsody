@@ -1,7 +1,7 @@
-/* Shared result stingers and continuous music fades; no downloaded sound required. */
+/* Star-synced slap results with existing faction voices and continuous music fades. */
 (function(root){
 'use strict';
-let ctx=null,finishAt=-Infinity,holdUntil=0,stingerBus=null;
+let ctx=null,finishAt=-Infinity,holdUntil=0,stingerBus=null,resultTimer=null;
 // Adopt the game's context, unlocked by the launch tap, instead of creating one at settlement.
 function unlock(existing){
  if(existing&&existing.state!=='closed')ctx=existing;
@@ -9,13 +9,18 @@ function unlock(existing){
 }
 const stingers={};
 for(const key of ['victory','defeat','finale']){const a=new Audio('audio/results/'+key+'.wav');a.preload='auto';stingers[key]=a;}
+const comic={};
+for(const faction of ['F','M'])for(let n=1;n<=3;n++){const a=new Audio('audio/results/victory_'+faction+'_'+n+'.wav');a.preload='auto';comic[faction+'_'+n]=a;}
 function finish(won,finale=false,settings={}){
- finishAt=performance.now();const duration=won?(finale?4.6:2.5):1.65;holdUntil=finishAt+duration*1000;
- for(const a of Object.values(stingers))a.pause();
+ finishAt=performance.now();clearTimeout(resultTimer);
+ for(const a of [...Object.values(stingers),...Object.values(comic)])a.pause();
+ const n=Math.max(1,Math.min(3,Math.round(settings.resultStars||1))),faction=settings.faction==='M'?'M':'F';
+ const delay=won?(settings.resultDelay??1.25):0;
+ holdUntil=finishAt+(delay+(won?(n-1)*.45+1.7:1.65))*1000;
  if(settings.sound===false)return;
- const a=stingers[won?(finale?'finale':'victory'):'defeat'];stingerBus=a;
+ const a=won?comic[faction+'_'+n]:stingers.defeat;stingerBus=a;
  a.currentTime=0;a.volume=Math.max(0,Math.min(1,.95*(settings.sfx??1)));
- a.play().catch(()=>{});
+ resultTimer=setTimeout(()=>{if(!document.hidden&&a.volume>0)a.play().catch(()=>{});},delay*1000);
 }
 function musicPlayer(){
  let current=null,old=null,key='',transitionAt=0,volume=0,enabled=false,duck=1,lastVolumeAt=0;

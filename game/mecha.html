@@ -528,7 +528,7 @@ const drawSortie=draw;draw=function(){drawSortie();if(state==='map'||state==='de
 let resultStarted=-Infinity,resultStill=null;
 const updateResult=update;update=function(dt){const before=state;updateResult(dt);if(before==='playing'&&(state==='won'||state==='lost')){
  try{window.parent.GW_DOMINANCE?.flush();}catch(_){}resultStarted=performance.now();resultStill=document.createElement('canvas');resultStill.width=cv.width;resultStill.height=cv.height;resultStill.getContext('2d').drawImage(cv,0,0);
- window.GW_PRESENTATION.finish(state==='won',false,{sound:settings.sound,sfx:settings.sfx??1});syncMusic();
+ window.GW_PRESENTATION.finish(state==='won',false,{sound:settings.sound,sfx:settings.sfx??1,faction,resultStars:1,resultDelay:1.2});syncMusic();
  }};
 const drawResultFade=draw;draw=function(){drawResultFade();syncMusic();if((state==='won'||state==='lost')&&resultStill){const age=performance.now()-resultStarted;
  if(age<1200){g.save();g.setTransform(1,0,0,1,0,0);g.globalAlpha=age<800?1:1-(age-800)/400;g.drawImage(resultStill,0,0,cv.width,cv.height);g.restore();menuHits=[];}
